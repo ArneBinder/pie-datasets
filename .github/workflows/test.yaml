@@ -65,14 +65,15 @@ jobs:
         run: poetry install --no-interaction
 
       #----------------------------------------------
-      #              run test suite
+      #   run test suite and upload coverage data
       #----------------------------------------------
       - name: Run tests with coverage
         run: |
           source .venv/bin/activate
-          pytest -k "not slow" --cov --cov-fail-under=90 --cov-report term-missing
-
+          pytest -k "not slow" --cov --cov-fail-under=90 --cov-report term-missing --cov-report xml:coverage.xml
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
+        with:
+          files: ./coverage.xml
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
