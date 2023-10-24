@@ -1,0 +1,70 @@
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.poetry]
+name = "pie-datasets"
+version = "0.1.0"
+description = "Building scripts for PyTorch-IE Datasets"
+authors = ["Arne Binder <arne.binder@dfki.de>"]
+readme = "README.md"
+homepage = "https://github.com/arnebinder/pie-datasets"
+repository = "https://github.com/arnebinder/pie-datasets"
+packages = [
+    { include = "pie_datasets", from = "src" },
+]
+classifiers = [
+    "Framework :: Pytest",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3 :: Only",
+]
+[tool.poetry.urls]
+"Bug Tracker" = "https://github.com/arnebinder/pie-datasets/issues"
+"Changelog" = "https://github.com/arnebinder/pie-datasets/releases"
+
+[tool.poetry.dependencies]
+python = "^3.9"
+pytorch-ie = ">=0.26.0,<0.27.0"
+
+[tool.poetry.group.dev.dependencies]
+torch = {version = "^2.1.0+cpu", source = "pytorch"}
+pytest = "^7.4.2"
+pytest-cov = "^4.1.0"
+pre-commit = "^3.4.0"
+
+[[tool.poetry.source]]
+name = "pytorch"
+url = "https://download.pytorch.org/whl/cpu"
+priority = "explicit"
+
+[[tool.poetry.source]]
+name = "pre-release"
+url = "https://test.pypi.org/simple/"
+priority = "explicit"
+
+
+[tool.pytest.ini_options]
+addopts = [
+  "--color=yes",
+  "--durations=0",
+  "--strict-markers",
+  "--doctest-modules",
+]
+filterwarnings = [
+  "ignore::DeprecationWarning",
+  "ignore::UserWarning",
+]
+log_cli = "True"
+markers = [
+  "slow: slow tests",
+]
+minversion = "6.0"
+testpaths = "tests/"
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: nocover",
+    "raise NotImplementedError",
+    "raise NotImplementedError()",
+    "if __name__ == .__main__.:",
+]
