@@ -22,8 +22,8 @@ from tests.dataset_builders.common import (
 
 logger = logging.getLogger(__name__)
 
-HF_DATASET_PATH = "DFKI-SLT/tacred"
 PIE_DATASET_PATH = f"{PIE_BASE_PATH}/tacred"
+HF_DATASET_PATH = Tacred.BASE_DATASET_PATH
 SPLITS = ["train", "validation", "test"]
 EXAMPLE_IDX = 0
 NUM_SAMPLES = 3
