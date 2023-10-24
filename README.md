@@ -10,7 +10,7 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
 
-Building Scripts for [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) Datasets.
+Building Scripts for [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) Datasets, also see [here](https://huggingface.co/pie).
 
 ## Setup
 
