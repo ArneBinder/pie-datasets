@@ -121,7 +121,7 @@ def document(hf_example, ner_names, relation_names):
 
 def test_document(document):
     assert document is not None
-    assert isinstance(document, Document)
+    assert isinstance(document, Tacred.DOCUMENT_TYPE)
 
 
 def test_example_to_document_and_back(hf_example, ner_names, relation_names):
@@ -150,6 +150,7 @@ def test_example_to_document_and_back_all(hf_dataset):
                 ner_int2str=lambda idx: ner_names[idx],
                 relation_int2str=lambda idx: relation_names[idx],
             )
+            assert isinstance(doc, Tacred.DOCUMENT_TYPE)
             example_back = document_to_example(
                 doc, ner_names=ner_names, relation_names=relation_names
             )
@@ -171,6 +172,10 @@ def test_pie_document_all(dataset_variant):
     for split, ds in pie_dataset.items():
         for doc in ds:
             assert doc is not None
+            # Note: we don't check the actual type of the document here, because the real type
+            # comes from the dataset builder script which Huggingface load_dataset() copies
+            # to a temporary directory and then imports. This means that the type of the document
+            # is not the same as the type of the document in the original dataset builder script.
             assert isinstance(doc, Document)
 
 
