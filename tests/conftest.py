@@ -1,4 +1,7 @@
 import dataclasses
+import glob
+import os
+from pathlib import Path
 
 import pkg_resources
 import pytest
@@ -9,6 +12,17 @@ from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextBasedDocument
 
 from tests import FIXTURES_ROOT
+from tests.dataset_builders.common import DATASET_BUILDER_BASE_PATH
+
+SRC_ROOTS = [Path("src"), DATASET_BUILDER_BASE_PATH]
+
+# import all src files to include them in the coverage score (and report)
+# this is necessary because we calculate coverage by calling "pytest --cov"
+for src_root in SRC_ROOTS:
+    for file in glob.glob(f"{src_root}/**/*.py", recursive=True):
+        import_path = file.replace(os.sep, ".").rstrip(".py")
+        __import__(import_path)
+
 
 _TABULATE_AVAILABLE = "tabulate" in {pkg.key for pkg in pkg_resources.working_set}
 
