@@ -6,25 +6,28 @@ from datasets import disable_caching, load_dataset
 from pytorch_ie import DatasetDict, tokenize_document
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, Document, annotation_field
-from pytorch_ie.documents import TextBasedDocument, TextDocumentWithLabeledSpansAndBinaryRelations
+from pytorch_ie.documents import (
+    TextBasedDocument,
+    TextDocumentWithLabeledSpansAndBinaryRelations,
+)
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.cdcp.cdcp import (
+    CDCP,
     CDCPDocument,
     convert_to_text_document_with_labeled_spans_and_binary_relations,
     document_to_example,
-    example_to_document, CDCP,
+    example_to_document,
 )
+from src.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
 from tests import FIXTURES_ROOT
 from tests.dataset_builders.common import _deep_compare
-
-from src.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
 
 disable_caching()
 
 DATASET_NAME = "cdcp"
 SPLIT_SIZES = {"train": 581, "test": 150}
-#HF_DATASET_PATH = "DFKI-SLT/cdcp"
+# HF_DATASET_PATH = "DFKI-SLT/cdcp"
 HF_DATASET_PATH = CDCP.BASE_DATASET_PATH
 PIE_DATASET_PATH = "pie/cdcp"
 DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "cdcp_acl17.zip"

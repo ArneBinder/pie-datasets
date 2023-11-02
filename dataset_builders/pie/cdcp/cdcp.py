@@ -9,7 +9,6 @@ from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import Annotation, AnnotationList, Document, annotation_field
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
-
 log = logging.getLogger(__name__)
 
 
@@ -127,6 +126,7 @@ class CDCPConfig(datasets.BuilderConfig):
 
     def __init__(self, **kwargs):
         """BuilderConfig for CDCP.
+
         Args:
           **kwargs: keyword arguments forwarded to super.
         """
