@@ -8,17 +8,6 @@ from pytorch_ie.documents import TextDocument, TextDocumentWithLabeledSpans
 from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
 
 
-class CoNLL2003Config(datasets.BuilderConfig):
-    """BuilderConfig for CoNLL2003"""
-
-    def __init__(self, **kwargs):
-        """BuilderConfig for CoNLL2003.
-        Args:
-          **kwargs: keyword arguments forwarded to super.
-        """
-        super().__init__(**kwargs)
-
-
 @dataclass
 class CoNLL2003Document(TextDocument):
     entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
@@ -30,7 +19,7 @@ class Conll2003(pytorch_ie.data.builder.GeneratorBasedBuilder):
     BASE_DATASET_PATH = "conll2003"
 
     BUILDER_CONFIGS = [
-        CoNLL2003Config(
+        datasets.BuilderConfig(
             name="conll2003", version=datasets.Version("1.0.0"), description="CoNLL2003 dataset"
         ),
     ]
