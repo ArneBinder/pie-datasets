@@ -20,7 +20,9 @@ SRC_ROOTS = [Path("src"), DATASET_BUILDER_BASE_PATH]
 # this is necessary because we calculate coverage by calling "pytest --cov"
 for src_root in SRC_ROOTS:
     for file in glob.glob(f"{src_root}/**/*.py", recursive=True):
-        import_path = file.replace(os.sep, ".").rstrip(".py")
+        # get the base file path without the extension
+        import_base_path = os.path.splitext(file)[0]
+        import_path = import_base_path.replace(os.sep, ".")
         __import__(import_path)
 
 
