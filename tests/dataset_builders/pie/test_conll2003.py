@@ -106,10 +106,10 @@ def converted_document(converted_pie_dataset):
 
 
 def test_converted_document(converted_document, converter_document_type):
-    assert isinstance(document, converter_document_type)
+    assert isinstance(converted_document, converter_document_type)
     if converter_document_type == TextDocumentWithLabeledSpans:
-        assert document.text == "EU rejects German call to boycott British lamb ."
-        entities = list(document.labeled_spans)
+        assert converted_document.text == "EU rejects German call to boycott British lamb ."
+        entities = list(converted_document.labeled_spans)
         assert len(entities) == 3
         assert str(entities[0]) == "EU"
         assert str(entities[1]) == "German"
