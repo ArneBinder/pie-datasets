@@ -15,5 +15,13 @@ and the following annotation layers:
 
 - `entities` (annotation type: `LabeledSpan`, target: `text`)
 
-See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/annotations.py) for the definitions of
-the annotation types.
+See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/annotations.py) for the annotation type definitions.
+
+## Document Converters
+
+The dataset provides document converters for the following target document types:
+
+- `pytorch_ie.documents.TextDocumentWithLabeledSpans`
+
+See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
+definitions.
