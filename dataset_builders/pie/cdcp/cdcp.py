@@ -4,10 +4,11 @@ from typing import Any, Callable, Dict, List, Optional
 
 import datasets
 import pytorch_ie.data.builder
-from pie_utils.document.processors.text_span_trimmer import trim_text_spans
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import Annotation, AnnotationList, Document, annotation_field
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+
+from pie_datasets.document.processing.text_span_trimmer import trim_text_spans
 
 log = logging.getLogger(__name__)
 
