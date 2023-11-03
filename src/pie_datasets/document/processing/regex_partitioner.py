@@ -148,7 +148,7 @@ class RegexPartitioner(EnterDatasetMixin, ExitDatasetMixin):
         self,
         pattern: str,
         collect_statistics: bool = False,
-        partition_layer_name: str = "labeled_partitions",
+        partition_layer_name: str = "partitions",
         text_field_name: str = "text",
         **partitioner_kwargs,
     ):
