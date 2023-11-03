@@ -19,17 +19,16 @@ from dataset_builders.pie.cdcp.cdcp import (
     document_to_example,
     example_to_document,
 )
-from src.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
+from pie_datasets.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
 from tests import FIXTURES_ROOT
-from tests.dataset_builders.common import _deep_compare
+from tests.dataset_builders.common import PIE_BASE_PATH, _deep_compare
 
 disable_caching()
 
 DATASET_NAME = "cdcp"
 SPLIT_SIZES = {"train": 581, "test": 150}
-# HF_DATASET_PATH = "DFKI-SLT/cdcp"
 HF_DATASET_PATH = CDCP.BASE_DATASET_PATH
-PIE_DATASET_PATH = "pie/cdcp"
+PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME  # "pie/cdcp"
 DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "cdcp_acl17.zip"
 
 HF_EXAMPLE_00195 = {
@@ -171,7 +170,7 @@ def test_example_to_document_and_back_all(
 
 @pytest.fixture(scope="module")
 def dataset() -> DatasetDict:
-    return DatasetDict.load_dataset(PIE_DATASET_PATH)
+    return DatasetDict.load_dataset(str(PIE_DATASET_PATH))
 
 
 def test_pie_dataset(dataset):
