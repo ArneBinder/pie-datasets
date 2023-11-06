@@ -1217,27 +1217,28 @@ six = ">=1.5"
 
 [[package]]
 name = "pytorch-ie"
-version = "0.26.0"
+version = "0.26.1.dev1699314147"
 description = "State-of-the-art Information Extraction in PyTorch"
 optional = false
-python-versions = "^3.9"
-files = []
-develop = false
+python-versions = ">=3.9,<4.0"
+files = [
+    {file = "pytorch_ie-0.26.1.dev1699314147-py3-none-any.whl", hash = "sha256:10e8aa445058b29cf4ae2a8e905f5614f803afb29ebad93f75e1f4fb1fde32bd"},
+    {file = "pytorch_ie-0.26.1.dev1699314147.tar.gz", hash = "sha256:01a398eef1874b5de464941774bbbeeef0ef862b5435a4523ade110f7707934e"},
+]
 
 [package.dependencies]
-absl-py = "^1.0.0"
-datasets = "^2.13"
+absl-py = ">=1.0.0,<2.0.0"
+datasets = ">=2.13,<3.0"
 fsspec = "<2023.9.0"
-pytorch-lightning = "^2"
+pytorch-lightning = ">=2,<3"
 torch = ">=1.10"
-torchmetrics = "^1"
-transformers = "^4.18"
+torchmetrics = ">=1,<2"
+transformers = ">=4.18,<5.0"
 
 [package.source]
-type = "git"
-url = "https://github.com/ChristophAlt/pytorch-ie.git"
-reference = "decouple_pie_dataset"
-resolved_reference = "15862d54de0066d2dee0f69fd7bf27527bbfb81d"
+type = "legacy"
+url = "https://test.pypi.org/simple"
+reference = "pre-release"
 
 [[package]]
 name = "pytorch-lightning"
@@ -2161,4 +2162,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "405005251a71a59558ec8b03c8b5bc44e84682b9035fe6a1053f864dec2c7e54"
+content-hash = "8e15677d9874e0189266d03d9fb22cf968f9b1437476fd41ab0010d2551a6975"
