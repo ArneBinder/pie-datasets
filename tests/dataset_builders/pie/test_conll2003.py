@@ -1,10 +1,10 @@
 import datasets
 import pytest
-from pytorch_ie import DatasetDict
 from pytorch_ie.core import Document
 from pytorch_ie.documents import TextDocumentWithLabeledSpans
 
 from dataset_builders.pie.conll2003.conll2003 import Conll2003
+from pie_datasets import DatasetDict
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 DATASET_NAME = "conll2003"

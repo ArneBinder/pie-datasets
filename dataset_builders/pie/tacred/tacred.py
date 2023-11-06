@@ -2,14 +2,15 @@ from dataclasses import dataclass, field
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import datasets
-import pytorch_ie.data.builder
-from pytorch_ie import token_based_document_to_text_based
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan, _post_init_single_label
 from pytorch_ie.core import Annotation, AnnotationList, Document, annotation_field
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TokenBasedDocument,
 )
+
+from pie_datasets import GeneratorBasedBuilder
+from pie_datasets.document.conversion import token_based_document_to_text_based
 
 
 @dataclass(eq=True, frozen=True)
@@ -172,7 +173,7 @@ class TacredConfig(datasets.BuilderConfig):
         super().__init__(**kwargs)
 
 
-class Tacred(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class Tacred(GeneratorBasedBuilder):
     DOCUMENT_TYPE = TacredDocument
 
     DOCUMENT_CONVERTERS = {

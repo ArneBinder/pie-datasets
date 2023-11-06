@@ -6,11 +6,11 @@ from pathlib import Path
 import pkg_resources
 import pytest
 from datasets import load_dataset
-from pytorch_ie import DatasetDict
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextBasedDocument
 
+from pie_datasets import DatasetDict
 from tests import FIXTURES_ROOT
 from tests.dataset_builders.common import DATASET_BUILDER_BASE_PATH
 
