@@ -80,9 +80,8 @@ repos:
       - id: codespell
         args:
           - --skip=logs/**,data/**,tests/fixtures/**
-          # hist: required for plotext.hist()
-          # ba: denotes beginning of an encoding with label as 'a'. More details at src/pie_utils/sequence_tagging/ill_formed.py
-          - --ignore-words-list=hist,ba
+          # arbitral: this is a legal term and used in example data (cdcp dataset)
+          - --ignore-words-list=arbitral
 
   # python static type checking
   - repo: https://github.com/pre-commit/mirrors-mypy
