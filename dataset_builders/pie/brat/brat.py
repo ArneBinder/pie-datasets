@@ -42,16 +42,16 @@ class Attribute(Annotation):
 class BratDocument(TextBasedDocument):
     spans: AnnotationList[LabeledMultiSpan] = annotation_field(target="text")
     relations: AnnotationList[BinaryRelation] = annotation_field(target="spans")
-    span_attributions: AnnotationList[Attribute] = annotation_field(target="spans")
-    relation_attributions: AnnotationList[Attribute] = annotation_field(target="relations")
+    span_attributes: AnnotationList[Attribute] = annotation_field(target="spans")
+    relation_attributes: AnnotationList[Attribute] = annotation_field(target="relations")
 
 
 @dataclasses.dataclass
 class BratDocumentWithMergedSpans(TextBasedDocument):
     spans: AnnotationList[LabeledSpan] = annotation_field(target="text")
     relations: AnnotationList[BinaryRelation] = annotation_field(target="spans")
-    span_attributions: AnnotationList[Attribute] = annotation_field(target="spans")
-    relation_attributions: AnnotationList[Attribute] = annotation_field(target="relations")
+    span_attributes: AnnotationList[Attribute] = annotation_field(target="spans")
+    relation_attributes: AnnotationList[Attribute] = annotation_field(target="relations")
 
 
 def example_to_document(
@@ -130,7 +130,7 @@ def example_to_document(
     if len(events) > 0:
         raise NotImplementedError("converting events is not yet implemented")
 
-    span_attributions: Dict[str, Attribute] = dict()
+    span_attributes: Dict[str, Attribute] = dict()
     attribution_ids = []
     for attribution_dict in dl2ld(example["attributions"]):
         target_id = attribution_dict["target"]
@@ -147,10 +147,10 @@ def example_to_document(
             label=attribution_dict["type"],
             value=attribution_dict["value"],
         )
-        span_attributions[attribution_dict["id"]] = attribution
+        span_attributes[attribution_dict["id"]] = attribution
         attribution_ids.append((target_layer_name, attribution_dict["id"]))
 
-    doc.span_attributions.extend(span_attributions.values())
+    doc.span_attributes.extend(span_attributes.values())
     doc.metadata["attribution_ids"] = attribution_ids
 
     normalizations = dl2ld(example["normalizations"])
@@ -236,8 +236,8 @@ def document_to_example(
         for target_layer, attribution_id in document.metadata["attribution_ids"]
         if target_layer == "spans"
     ]
-    assert len(span_attribution_ids) == len(document.span_attributions)
-    for i, span_attribution in enumerate(document.span_attributions):
+    assert len(span_attribution_ids) == len(document.span_attributes)
+    for i, span_attribution in enumerate(document.span_attributes):
         target_id = span_dicts[span_attribution.annotation]["id"]
         attribution_dict = {
             "id": span_attribution_ids[i],
