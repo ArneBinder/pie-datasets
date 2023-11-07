@@ -8,6 +8,8 @@ from .common import (
 from .dataset import Dataset, IterableDataset
 from .dataset_dict import DatasetDict
 from .document_formatter import DocumentFormatter
+from .metric import DocumentMetric
+from .statistic import DocumentStatistic
 
 __all__ = [
     "GeneratorBasedBuilder",
