@@ -130,7 +130,7 @@ def example_to_document(
 
     attribute_annotations: Dict[str, Dict[str, Attribute]] = defaultdict(dict)
     attribute_ids = []
-    for attribute_dict in dl2ld(example["attributes"]):
+    for attribute_dict in dl2ld(example["attributions"]):
         target_id = attribute_dict["target"]
         if target_id in spans:
             target_layer_name = "spans"
@@ -264,7 +264,7 @@ def document_to_example(
                 )
             attribute_dicts[attribute_annotation] = attribute_dict
 
-    example["attributes"] = ld2dl(
+    example["attributions"] = ld2dl(
         list(attribute_dicts.values()), keys=["id", "type", "target", "value"]
     )
     example["normalizations"] = ld2dl(
