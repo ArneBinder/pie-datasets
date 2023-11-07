@@ -19,6 +19,3 @@ def _check_hf_conll2003_is_available():
         return True
     except ConnectionError:
         return False
-
-
-_HF_CONLL2003_IS_AVAILABLE = _check_hf_conll2003_is_available()
