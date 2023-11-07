@@ -1,6 +1,6 @@
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Type, Union
+from typing import Any, Callable, Dict, List, Optional, Type, Union
 
 from pytorch_ie.annotations import Span
 from pytorch_ie.core import Document, DocumentStatistic
@@ -110,7 +110,7 @@ class SpanLengthCollector(DocumentStatistic):
                 f"this collector, but be aware that the results may be wrong for your own aggregation "
                 f"functions that rely on zero values."
             )
-            self.aggregation_functions = {
+            self.aggregation_functions: Dict[str, Callable[[List], Any]] = {
                 name: func
                 for name, func in self.aggregation_functions.items()
                 if name not in ["mean", "std", "min"]
@@ -226,7 +226,7 @@ class LabelCountCollector(DocumentStatistic):
                 f"this collector, but be aware that the results may be wrong for your own aggregation "
                 f"functions that rely on zero values."
             )
-            self.aggregation_functions = {
+            self.aggregation_functions: Dict[str, Callable[[List], Any]] = {
                 name: func
                 for name, func in self.aggregation_functions.items()
                 if name not in ["mean", "std", "min"]
