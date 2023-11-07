@@ -10,7 +10,8 @@ from pytorch_ie.annotations import (
     LabeledSpan,
     _post_init_single_label,
 )
-from pytorch_ie.core import Annotation, AnnotationList, Document, annotation_field
+from pytorch_ie.core import Annotation, AnnotationList, annotation_field
+from pytorch_ie.documents import TextBasedDocument
 
 logger = logging.getLogger(__name__)
 
@@ -28,20 +29,17 @@ def ld2dl(
 
 @dataclasses.dataclass(eq=True, frozen=True)
 class Attribute(Annotation):
-    target_annotation: Annotation
+    annotation: Annotation
     label: str
     value: Optional[str] = None
-    score: float = 1.0
+    score: Optional[float] = dataclasses.field(default=None, compare=False)
 
     def __post_init__(self) -> None:
         _post_init_single_label(self)
 
 
 @dataclasses.dataclass
-class BratDocument(Document):
-    text: str
-    id: Optional[str] = None
-    metadata: Dict[str, Any] = dataclasses.field(default_factory=dict)
+class BratDocument(TextBasedDocument):
     spans: AnnotationList[LabeledMultiSpan] = annotation_field(target="text")
     relations: AnnotationList[BinaryRelation] = annotation_field(target="spans")
     span_attributions: AnnotationList[Attribute] = annotation_field(target="spans")
@@ -49,10 +47,7 @@ class BratDocument(Document):
 
 
 @dataclasses.dataclass
-class BratDocumentWithMergedSpans(Document):
-    text: str
-    id: Optional[str] = None
-    metadata: Dict[str, Any] = dataclasses.field(default_factory=dict)
+class BratDocumentWithMergedSpans(TextBasedDocument):
     spans: AnnotationList[LabeledSpan] = annotation_field(target="text")
     relations: AnnotationList[BinaryRelation] = annotation_field(target="spans")
     span_attributions: AnnotationList[Attribute] = annotation_field(target="spans")
@@ -60,9 +55,9 @@ class BratDocumentWithMergedSpans(Document):
 
 
 def example_to_document(
-    example: Dict[str, Any], merge_non_contiguous_spans: bool = False
+    example: Dict[str, Any], merge_fragmented_spans: bool = False
 ) -> BratDocument:
-    if merge_non_contiguous_spans:
+    if merge_fragmented_spans:
         doc = BratDocumentWithMergedSpans(text=example["context"], id=example["file_name"])
     else:
         doc = BratDocument(text=example["context"], id=example["file_name"])
@@ -85,7 +80,7 @@ def example_to_document(
                 f"joined span parts do not match stripped span text field content. "
                 f'joined_span_texts_stripped: "{joined_span_texts_stripped}" != stripped "text": "{span_text_stripped}"'
             )
-        if merge_non_contiguous_spans:
+        if merge_fragmented_spans:
             if len(starts) > 1:
                 # check if the text in between the fragments holds only space
                 merged_content_texts = [
@@ -96,7 +91,8 @@ def example_to_document(
                 ]
                 if len(merged_content_texts_not_empty) > 0:
                     logger.warning(
-                        f"document '{doc.id}' contains a non-contiguous span with text content in between (will be merged into a single span): "
+                        f"document '{doc.id}' contains a non-contiguous span with text content in between "
+                        f"(will be merged into a single span): "
                         f"newly covered text parts: {merged_content_texts_not_empty}, "
                         f"merged span text: '{doc.text[starts[0]:ends[-1]]}', "
                         f"annotation: {span_dict}"
@@ -140,14 +136,14 @@ def example_to_document(
         target_id = attribution_dict["target"]
         if target_id in spans:
             target_layer_name = "spans"
-            target_annotation = spans[target_id]
+            annotation = spans[target_id]
         elif target_id in relations:
             target_layer_name = "relations"
-            target_annotation = relations[target_id]
+            annotation = relations[target_id]
         else:
             raise Exception("only span and relation attributions are supported yet")
         attribution = Attribute(
-            target_annotation=target_annotation,
+            annotation=annotation,
             label=attribution_dict["type"],
             value=attribution_dict["value"],
         )
@@ -242,7 +238,7 @@ def document_to_example(
     ]
     assert len(span_attribution_ids) == len(document.span_attributions)
     for i, span_attribution in enumerate(document.span_attributions):
-        target_id = span_dicts[span_attribution.target_annotation]["id"]
+        target_id = span_dicts[span_attribution.annotation]["id"]
         attribution_dict = {
             "id": span_attribution_ids[i],
             "type": span_attribution.label,
@@ -253,7 +249,8 @@ def document_to_example(
             prev_ann_dict = attribution_dicts[span_attribution]
             ann_dict = span_attribution
             logger.warning(
-                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {ann_dict['id']} are identical"
+                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {ann_dict['id']} "
+                f"are identical"
             )
         attribution_dicts[span_attribution] = attribution_dict
 
@@ -271,32 +268,32 @@ def document_to_example(
 class BratConfig(datasets.BuilderConfig):
     """BuilderConfig for BratDatasetLoader."""
 
-    def __init__(self, merge_non_contiguous_spans: bool = False, **kwargs):
+    def __init__(self, merge_fragmented_spans: bool = False, **kwargs):
         """BuilderConfig for DocRED.
 
         Args:
           **kwargs: keyword arguments forwarded to super.
         """
         super().__init__(**kwargs)
-        self.merge_non_contiguous_spans = merge_non_contiguous_spans
+        self.merge_fragmented_spans = merge_fragmented_spans
 
 
 class BratDatasetLoader(pytorch_ie.data.builder.GeneratorBasedBuilder):
     # this requires https://github.com/ChristophAlt/pytorch-ie/pull/288
     DOCUMENT_TYPES = {
         "default": BratDocument,
-        "merge_non_contiguous_spans": BratDocumentWithMergedSpans,
+        "merge_fragmented_spans": BratDocumentWithMergedSpans,
     }
 
     DEFAULT_CONFIG_NAME = "default"
     BUILDER_CONFIGS = [
         BratConfig(name="default"),
-        BratConfig(name="merge_non_contiguous_spans", merge_non_contiguous_spans=True),
+        BratConfig(name="merge_fragmented_spans", merge_fragmented_spans=True),
     ]
 
     BASE_DATASET_PATH = "DFKI-SLT/brat"
 
     def _generate_document(self, example, **kwargs):
         return example_to_document(
-            example, merge_non_contiguous_spans=self.config.merge_non_contiguous_spans
+            example, merge_fragmented_spans=self.config.merge_fragmented_spans
         )
