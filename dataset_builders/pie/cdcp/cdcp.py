@@ -3,7 +3,6 @@ import logging
 from typing import Any, Callable, Dict, List, Optional
 
 import datasets
-import pytorch_ie.data.builder
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import (
@@ -11,6 +10,7 @@ from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )
 
+from pie_datasets import GeneratorBasedBuilder
 from pie_datasets.document.processing.text_span_trimmer import trim_text_spans
 
 log = logging.getLogger(__name__)
@@ -117,7 +117,7 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
     return result
 
 
-class CDCP(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class CDCP(GeneratorBasedBuilder):
     DOCUMENT_TYPE = CDCPDocument
 
     DOCUMENT_CONVERTERS = {
