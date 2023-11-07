@@ -3,13 +3,12 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Type, Union
 
 from pytorch_ie.annotations import Span
-from pytorch_ie.core import Document
+from pytorch_ie.core import Document, DocumentStatistic
 from pytorch_ie.documents import TextBasedDocument, TokenBasedDocument
 from pytorch_ie.utils.hydra import resolve_optional_document_type
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from pie_datasets.document.conversion import tokenize_document
-from pie_datasets.statistic import DocumentStatistic
 
 logger = logging.getLogger(__name__)
 
