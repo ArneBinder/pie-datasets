@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 import datasets
-
 import pytorch_ie.data.builder
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
@@ -14,6 +13,7 @@ class GermEval14Config(datasets.BuilderConfig):
 
     def __init__(self, **kwargs):
         """BuilderConfig for GermEval 2014.
+
         Args:
           **kwargs: keyword arguments forwarded to super.
         """

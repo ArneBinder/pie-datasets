@@ -1,7 +1,6 @@
 from dataclasses import dataclass
 
 import datasets
-
 import pytorch_ie.data.builder
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
@@ -10,10 +9,11 @@ from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
 
 
 class CoNLLppConfig(datasets.BuilderConfig):
-    """BuilderConfig for CoNLLpp"""
+    """BuilderConfig for CoNLLpp."""
 
     def __init__(self, **kwargs):
         """BuilderConfig for CoNLLpp.
+
         Args:
           **kwargs: keyword arguments forwarded to super.
         """
