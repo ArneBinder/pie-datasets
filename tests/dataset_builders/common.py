@@ -11,6 +11,7 @@ DATASET_BUILDER_BASE_PATH = Path("dataset_builders")
 HF_BASE_PATH = DATASET_BUILDER_BASE_PATH / "hf"
 PIE_BASE_PATH = DATASET_BUILDER_BASE_PATH / "pie"
 HF_DS_FIXTURE_DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "hf"
+PIE_DS_FIXTURE_DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "pie"
 
 logger = logging.getLogger(__name__)
 

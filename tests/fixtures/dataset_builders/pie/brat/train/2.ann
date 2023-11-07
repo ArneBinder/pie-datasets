@@ -1,0 +1,5 @@
+T1	city 0 7	Seattle
+T2	person 25 37	Jenny Durkan
+R1	mayor_of Arg1:T2 Arg2:T1
+A1	factuality T1 actual
+A2	statement R1
