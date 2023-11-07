@@ -4,15 +4,11 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datasets
-import pytorch_ie
-from pytorch_ie.annotations import (
-    BinaryRelation,
-    LabeledMultiSpan,
-    LabeledSpan,
-    _post_init_single_label,
-)
+from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
 from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import TextBasedDocument
+
+from pie_datasets import GeneratorBasedBuilder
 
 logger = logging.getLogger(__name__)
 
@@ -288,7 +284,7 @@ class BratConfig(datasets.BuilderConfig):
         self.merge_fragmented_spans = merge_fragmented_spans
 
 
-class BratDatasetLoader(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class BratDatasetLoader(GeneratorBasedBuilder):
     # this requires https://github.com/ChristophAlt/pytorch-ie/pull/288
     DOCUMENT_TYPES = {
         "default": BratDocument,
