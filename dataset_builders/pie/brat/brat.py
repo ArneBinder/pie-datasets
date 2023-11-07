@@ -247,7 +247,7 @@ def document_to_example(
     for target_layer, attribute_ids in attribute_ids_per_target.items():
         attribute_annotations = all_attribute_annotations[target_layer]
         assert len(attribute_ids) == len(attribute_annotations)
-        for i, attribute_annotation in enumerate(document.span_attributes):
+        for i, attribute_annotation in enumerate(attribute_annotations):
             target_id = annotation_dicts[target_layer][attribute_annotation.annotation]["id"]
             attribute_dict = {
                 "id": attribute_ids_per_target[target_layer][i],
