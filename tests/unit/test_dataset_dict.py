@@ -24,8 +24,9 @@ from tests.conftest import CREATE_FIXTURE_DATA, TestDocument
 logger = logging.getLogger(__name__)
 
 DATASET_NAME = "conll2003"
+N_FIXTURE_SAMPLES = 3
 PIE_DATASET_PATH = DATASET_BUILDERS_ROOT / "pie" / DATASET_NAME
-DATA_PATH = FIXTURES_ROOT / "dataset_dict" / f"{DATASET_NAME}_extract"
+FIXTURE_DATA_PATH = FIXTURES_ROOT / "dataset_dict" / f"{DATASET_NAME}_extract"
 
 TEST_CLASS_PREFIX = "tests.unit.test_dataset_dict"
 
@@ -35,8 +36,8 @@ def test_create_fixture_data():
     conll2003 = DatasetDict(datasets.load_dataset(str(PIE_DATASET_PATH)))
     for split in list(conll2003):
         # restrict all splits to 3 examples
-        conll2003 = conll2003.select(split=split, stop=3)
-    conll2003.to_json(DATA_PATH)
+        conll2003 = conll2003.select(split=split, stop=N_FIXTURE_SAMPLES)
+    conll2003.to_json(FIXTURE_DATA_PATH)
 
 
 @dataclass
@@ -47,20 +48,20 @@ class DocumentWithEntitiesAndRelations(TextBasedDocument):
 @pytest.fixture(scope="module")
 def dataset_dict():
     return DatasetDict.from_json(
-        data_dir=DATA_PATH, document_type=DocumentWithEntitiesAndRelations
+        data_dir=FIXTURE_DATA_PATH, document_type=DocumentWithEntitiesAndRelations
     )
 
 
 def test_from_json(dataset_dict):
     assert set(dataset_dict) == {"train", "test", "validation"}
-    assert len(dataset_dict["train"]) == 3
-    assert len(dataset_dict["test"]) == 3
-    assert len(dataset_dict["validation"]) == 3
+    assert len(dataset_dict["train"]) == N_FIXTURE_SAMPLES
+    assert len(dataset_dict["test"]) == N_FIXTURE_SAMPLES
+    assert len(dataset_dict["validation"]) == N_FIXTURE_SAMPLES
 
 
 def test_from_json_no_serialized_document_type(dataset_dict):
     with pytest.raises(ValueError) as excinfo:
-        DatasetDict.from_json(data_dir=DATA_PATH)
+        DatasetDict.from_json(data_dir=FIXTURE_DATA_PATH)
     assert (
         str(excinfo.value)
         == "document_type must be provided if it cannot be loaded from the metadata file"
@@ -70,7 +71,7 @@ def test_from_json_no_serialized_document_type(dataset_dict):
 @pytest.fixture(scope="module")
 def iterable_dataset_dict():
     return DatasetDict.from_json(
-        data_dir=DATA_PATH,
+        data_dir=FIXTURE_DATA_PATH,
         document_type=DocumentWithEntitiesAndRelations,
         streaming=True,
     )
@@ -84,7 +85,7 @@ def test_to_json_and_back(dataset_dict, tmp_path):
     path = Path(tmp_path) / "dataset_dict"
     dataset_dict.to_json(path)
     dataset_dict_from_json = DatasetDict.from_json(
-        data_dir=path,
+        data_dir=str(path),
         document_type=dataset_dict.document_type,
     )
     assert set(dataset_dict_from_json) == set(dataset_dict)
@@ -98,7 +99,7 @@ def test_to_json_and_back_serialize_document_type(dataset_dict, tmp_path):
     path = Path(tmp_path) / "dataset_dict"
     dataset_dict.to_json(path)
     dataset_dict_from_json = DatasetDict.from_json(
-        data_dir=path,
+        data_dir=str(path),
     )
     assert set(dataset_dict_from_json) == set(dataset_dict)
     for split in dataset_dict:
@@ -118,7 +119,7 @@ def test_document_type_empty_no_splits():
 def test_document_type_different_types(dataset_dict):
     # load the example dataset as a different document type
     dataset_dict_different_type = DatasetDict.from_json(
-        data_dir=DATA_PATH,
+        data_dir=FIXTURE_DATA_PATH,
         document_type=TextBasedDocument,
     )
     assert dataset_dict_different_type.document_type is TextBasedDocument
@@ -361,14 +362,18 @@ def test_filter(dataset_dict):
         split="train",
     )
     assert all(len(doc.text) > 15 for doc in dataset_dict_filtered["train"])
-    assert len(dataset_dict["train"]) == 3
+    assert len(dataset_dict["train"]) == N_FIXTURE_SAMPLES
     assert len(dataset_dict_filtered["train"]) == 2
     assert dataset_dict_filtered["train"][0] == dataset_dict["train"][0]
     assert dataset_dict_filtered["train"][1] == dataset_dict["train"][2]
 
     # remaining splits should be unchanged
-    assert len(dataset_dict_filtered["validation"]) == len(dataset_dict["validation"]) == 3
-    assert len(dataset_dict_filtered["test"]) == len(dataset_dict["test"]) == 3
+    assert (
+        len(dataset_dict_filtered["validation"])
+        == len(dataset_dict["validation"])
+        == N_FIXTURE_SAMPLES
+    )
+    assert len(dataset_dict_filtered["test"]) == len(dataset_dict["test"]) == N_FIXTURE_SAMPLES
     assert_doc_lists_equal(dataset_dict_filtered["validation"], dataset_dict["validation"])
     assert_doc_lists_equal(dataset_dict_filtered["test"], dataset_dict["test"])
 
@@ -393,9 +398,13 @@ def test_filter_unknown_dataset_type():
 def test_filter_noop(dataset_dict):
     # passing no filter function should be a noop
     dataset_dict_filtered = dataset_dict.filter(split="train")
-    assert len(dataset_dict_filtered["train"]) == len(dataset_dict["train"]) == 3
-    assert len(dataset_dict_filtered["validation"]) == len(dataset_dict["validation"]) == 3
-    assert len(dataset_dict_filtered["test"]) == len(dataset_dict["test"]) == 3
+    assert len(dataset_dict_filtered["train"]) == len(dataset_dict["train"]) == N_FIXTURE_SAMPLES
+    assert (
+        len(dataset_dict_filtered["validation"])
+        == len(dataset_dict["validation"])
+        == N_FIXTURE_SAMPLES
+    )
+    assert len(dataset_dict_filtered["test"]) == len(dataset_dict["test"]) == N_FIXTURE_SAMPLES
     assert_doc_lists_equal(dataset_dict_filtered["train"], dataset_dict["train"])
     assert_doc_lists_equal(dataset_dict_filtered["validation"], dataset_dict["validation"])
     assert_doc_lists_equal(dataset_dict_filtered["test"], dataset_dict["test"])
@@ -422,8 +431,12 @@ def test_move_to_new_split(dataset_dict, ids, filter_function):
     assert_doc_lists_equal(dataset_dict_moved["train"], dataset_dict["train"][:1])
 
     # the remaining splits should be unchanged
-    assert len(dataset_dict_moved["validation"]) == len(dataset_dict["validation"]) == 3
-    assert len(dataset_dict_moved["test"]) == len(dataset_dict["test"]) == 3
+    assert (
+        len(dataset_dict_moved["validation"])
+        == len(dataset_dict["validation"])
+        == N_FIXTURE_SAMPLES
+    )
+    assert len(dataset_dict_moved["test"]) == len(dataset_dict["test"]) == N_FIXTURE_SAMPLES
     assert_doc_lists_equal(dataset_dict_moved["validation"], dataset_dict["validation"])
     assert_doc_lists_equal(dataset_dict_moved["test"], dataset_dict["test"])
 
