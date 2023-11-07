@@ -42,8 +42,8 @@ The language in the dataset is English (AmE).
 
 ### Data Splits
 
-|                  | train | test | 
-|------------------|------:|-----:| 
+|                  | train | test |
+| ---------------- | ----: | ---: |
 | No. of instances |   581 |  150 |
 
 Further statistics on data splits to be added.
@@ -82,19 +82,17 @@ Inter-annotator agreement between 2 annotators is measured with Krippendorf’s 
 
 #### Who are the annotators?
 
-[More Information Needed]
+\[More Information Needed\]
 
 ### Personal and Sensitive Information
 
-[More Information Needed]
+\[More Information Needed\]
 
 ## Considerations for Using the Data
 
 ### Social Impact of Dataset
 
-
 Immediate applications include automatically ranking arguments based on their evaluability for a (crude) identification of read-worthy comments and providing real-time feedback to writers, specifying which types of support for which propositions can be added to construct better-formed arguments. (p. 1624)
-
 
 ### Discussion of Biases
 
@@ -102,17 +100,17 @@ About 45% of the elementary units are `VALUE` type. A significant portion, rough
 
 ### Other Known Limitations
 
-[More Information Needed]
+\[More Information Needed\]
 
 ## Additional Information
 
 ### Dataset Curators
 
-[More Information Needed]
+\[More Information Needed\]
 
 ### Licensing Information
 
-[More Information Needed]
+\[More Information Needed\]
 
 ### Citation Information
 
