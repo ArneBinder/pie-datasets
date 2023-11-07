@@ -1,6 +1,7 @@
 import json
 import logging
 import os
+from abc import ABC, abstractmethod
 from pathlib import Path
 from typing import (
     Any,
@@ -15,16 +16,10 @@ from typing import (
 )
 
 import datasets
-from pytorch_ie.core import Document
+from pytorch_ie.core.document import Document
 from pytorch_ie.utils.hydra import resolve_target, serialize_document_type
 
-from .common import (
-    EnterDatasetDictMixin,
-    EnterDatasetMixin,
-    ExitDatasetDictMixin,
-    ExitDatasetMixin,
-)
-from .dataset import Dataset, IterableDataset, get_pie_dataset_type
+from pie_datasets.dataset import Dataset, IterableDataset, get_pie_dataset_type
 
 logger = logging.getLogger(__name__)
 
@@ -32,6 +27,42 @@ METADATA_FILE_NAME = "metadata.json"
 
 
 D = TypeVar("D", bound=Document)
+
+
+class EnterDatasetMixin(ABC):
+    """Mixin for processors that enter a dataset context."""
+
+    @abstractmethod
+    def enter_dataset(
+        self, dataset: Union[Dataset, IterableDataset], name: Optional[str] = None
+    ) -> None:
+        """Enter dataset context."""
+
+
+class ExitDatasetMixin(ABC):
+    """Mixin for processors that exit a dataset context."""
+
+    @abstractmethod
+    def exit_dataset(
+        self, dataset: Union[Dataset, IterableDataset], name: Optional[str] = None
+    ) -> None:
+        """Exit dataset context."""
+
+
+class EnterDatasetDictMixin(ABC):
+    """Mixin for processors that enter a dataset dict context."""
+
+    @abstractmethod
+    def enter_dataset_dict(self, dataset_dict) -> None:
+        """Enter dataset dict context."""
+
+
+class ExitDatasetDictMixin(ABC):
+    """Mixin for processors that exit a dataset dict context."""
+
+    @abstractmethod
+    def exit_dataset_dict(self, dataset_dict) -> None:
+        """Exit dataset dict context."""
 
 
 class DatasetDict(datasets.DatasetDict):

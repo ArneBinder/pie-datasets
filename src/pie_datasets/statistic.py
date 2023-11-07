@@ -3,14 +3,13 @@ from abc import abstractmethod
 from collections import defaultdict
 from typing import Any, Dict, Generator, List, Optional, Tuple, Type, Union
 
+from pytorch_ie.core import DocumentMetric
 from pytorch_ie.core.document import Document
 from pytorch_ie.utils.hydra import (
     InstantiationException,
     resolve_optional_document_type,
     resolve_target,
 )
-
-from pie_datasets.metric import DocumentMetric
 
 logger = logging.getLogger(__name__)
 

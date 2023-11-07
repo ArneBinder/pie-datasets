@@ -9,7 +9,7 @@ from typing import Any, Callable, Iterable, Iterator, Match, TypeVar
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.documents import TextBasedDocument
 
-from pie_datasets import Dataset, EnterDatasetMixin, ExitDatasetMixin, IterableDataset
+from pie_datasets.dataset_dict import Dataset, EnterDatasetMixin, ExitDatasetMixin, IterableDataset
 
 logger = logging.getLogger(__name__)
 

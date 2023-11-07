@@ -6,7 +6,7 @@ from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextBasedDocument, TokenBasedDocument
 
 from pie_datasets import DatasetDict
-from pie_datasets.metrics.statistics import (
+from pie_datasets.statistics import (
     DummyCollector,
     FieldLengthCollector,
     LabelCountCollector,
