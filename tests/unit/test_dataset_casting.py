@@ -4,18 +4,18 @@ from dataclasses import dataclass
 import pytest
 from pytorch_ie.annotations import LabeledSpan, Span
 from pytorch_ie.core import AnnotationList, annotation_field
-from pytorch_ie.documents import TextDocument
+from pytorch_ie.documents import TextBasedDocument
 
 from pie_datasets import Dataset, IterableDataset
 
 
 @dataclass
-class CoNLL2002Document(TextDocument):
+class CoNLL2002Document(TextBasedDocument):
     entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
 @dataclass
-class DocumentWithParts(TextDocument):
+class DocumentWithParts(TextBasedDocument):
     parts: AnnotationList[Span] = annotation_field(target="text")
 
 
@@ -25,12 +25,12 @@ class CoNLL2002WithPartsDocument(CoNLL2002Document, DocumentWithParts):
 
 
 @dataclass
-class DocumentWithEnts(TextDocument):
+class DocumentWithEnts(TextBasedDocument):
     ents: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
 @dataclass
-class DocumentWithEntsWrongType(TextDocument):
+class DocumentWithEntsWrongType(TextBasedDocument):
     ents: AnnotationList[Span] = annotation_field(target="text")
 
 
@@ -40,7 +40,7 @@ class DocumentWithEntsAndParts(DocumentWithParts, DocumentWithEnts):
 
 
 @dataclass
-class DocumentWithPartsAndEntitiesSwapped(TextDocument):
+class DocumentWithPartsAndEntitiesSwapped(TextBasedDocument):
     parts: AnnotationList[LabeledSpan] = annotation_field(target="text")
     entities: AnnotationList[Span] = annotation_field(target="text")
 
