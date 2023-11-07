@@ -1,5 +1,6 @@
 import dataclasses
 import logging
+from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datasets
@@ -130,10 +131,10 @@ def example_to_document(
     if len(events) > 0:
         raise NotImplementedError("converting events is not yet implemented")
 
-    span_attributes: Dict[str, Attribute] = dict()
-    attribution_ids = []
-    for attribution_dict in dl2ld(example["attributions"]):
-        target_id = attribution_dict["target"]
+    attribute_annotations: Dict[str, Dict[str, Attribute]] = defaultdict(dict)
+    attribute_ids = []
+    for attribute_dict in dl2ld(example["attributes"]):
+        target_id = attribute_dict["target"]
         if target_id in spans:
             target_layer_name = "spans"
             annotation = spans[target_id]
@@ -141,17 +142,18 @@ def example_to_document(
             target_layer_name = "relations"
             annotation = relations[target_id]
         else:
-            raise Exception("only span and relation attributions are supported yet")
-        attribution = Attribute(
+            raise Exception("only span and relation attributes are supported yet")
+        attribute = Attribute(
             annotation=annotation,
-            label=attribution_dict["type"],
-            value=attribution_dict["value"],
+            label=attribute_dict["type"],
+            value=attribute_dict["value"],
         )
-        span_attributes[attribution_dict["id"]] = attribution
-        attribution_ids.append((target_layer_name, attribution_dict["id"]))
+        attribute_annotations[target_layer_name][attribute_dict["id"]] = attribute
+        attribute_ids.append((target_layer_name, attribute_dict["id"]))
 
-    doc.span_attributes.extend(span_attributes.values())
-    doc.metadata["attribution_ids"] = attribution_ids
+    doc.span_attributes.extend(attribute_annotations["spans"].values())
+    doc.relation_attributes.extend(attribute_annotations["relations"].values())
+    doc.metadata["attribute_ids"] = attribute_ids
 
     normalizations = dl2ld(example["normalizations"])
     if len(normalizations) > 0:
@@ -199,7 +201,8 @@ def document_to_example(
             prev_ann_dict = span_dicts[span]
             ann_dict = span_dict
             logger.warning(
-                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {ann_dict['id']} are identical"
+                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {ann_dict['id']} "
+                f"are identical"
             )
         span_dicts[span] = span_dict
     example["spans"] = ld2dl(list(span_dicts.values()), keys=["id", "type", "locations", "text"])
@@ -221,7 +224,8 @@ def document_to_example(
             prev_ann_dict = relation_dicts[rel]
             ann_dict = relation_dict
             logger.warning(
-                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {ann_dict['id']} are identical"
+                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {ann_dict['id']} "
+                f"are identical"
             )
         relation_dicts[rel] = relation_dict
 
@@ -230,32 +234,41 @@ def document_to_example(
     example["equivalence_relations"] = ld2dl([], keys=["type", "targets"])
     example["events"] = ld2dl([], keys=["id", "type", "trigger", "arguments"])
 
-    attribution_dicts: Dict[Annotation, Dict[str, Any]] = dict()
-    span_attribution_ids = [
-        attribution_id
-        for target_layer, attribution_id in document.metadata["attribution_ids"]
-        if target_layer == "spans"
-    ]
-    assert len(span_attribution_ids) == len(document.span_attributes)
-    for i, span_attribution in enumerate(document.span_attributes):
-        target_id = span_dicts[span_attribution.annotation]["id"]
-        attribution_dict = {
-            "id": span_attribution_ids[i],
-            "type": span_attribution.label,
-            "target": target_id,
-            "value": span_attribution.value,
-        }
-        if span_attribution in attribution_dicts:
-            prev_ann_dict = attribution_dicts[span_attribution]
-            ann_dict = span_attribution
-            logger.warning(
-                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {ann_dict['id']} "
-                f"are identical"
-            )
-        attribution_dicts[span_attribution] = attribution_dict
+    annotation_dicts = {
+        "spans": span_dicts,
+        "relations": relation_dicts,
+    }
+    all_attribute_annotations = {
+        "spans": document.span_attributes,
+        "relations": document.relation_attributes,
+    }
+    attribute_dicts: Dict[Annotation, Dict[str, Any]] = dict()
+    attribute_ids_per_target = defaultdict(list)
+    for target_layer, attribute_id in document.metadata["attribute_ids"]:
+        attribute_ids_per_target[target_layer].append(attribute_id)
 
-    example["attributions"] = ld2dl(
-        list(attribution_dicts.values()), keys=["id", "type", "target", "value"]
+    for target_layer, attribute_ids in attribute_ids_per_target.items():
+        attribute_annotations = all_attribute_annotations[target_layer]
+        assert len(attribute_ids) == len(attribute_annotations)
+        for i, attribute_annotation in enumerate(document.span_attributes):
+            target_id = annotation_dicts[target_layer][attribute_annotation.annotation]["id"]
+            attribute_dict = {
+                "id": attribute_ids_per_target[target_layer][i],
+                "type": attribute_annotation.label,
+                "target": target_id,
+                "value": attribute_annotation.value,
+            }
+            if attribute_annotation in attribute_dicts:
+                prev_ann_dict = attribute_dicts[attribute_annotation]
+                ann_dict = attribute_annotation
+                logger.warning(
+                    f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {ann_dict['id']} "
+                    f"are identical"
+                )
+            attribute_dicts[attribute_annotation] = attribute_dict
+
+    example["attributes"] = ld2dl(
+        list(attribute_dicts.values()), keys=["id", "type", "target", "value"]
     )
     example["normalizations"] = ld2dl(
         [], keys=["id", "type", "target", "resource_id", "entity_id"]
