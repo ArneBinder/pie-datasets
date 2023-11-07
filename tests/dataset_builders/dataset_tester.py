@@ -9,8 +9,8 @@ from datasets.download.mock_download_manager import MockDownloadManager
 from datasets.load import dataset_module_factory, import_main_class
 from datasets.utils.file_utils import DownloadConfig, is_remote_url
 from datasets.utils.logging import get_logger
-
 from pytorch_ie.data.builder import ArrowBasedBuilder, GeneratorBasedBuilder
+
 from tests import DATASET_BUILDERS_ROOT
 
 logger = get_logger(__name__)
@@ -116,7 +116,7 @@ class DatasetTester:
                     sorted(dataset_builder.info.splits.keys()), sorted(dataset)
                 )
                 for split in dataset_builder.info.splits.keys():
-                    # check that loaded datset is not empty
+                    # check that loaded dataset is not empty
                     self.parent.assertTrue(len(dataset[split]) > 0)
 
                 # check that we can cast features for each task template
