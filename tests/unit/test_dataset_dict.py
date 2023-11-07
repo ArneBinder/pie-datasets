@@ -24,6 +24,7 @@ from tests.conftest import CREATE_FIXTURE_DATA, TestDocument
 logger = logging.getLogger(__name__)
 
 DATASET_NAME = "conll2003"
+# restrict all splits to 3 examples
 N_FIXTURE_SAMPLES = 3
 PIE_DATASET_PATH = DATASET_BUILDERS_ROOT / "pie" / DATASET_NAME
 FIXTURE_DATA_PATH = FIXTURES_ROOT / "dataset_dict" / f"{DATASET_NAME}_extract"
@@ -35,7 +36,6 @@ TEST_CLASS_PREFIX = "tests.unit.test_dataset_dict"
 def test_create_fixture_data():
     conll2003 = DatasetDict(datasets.load_dataset(str(PIE_DATASET_PATH)))
     for split in list(conll2003):
-        # restrict all splits to 3 examples
         conll2003 = conll2003.select(split=split, stop=N_FIXTURE_SAMPLES)
     conll2003.to_json(FIXTURE_DATA_PATH)
 
