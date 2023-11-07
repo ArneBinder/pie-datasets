@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 
 import datasets
-import pytorch_ie.data.builder
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocument
 from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
+
+from pie_datasets import GeneratorBasedBuilder
 
 _VERSION = "1.0.0"
 _COURTS = ["bag", "bfh", "bgh", "bpatg", "bsg", "bverfg", "bverwg"]
@@ -28,7 +29,7 @@ class GermanLegalEntityRecognitionDocument(TextDocument):
     entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
-class GermanLegalEntityRecognition(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class GermanLegalEntityRecognition(GeneratorBasedBuilder):
     DOCUMENT_TYPE = GermanLegalEntityRecognitionDocument
 
     BASE_DATASET_PATH = "german_legal_entity_recognition"

@@ -1,23 +1,12 @@
 from dataclasses import dataclass
 
 import datasets
-import pytorch_ie.data.builder
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocument
 from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
 
-
-class NCBIDiseaseConfig(datasets.BuilderConfig):
-    """BuilderConfig for NCBIDisease."""
-
-    def __init__(self, **kwargs):
-        """BuilderConfig for NCBIDisease.
-
-        Args:
-          **kwargs: keyword arguments forwarded to super.
-        """
-        super().__init__(**kwargs)
+from pie_datasets import GeneratorBasedBuilder
 
 
 @dataclass
@@ -25,13 +14,13 @@ class NCBIDiseaseDocument(TextDocument):
     entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
-class NCBIDisease(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class NCBIDisease(GeneratorBasedBuilder):
     DOCUMENT_TYPE = NCBIDiseaseDocument
 
     BASE_DATASET_PATH = "ncbi_disease"
 
     BUILDER_CONFIGS = [
-        NCBIDiseaseConfig(
+        datasets.BuilderConfig(
             name="ncbi_disease",
             version=datasets.Version("1.0.0"),
             description="NCBIDisease dataset",

@@ -1,23 +1,12 @@
 from dataclasses import dataclass
 
 import datasets
-import pytorch_ie.data.builder
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocument
 from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
 
-
-class GermEval14Config(datasets.BuilderConfig):
-    """BuilderConfig for GermEval 2014."""
-
-    def __init__(self, **kwargs):
-        """BuilderConfig for GermEval 2014.
-
-        Args:
-          **kwargs: keyword arguments forwarded to super.
-        """
-        super().__init__(**kwargs)
+from pie_datasets import GeneratorBasedBuilder
 
 
 @dataclass
@@ -25,13 +14,13 @@ class GermEval14Document(TextDocument):
     entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
-class GermEval14(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class GermEval14(GeneratorBasedBuilder):
     DOCUMENT_TYPE = GermEval14Document
 
     BASE_DATASET_PATH = "germeval_14"
 
     BUILDER_CONFIGS = [
-        GermEval14Config(
+        datasets.BuilderConfig(
             name="germeval_14",
             version=datasets.Version("2.0.0"),
             description="GermEval 2014 NER Shared Task dataset",

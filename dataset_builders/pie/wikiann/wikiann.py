@@ -1,11 +1,12 @@
 from dataclasses import dataclass
 
 import datasets
-import pytorch_ie.data.builder
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocument
 from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
+
+from pie_datasets import GeneratorBasedBuilder
 
 _VERSION = "1.1.0"
 _LANGS = [
@@ -198,7 +199,7 @@ class WikiANNDocument(TextDocument):
     entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
-class WikiANN(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class WikiANN(GeneratorBasedBuilder):
     DOCUMENT_TYPE = WikiANNDocument
 
     BASE_DATASET_PATH = "wikiann"

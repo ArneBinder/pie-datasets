@@ -1,23 +1,12 @@
 from dataclasses import dataclass
 
 import datasets
-import pytorch_ie.data.builder
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocument
 from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
 
-
-class WNUT_17Config(datasets.BuilderConfig):
-    """The WNUT 17 Emerging Entities Dataset."""
-
-    def __init__(self, **kwargs):
-        """BuilderConfig for WNUT 17.
-
-        Args:
-          **kwargs: keyword arguments forwarded to super.
-        """
-        super().__init__(**kwargs)
+from pie_datasets import GeneratorBasedBuilder
 
 
 @dataclass
@@ -25,7 +14,7 @@ class WNUT17Document(TextDocument):
     entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
-class WNUT17(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class WNUT17(GeneratorBasedBuilder):
     """The WNUT 17 Emerging Entities Dataset."""
 
     DOCUMENT_TYPE = WNUT17Document
@@ -33,7 +22,7 @@ class WNUT17(pytorch_ie.data.builder.GeneratorBasedBuilder):
     BASE_DATASET_PATH = "wnut_17"
 
     BUILDER_CONFIGS = [
-        WNUT_17Config(
+        datasets.BuilderConfig(
             name="wnut_17",
             version=datasets.Version("1.0.0"),
             description="The WNUT 17 Emerging Entities Dataset",

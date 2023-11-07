@@ -1,23 +1,12 @@
 from dataclasses import dataclass
 
 import datasets
-import pytorch_ie.data.builder
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocument
 from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
 
-
-class Conll2002Config(datasets.BuilderConfig):
-    """BuilderConfig for CoNLL2002."""
-
-    def __init__(self, **kwargs):
-        """BuilderConfig for CoNLL2002.
-
-        Args:
-          **kwargs: keyword arguments forwarded to super.
-        """
-        super().__init__(**kwargs)
+from pie_datasets import GeneratorBasedBuilder
 
 
 @dataclass
@@ -25,16 +14,16 @@ class CoNLL2002Document(TextDocument):
     entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
-class Conll2003(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class Conll2003(GeneratorBasedBuilder):
     DOCUMENT_TYPE = CoNLL2002Document
 
     BASE_DATASET_PATH = "conll2002"
 
     BUILDER_CONFIGS = [
-        Conll2002Config(
+        datasets.BuilderConfig(
             name="es", version=datasets.Version("1.0.0"), description="CoNLL2002 Spanish dataset"
         ),
-        Conll2002Config(
+        datasets.BuilderConfig(
             name="nl", version=datasets.Version("1.0.0"), description="CoNLL2002 Dutch dataset"
         ),
     ]

@@ -1,23 +1,12 @@
 from dataclasses import dataclass
 
 import datasets
-import pytorch_ie.data.builder
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocument
 from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
 
-
-class GermaNERConfig(datasets.BuilderConfig):
-    """BuilderConfig for GermaNER."""
-
-    def __init__(self, **kwargs):
-        """BuilderConfig for GermaNER.
-
-        Args:
-          **kwargs: keyword arguments forwarded to super.
-        """
-        super().__init__(**kwargs)
+from pie_datasets import GeneratorBasedBuilder
 
 
 @dataclass
@@ -25,13 +14,13 @@ class GermaNERDocument(TextDocument):
     entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
-class GermaNER(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class GermaNER(GeneratorBasedBuilder):
     DOCUMENT_TYPE = GermaNERDocument
 
     BASE_DATASET_PATH = "germaner"
 
     BUILDER_CONFIGS = [
-        GermaNERConfig(
+        datasets.BuilderConfig(
             name="germaner",
             version=datasets.Version("0.9.1"),
             description="GermaNER dataset",
