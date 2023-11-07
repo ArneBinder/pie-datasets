@@ -6,11 +6,11 @@ from pathlib import Path
 import pkg_resources
 import pytest
 from datasets import load_dataset
-from pytorch_ie import DatasetDict
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextBasedDocument
 
+from pie_datasets import DatasetDict
 from tests import FIXTURES_ROOT
 from tests.dataset_builders.common import DATASET_BUILDER_BASE_PATH
 
@@ -27,6 +27,18 @@ for src_root in SRC_ROOTS:
 
 
 _TABULATE_AVAILABLE = "tabulate" in {pkg.key for pkg in pkg_resources.working_set}
+
+CREATE_FIXTURE_DATA = False
+
+
+# just ensure that this never happens on CI
+def test_dont_create_fixture_data():
+    assert not CREATE_FIXTURE_DATA
+
+
+@pytest.fixture
+def documents(dataset):
+    return list(dataset["train"])
 
 
 @dataclasses.dataclass
@@ -78,7 +90,7 @@ def test_hf_dataset(hf_dataset):
         assert len(hf_dataset[split]) == SPLIT_SIZES[split]
 
 
-@pytest.fixture(scope="session")
+@pytest.fixture()
 def dataset(hf_dataset):
     mapped_dataset = hf_dataset.map(example_to_doc_dict)
     dataset = DatasetDict.from_hf(hf_dataset=mapped_dataset, document_type=TestDocument)
@@ -97,3 +109,32 @@ def test_dataset(dataset):
     doc0 = d_train[0]
     assert doc0 is not None
     assert isinstance(doc0, TestDocument)
+
+
+@pytest.fixture(scope="session")
+def iterable_hf_dataset():
+    result = load_dataset(
+        "json",
+        field="data",
+        data_dir=str(FIXTURES_ROOT / "hf_datasets" / "json"),
+        streaming=True,
+    )
+
+    return result
+
+
+@pytest.fixture()
+def iterable_dataset(iterable_hf_dataset):
+    mapped_dataset = iterable_hf_dataset.map(example_to_doc_dict)
+    dataset = DatasetDict.from_hf(hf_dataset=mapped_dataset, document_type=TestDocument)
+    return dataset
+
+
+def test_iterable_dataset(iterable_dataset):
+    assert iterable_dataset is not None
+    assert set(iterable_dataset) == set(SPLIT_SIZES)
+
+
+@pytest.fixture(params=["dataset", "iterable_dataset"])
+def maybe_iterable_dataset(request):
+    return request.getfixturevalue(request.param)

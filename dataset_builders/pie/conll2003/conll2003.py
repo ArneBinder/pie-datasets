@@ -7,13 +7,15 @@ from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocument, TextDocumentWithLabeledSpans
 from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
 
+from pie_datasets import GeneratorBasedBuilder
+
 
 @dataclass
 class CoNLL2003Document(TextDocument):
     entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
-class Conll2003(pytorch_ie.data.builder.GeneratorBasedBuilder):
+class Conll2003(GeneratorBasedBuilder):
     DOCUMENT_TYPE = CoNLL2003Document
 
     BASE_DATASET_PATH = "conll2003"
