@@ -23,9 +23,10 @@ from tests.conftest import TestDocument
 
 logger = logging.getLogger(__name__)
 
-DATA_PATH = FIXTURES_ROOT / "dataset_dict" / "conll2003_extract"
 DATASET_NAME = "conll2003"
 PIE_DATASET_PATH = DATASET_BUILDERS_ROOT / "pie" / DATASET_NAME
+DATA_PATH = FIXTURES_ROOT / "dataset_dict" / f"{DATASET_NAME}_extract"
+
 TEST_CLASS_PREFIX = "tests.unit.test_dataset_dict"
 
 CREATE_FIXTURE_DATA = False
