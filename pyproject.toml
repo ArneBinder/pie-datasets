@@ -24,7 +24,8 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pytorch-ie = ">=0.27.0,<0.28.0"
+#pytorch-ie = ">=0.28.0,<0.29.0"
+pytorch-ie = { git = "https://github.com/ChristophAlt/pytorch-ie.git", branch = "remove_datasets" }
 
 [tool.poetry.group.dev.dependencies]
 torch = {version = "^2.1.0+cpu", source = "pytorch"}
