@@ -5,8 +5,11 @@ from typing import Any, Callable, Dict, List, Optional
 import datasets
 import pytorch_ie.data.builder
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
-from pytorch_ie.core import Annotation, AnnotationList, Document, annotation_field
-from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+from pytorch_ie.core import Annotation, AnnotationList, annotation_field
+from pytorch_ie.documents import (
+    TextBasedDocument,
+    TextDocumentWithLabeledSpansAndBinaryRelations,
+)
 
 from pie_datasets.document.processing.text_span_trimmer import trim_text_spans
 
@@ -18,12 +21,7 @@ def dl2ld(dict_of_lists):
 
 
 def ld2dl(list_of_dicts, keys: Optional[List[str]] = None, as_list: bool = False):
-    if keys is None:
-        keys = list_of_dicts[0].keys()
-    if as_list:
-        return [[d[k] for d in list_of_dicts] for k in keys]
-    else:
-        return {k: [d[k] for d in list_of_dicts] for k in keys}
+    return {k: [d[k] for d in list_of_dicts] for k in keys}
 
 
 @dataclasses.dataclass(frozen=True)
@@ -33,10 +31,7 @@ class Attribute(Annotation):
 
 
 @dataclasses.dataclass
-class CDCPDocument(Document):
-    text: str
-    id: Optional[str] = None
-    metadata: Dict[str, Any] = dataclasses.field(default_factory=dict)
+class CDCPDocument(TextBasedDocument):
     propositions: AnnotationList[LabeledSpan] = annotation_field(target="text")
     relations: AnnotationList[BinaryRelation] = annotation_field(target="propositions")
     urls: AnnotationList[Attribute] = annotation_field(target="propositions")
@@ -120,18 +115,6 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
         verbose=verbose,
     )
     return result
-
-
-class CDCPConfig(datasets.BuilderConfig):
-    """BuilderConfig for CDCP."""
-
-    def __init__(self, **kwargs):
-        """BuilderConfig for CDCP.
-
-        Args:
-          **kwargs: keyword arguments forwarded to super.
-        """
-        super().__init__(**kwargs)
 
 
 class CDCP(pytorch_ie.data.builder.GeneratorBasedBuilder):
