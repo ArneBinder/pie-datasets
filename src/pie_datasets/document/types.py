@@ -25,9 +25,6 @@ class Attribute(Annotation):
     value: Optional[str] = None
     score: float = 1.0
 
-    def __post_init__(self) -> None:
-        _post_init_single_label(self)
-
 
 # ========================= Document Types ========================= #
 

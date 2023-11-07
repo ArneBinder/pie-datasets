@@ -9,7 +9,7 @@ The document type for this dataset is `CDCPDocument` which defines the following
 
 - `text` (str)
 - `id` (str, optional)
-- `metadata` (dictionary, dataclasses)
+- `metadata` (dictionary, optional)
 
 and the following annotation layers:
 

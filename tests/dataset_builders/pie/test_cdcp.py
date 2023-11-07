@@ -97,18 +97,7 @@ def test_hf_example(hf_example, split):
 
 @pytest.fixture(scope="module")
 def generate_document_kwargs(hf_dataset, split):
-    return {
-        "relation_int2str": hf_dataset[split].features["relations"].feature["label"].int2str,
-        "proposition_int2str": hf_dataset[split].features["propositions"].feature["label"].int2str,
-    }
-
-
-@pytest.fixture(scope="module")
-def convert_back_kwargs(hf_dataset, split):
-    return {
-        "relation_str2int": hf_dataset[split].features["relations"].feature["label"].str2int,
-        "proposition_str2int": hf_dataset[split].features["propositions"].feature["label"].str2int,
-    }
+    return CDCP()._generate_document_kwargs(hf_dataset[split])
 
 
 def test_example_to_document(hf_example, generate_document_kwargs):
@@ -116,9 +105,9 @@ def test_example_to_document(hf_example, generate_document_kwargs):
     assert doc is not None
 
 
-def test_example_to_document_and_back(hf_example, generate_document_kwargs, convert_back_kwargs):
+def test_example_to_document_and_back(hf_example, generate_document_kwargs):
     doc = example_to_document(hf_example, **generate_document_kwargs)
-    hf_example_back = document_to_example(doc, **convert_back_kwargs)
+    hf_example_back = document_to_example(doc, **generate_document_kwargs)
     _deep_compare(
         obj=hf_example_back,
         obj_expected=hf_example,
@@ -155,13 +144,11 @@ def test_assert_no_span_overlap():
         _assert_no_span_overlap(document=doc1, text_field="text", span_layer="entities")
 
 
-def test_example_to_document_and_back_all(
-    hf_dataset, generate_document_kwargs, convert_back_kwargs, split
-):
+def test_example_to_document_and_back_all(hf_dataset, generate_document_kwargs, split):
     for hf_ex in hf_dataset[split]:
         doc = example_to_document(hf_ex, **generate_document_kwargs)
         _assert_no_span_overlap(document=doc, text_field="text", span_layer="propositions")
-        hf_example_back = document_to_example(doc, **convert_back_kwargs)
+        hf_example_back = document_to_example(doc, **generate_document_kwargs)
         _deep_compare(
             obj=hf_example_back,
             obj_expected=hf_ex,

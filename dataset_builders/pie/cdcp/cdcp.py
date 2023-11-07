@@ -39,15 +39,15 @@ class CDCPDocument(TextBasedDocument):
 
 def example_to_document(
     example: Dict[str, Any],
-    relation_int2str: Callable[[int], str],
-    proposition_int2str: Callable[[int], str],
+    relation_label: Callable[[int], str],
+    proposition_label: Callable[[int], str],
 ):
     document = CDCPDocument(id=example["id"], text=example["text"])
     for proposition_dict in dl2ld(example["propositions"]):
         proposition = LabeledSpan(
             start=proposition_dict["start"],
             end=proposition_dict["end"],
-            label=proposition_int2str(proposition_dict["label"]),
+            label=proposition_label.int2str(proposition_dict["label"]),
         )
         document.propositions.append(proposition)
         if proposition_dict.get("url", "") != "":
@@ -58,7 +58,7 @@ def example_to_document(
         relation = BinaryRelation(
             head=document.propositions[relation_dict["head"]],
             tail=document.propositions[relation_dict["tail"]],
-            label=relation_int2str(relation_dict["label"]),
+            label=relation_label.int2str(relation_dict["label"]),
         )
         document.relations.append(relation)
 
@@ -67,8 +67,8 @@ def example_to_document(
 
 def document_to_example(
     document: CDCPDocument,
-    relation_str2int: Callable[[str], int],
-    proposition_str2int: Callable[[str], int],
+    relation_label: Callable[[int], str],
+    proposition_label: Callable[[int], str],
 ) -> Dict[str, Any]:
     result = {"id": document.id, "text": document.text}
     proposition2dict = {}
@@ -77,7 +77,7 @@ def document_to_example(
         proposition2dict[proposition] = {
             "start": proposition.start,
             "end": proposition.end,
-            "label": proposition_str2int(proposition.label),
+            "label": proposition_label.str2int(proposition.label),
             "url": "",
         }
         proposition2idx[proposition] = idx
@@ -92,7 +92,7 @@ def document_to_example(
         {
             "head": proposition2idx[relation.head],
             "tail": proposition2idx[relation.tail],
-            "label": relation_str2int(relation.label),
+            "label": relation_label.str2int(relation.label),
         }
         for relation in document.relations
     ]
@@ -132,11 +132,11 @@ class CDCP(pytorch_ie.data.builder.GeneratorBasedBuilder):
 
     def _generate_document_kwargs(self, dataset):
         return {
-            "relation_int2str": dataset.features["relations"].feature["label"].int2str,
-            "proposition_int2str": dataset.features["propositions"].feature["label"].int2str,
+            "relation_label": dataset.features["relations"].feature["label"],
+            "proposition_label": dataset.features["propositions"].feature["label"],
         }
 
-    def _generate_document(self, example, relation_int2str, proposition_int2str):
+    def _generate_document(self, example, relation_label, proposition_label):
         return example_to_document(
-            example, relation_int2str=relation_int2str, proposition_int2str=proposition_int2str
+            example, relation_label=relation_label, proposition_label=proposition_label
         )
