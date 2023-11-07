@@ -19,7 +19,7 @@ from pie_datasets import (
     IterableDataset,
 )
 from tests import DATASET_BUILDERS_ROOT, FIXTURES_ROOT
-from tests.conftest import TestDocument
+from tests.conftest import CREATE_FIXTURE_DATA, TestDocument
 
 logger = logging.getLogger(__name__)
 
@@ -28,8 +28,6 @@ PIE_DATASET_PATH = DATASET_BUILDERS_ROOT / "pie" / DATASET_NAME
 DATA_PATH = FIXTURES_ROOT / "dataset_dict" / f"{DATASET_NAME}_extract"
 
 TEST_CLASS_PREFIX = "tests.unit.test_dataset_dict"
-
-CREATE_FIXTURE_DATA = False
 
 
 @pytest.mark.skipif(condition=not CREATE_FIXTURE_DATA, reason="don't create fixture data again")

@@ -28,6 +28,13 @@ for src_root in SRC_ROOTS:
 
 _TABULATE_AVAILABLE = "tabulate" in {pkg.key for pkg in pkg_resources.working_set}
 
+CREATE_FIXTURE_DATA = False
+
+
+# just ensure that this never happens on CI
+def test_dont_create_fixture_data():
+    assert not CREATE_FIXTURE_DATA
+
 
 @pytest.fixture
 def documents(dataset):
