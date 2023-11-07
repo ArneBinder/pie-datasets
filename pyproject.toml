@@ -24,8 +24,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-#pytorch-ie = ">=0.26.0,<0.27.0"
-pytorch-ie = { version = "0.26.1.dev1699314147", source = "pre-release" }
+pytorch-ie = ">=0.27.0,<0.28.0"
 
 [tool.poetry.group.dev.dependencies]
 torch = {version = "^2.1.0+cpu", source = "pytorch"}
