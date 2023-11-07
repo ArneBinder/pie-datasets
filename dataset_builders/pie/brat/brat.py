@@ -35,9 +35,6 @@ class Attribute(Annotation):
     value: Optional[str] = None
     score: Optional[float] = dataclasses.field(default=None, compare=False)
 
-    def __post_init__(self) -> None:
-        _post_init_single_label(self)
-
 
 @dataclasses.dataclass
 class BratDocument(TextBasedDocument):
