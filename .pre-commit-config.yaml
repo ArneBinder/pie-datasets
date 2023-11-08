@@ -79,7 +79,7 @@ repos:
     hooks:
       - id: codespell
         args:
-          - --skip=logs/**,data/**,tests/fixtures/**
+          - --skip=logs/**,data/**,tests/fixtures/**,dataset_builders/pie/wikiann/wikiann.py
           # hist: required for plotext.hist()
           # ba: denotes beginning of an encoding with label as 'a'. More details at src/pie_utils/sequence_tagging/ill_formed.py
           - --ignore-words-list=hist,ba
