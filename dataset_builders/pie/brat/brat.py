@@ -1,14 +1,17 @@
-import dataclasses
 import logging
 from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datasets
 from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pytorch_ie.core import Annotation, AnnotationList, annotation_field
-from pytorch_ie.documents import TextBasedDocument
+from pytorch_ie.core import Annotation
 
 from pie_datasets import GeneratorBasedBuilder
+from pie_datasets.document.types import (
+    Attribute,
+    BratDocument,
+    BratDocumentWithMergedSpans,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -24,33 +27,9 @@ def ld2dl(
     return {k: [dic[k] for dic in list_fo_dicts] for k in keys}
 
 
-@dataclasses.dataclass(eq=True, frozen=True)
-class Attribute(Annotation):
-    annotation: Annotation
-    label: str
-    value: Optional[str] = None
-    score: Optional[float] = dataclasses.field(default=None, compare=False)
-
-
-@dataclasses.dataclass
-class BratDocument(TextBasedDocument):
-    spans: AnnotationList[LabeledMultiSpan] = annotation_field(target="text")
-    relations: AnnotationList[BinaryRelation] = annotation_field(target="spans")
-    span_attributes: AnnotationList[Attribute] = annotation_field(target="spans")
-    relation_attributes: AnnotationList[Attribute] = annotation_field(target="relations")
-
-
-@dataclasses.dataclass
-class BratDocumentWithMergedSpans(TextBasedDocument):
-    spans: AnnotationList[LabeledSpan] = annotation_field(target="text")
-    relations: AnnotationList[BinaryRelation] = annotation_field(target="spans")
-    span_attributes: AnnotationList[Attribute] = annotation_field(target="spans")
-    relation_attributes: AnnotationList[Attribute] = annotation_field(target="relations")
-
-
 def example_to_document(
     example: Dict[str, Any], merge_fragmented_spans: bool = False
-) -> BratDocument:
+) -> Union[BratDocument, BratDocumentWithMergedSpans]:
     if merge_fragmented_spans:
         doc = BratDocumentWithMergedSpans(text=example["context"], id=example["file_name"])
     else:
