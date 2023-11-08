@@ -10,7 +10,7 @@ from pytorch_ie.core import AnnotationList, Document, annotation_field
 from pytorch_ie.documents import TextBasedDocument, TextDocument
 
 from pie_datasets import Dataset, DatasetDict, IterableDataset
-from pie_datasets.dataset_dict import (
+from pie_datasets.core.dataset_dict import (
     EnterDatasetDictMixin,
     EnterDatasetMixin,
     ExitDatasetDictMixin,
@@ -18,6 +18,9 @@ from pie_datasets.dataset_dict import (
 )
 from tests import DATASET_BUILDERS_ROOT, FIXTURES_ROOT
 from tests.conftest import CREATE_FIXTURE_DATA, TestDocument
+from tests.unit.core import TEST_PACKAGE
+
+TEST_MODULE = f"{TEST_PACKAGE}.{Path(__file__).stem}"
 
 logger = logging.getLogger(__name__)
 
@@ -26,8 +29,6 @@ DATASET_NAME = "conll2003"
 N_FIXTURE_SAMPLES = 3
 PIE_DATASET_PATH = DATASET_BUILDERS_ROOT / "pie" / DATASET_NAME
 FIXTURE_DATA_PATH = FIXTURES_ROOT / "dataset_dict" / f"{DATASET_NAME}_extract"
-
-TEST_CLASS_PREFIX = "tests.unit.test_dataset_dict"
 
 
 @pytest.mark.skipif(condition=not CREATE_FIXTURE_DATA, reason="don't create fixture data again")
@@ -167,7 +168,7 @@ def map_fn(doc):
 
 @pytest.mark.parametrize(
     "function",
-    [map_fn, f"{TEST_CLASS_PREFIX}.map_fn"],
+    [map_fn, f"{TEST_MODULE}.map_fn"],
 )
 def test_map(dataset_dict, function):
     dataset_dict_mapped = dataset_dict.map(function)
@@ -479,8 +480,8 @@ def test_register_document_converter(dataset_dict):
 
 def test_register_document_converter_resolve(dataset_dict):
     dataset_dict.register_document_converter(
-        f"{TEST_CLASS_PREFIX}.convert_to_document_with_label",
-        document_type=f"{TEST_CLASS_PREFIX}.TestDocumentWithLabel",
+        f"{TEST_MODULE}.convert_to_document_with_label",
+        document_type=f"{TEST_MODULE}.TestDocumentWithLabel",
     )
 
     for name, split in dataset_dict.items():
@@ -494,11 +495,11 @@ class NoDocument:
 def test_register_document_converter_resolve_wrong_document_type(dataset_dict):
     with pytest.raises(TypeError) as excinfo:
         dataset_dict.register_document_converter(
-            convert_to_document_with_label, document_type=f"{TEST_CLASS_PREFIX}.NoDocument"
+            convert_to_document_with_label, document_type=f"{TEST_MODULE}.NoDocument"
         )
     assert (
         str(excinfo.value)
-        == f"document_type must be or resolve to a subclass of Document, but is '{TEST_CLASS_PREFIX}.NoDocument'"
+        == f"document_type must be or resolve to a subclass of Document, but is '{TEST_MODULE}.NoDocument'"
     )
 
 
@@ -518,9 +519,7 @@ def test_to_document_type(dataset_dict):
 
 def test_to_document_resolve(dataset_dict):
     dataset_dict.register_document_converter(convert_to_document_with_label)
-    dataset_dict_converted = dataset_dict.to_document_type(
-        f"{TEST_CLASS_PREFIX}.TestDocumentWithLabel"
-    )
+    dataset_dict_converted = dataset_dict.to_document_type(f"{TEST_MODULE}.TestDocumentWithLabel")
     assert dataset_dict_converted.document_type == TestDocumentWithLabel
     for split in dataset_dict_converted.values():
         assert all(isinstance(doc, TestDocumentWithLabel) for doc in split)
@@ -529,11 +528,11 @@ def test_to_document_resolve(dataset_dict):
 def test_to_document_type_resolve_wrong_document_type(dataset_dict):
     dataset_dict.register_document_converter(convert_to_document_with_label)
     with pytest.raises(TypeError) as excinfo:
-        dataset_dict.to_document_type(f"{TEST_CLASS_PREFIX}.NoDocument")
+        dataset_dict.to_document_type(f"{TEST_MODULE}.NoDocument")
     assert (
         str(excinfo.value)
         == f"document_type must be a document type or a string that can be resolved to such a type, but got "
-        f"{TEST_CLASS_PREFIX}.NoDocument."
+        f"{TEST_MODULE}.NoDocument."
     )
 
 

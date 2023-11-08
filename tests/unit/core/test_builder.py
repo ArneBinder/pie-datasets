@@ -1,6 +1,7 @@
 import re
 import tempfile
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Type
 
 import pytest
@@ -10,10 +11,13 @@ from pytorch_ie.annotations import LabeledSpan, Span
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextBasedDocument, TextDocumentWithSpans
 
-from pie_datasets.builder import PieDatasetBuilder
+from pie_datasets.core.builder import PieDatasetBuilder
 from tests import FIXTURES_ROOT
+from tests.unit.core import TEST_PACKAGE
 
 DATASETS_ROOT = FIXTURES_ROOT / "builder" / "datasets"
+
+TEST_MODULE = f"{TEST_PACKAGE}.{Path(__file__).stem}"
 
 
 def test_builder_class():
@@ -193,7 +197,7 @@ def test_builder_with_document_converters_resolve_document_type_and_converter():
         builder = builder_cls(
             cache_dir=tmp_cache_dir,
             document_converters={
-                "tests.unit.test_builder.ExampleDocumentWithSimpleSpans": "tests.unit.test_builder.convert_example_document_to_example_document_with_simple_spans",
+                f"{TEST_MODULE}.ExampleDocumentWithSimpleSpans": f"{TEST_MODULE}.convert_example_document_to_example_document_with_simple_spans",
             },
         )
     assert isinstance(builder, PieDatasetBuilder)
@@ -213,12 +217,12 @@ def test_builder_with_document_converters_resolve_wrong_document_type():
         with pytest.raises(
             TypeError,
             match=re.escape(
-                "The key 'tests.unit.test_builder.NoDocumentType' for one of the converters can not be resolved to a document type."
+                f"The key '{TEST_MODULE}.NoDocumentType' for one of the converters can not be resolved to a document type."
             ),
         ):
             builder = builder_cls(
                 cache_dir=tmp_cache_dir,
                 document_converters={
-                    "tests.unit.test_builder.NoDocumentType": convert_example_document_to_example_document_with_simple_spans,
+                    f"{TEST_MODULE}.NoDocumentType": convert_example_document_to_example_document_with_simple_spans,
                 },
             )
