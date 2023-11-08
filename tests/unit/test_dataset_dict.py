@@ -9,14 +9,12 @@ from pytorch_ie.annotations import Label, LabeledSpan
 from pytorch_ie.core import AnnotationList, Document, annotation_field
 from pytorch_ie.documents import TextBasedDocument, TextDocument
 
-from pie_datasets import (
-    Dataset,
-    DatasetDict,
+from pie_datasets import Dataset, DatasetDict, IterableDataset
+from pie_datasets.dataset_dict import (
     EnterDatasetDictMixin,
     EnterDatasetMixin,
     ExitDatasetDictMixin,
     ExitDatasetMixin,
-    IterableDataset,
 )
 from tests import DATASET_BUILDERS_ROOT, FIXTURES_ROOT
 from tests.conftest import CREATE_FIXTURE_DATA, TestDocument
