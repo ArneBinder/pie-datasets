@@ -20,7 +20,7 @@ def dl2ld(dict_of_lists):
     return [dict(zip(dict_of_lists, t)) for t in zip(*dict_of_lists.values())]
 
 
-def ld2dl(list_of_dicts, keys: Optional[List[str]] = None, as_list: bool = False):
+def ld2dl(list_of_dicts, keys: Optional[List[str]] = None):
     return {k: [d[k] for d in list_of_dicts] for k in keys}
 
 
