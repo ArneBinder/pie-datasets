@@ -1,4 +1,4 @@
-# PIE Dataset Card for "SciDTB ArgMin"
+# PIE Dataset Card for "SciDTB Argmin"
 
 This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for the
 [SciDTB ArgMin Huggingface dataset loading script](https://huggingface.co/datasets/DFKI-SLT/scidtb_argmin).
@@ -20,4 +20,4 @@ See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/a
 
 ## Document Converters
 
-[To ne added]
+\[To ne added\]

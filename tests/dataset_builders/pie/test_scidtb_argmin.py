@@ -3,31 +3,34 @@ from typing import List
 
 import pytest
 from datasets import disable_caching, load_dataset
-from pytorch_ie import DatasetDict, tokenize_document
 from pytorch_ie.core import Document
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.scidtb_argmin.scidtb_argmin import (
+    SciDTBArgmin,
     SciDTBArgminDocument,
     convert_to_text_document_with_labeled_spans_and_binary_relations,
     document_to_example,
     example_to_document,
 )
-from src.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
-from tests.unit.dataset_builders.common import (
+from pie_datasets import DatasetDict
+from pie_datasets.document.conversion import tokenize_document
+from pie_datasets.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
+from tests import FIXTURES_ROOT
+from tests.dataset_builders.common import (
     HF_DS_FIXTURE_DATA_PATH,
+    PIE_BASE_PATH,
     _deep_compare,
-    dataset_from_config,
 )
 
 disable_caching()
 
 DATASET_NAME = "scidtb_argmin"
 SPLIT_SIZES = {"train": 60}
-HF_DATASET_PATH = "DFKI-SLT/scidtb_argmin"
-PIE_DATASET_PATH = "pie/scidtb_argmin"
-DATA_PATH = "data/datasets/scidtb_argmin_annotations.tgz"
+HF_DATASET_PATH = SciDTBArgmin.BASE_DATASET_PATH
+PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
+DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "scidtb_argmin_annotations.tgz"
 
 
 @pytest.fixture(scope="module")
@@ -101,7 +104,7 @@ def test_example_to_document_and_back_all(
 
 @pytest.fixture(scope="module")
 def dataset() -> DatasetDict:
-    yield from dataset_from_config(f"{DATASET_NAME}_base")
+    return DatasetDict.load_dataset(str(PIE_DATASET_PATH))
 
 
 def test_dataset(dataset):

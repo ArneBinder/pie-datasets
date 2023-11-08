@@ -3,10 +3,16 @@ import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import datasets
-import pytorch_ie.data.builder
+from pytorch_ie import token_based_document_to_text_based
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import AnnotationList, Document, annotation_field
+from pytorch_ie.documents import (
+    TextDocumentWithLabeledSpansAndBinaryRelations,
+    TokenBasedDocument,
+)
 from pytorch_ie.utils.span import bio_tags_to_spans
+
+from pie_datasets import GeneratorBasedBuilder
 
 log = logging.getLogger(__name__)
 
@@ -31,13 +37,18 @@ class SciDTBArgminDocument(Document):
     relations: AnnotationList[BinaryRelation] = annotation_field(target="units")
 
 
+@dataclasses.dataclass
+class SimplifiedSciDTBArgminDocument(TokenBasedDocument):
+    labeled_spans: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
+    binary_relations: AnnotationList[BinaryRelation] = annotation_field(target="labeled_spans")
+
+
 def example_to_document(
     example: Dict[str, Any],
     unit_bio_int2str: Callable[[int], str],
     unit_label_int2str: Callable[[int], str],
     relation_int2str: Callable[[int], str],
 ):
-
     document = SciDTBArgminDocument(id=example["id"], tokens=tuple(example["data"]["token"]))
     bio_tags = unit_bio_int2str(example["data"]["unit-bio"])
     unit_labels = unit_label_int2str(example["data"]["unit-label"])
@@ -83,7 +94,6 @@ def document_to_example(
     unit_label_str2int: Callable[[str], int],
     relation_str2int: Callable[[str], int],
 ) -> Dict[str, Any]:
-
     unit2idx = {unit: idx for idx, unit in enumerate(document.units)}
     unit2parent_relation = {relation.head: relation for relation in document.relations}
 
@@ -121,8 +131,27 @@ def document_to_example(
     return result
 
 
-class SciDTBArgmin(pytorch_ie.data.builder.GeneratorBasedBuilder):
+def convert_to_text_document_with_labeled_spans_and_binary_relations(
+    document: SciDTBArgminDocument,
+) -> TextDocumentWithLabeledSpansAndBinaryRelations:
+    doc_simplified = document.as_type(
+        SimplifiedSciDTBArgminDocument,
+        field_mapping={"units": "labeled_spans", "relations": "binary_relations"},
+    )
+    result = token_based_document_to_text_based(
+        doc_simplified,
+        result_document_type=TextDocumentWithLabeledSpansAndBinaryRelations,
+        join_tokens_with=" ",
+    )
+    return result
+
+
+class SciDTBArgmin(GeneratorBasedBuilder):
     DOCUMENT_TYPE = SciDTBArgminDocument
+
+    DOCUMENT_CONVERTERS = {
+        TextDocumentWithLabeledSpansAndBinaryRelations: convert_to_text_document_with_labeled_spans_and_binary_relations
+    }
 
     BASE_DATASET_PATH = "DFKI-SLT/scidtb_argmin"
 
