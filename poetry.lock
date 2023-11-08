@@ -1227,24 +1227,20 @@ name = "pytorch-ie"
 version = "0.27.0"
 description = "State-of-the-art Information Extraction in PyTorch"
 optional = false
-python-versions = "^3.9"
-files = []
-develop = false
+python-versions = ">=3.9,<4.0"
+files = [
+    {file = "pytorch_ie-0.27.0-py3-none-any.whl", hash = "sha256:d8eec1183d260e2ad13b3aeea10342bd46ef2b3cefb64fafdbddecc91181c14e"},
+    {file = "pytorch_ie-0.27.0.tar.gz", hash = "sha256:6711d8afe63c7754e70dc6bf20427f005edd0b0a60d1d670290b4d81068614a4"},
+]
 
 [package.dependencies]
-absl-py = "^1.0.0"
+absl-py = ">=1.0.0,<2.0.0"
+datasets = ">=2.13,<3.0"
 fsspec = "<2023.9.0"
-pandas = "^2.0.0"
-pytorch-lightning = "^2"
+pytorch-lightning = ">=2,<3"
 torch = ">=1.10"
-torchmetrics = "^1"
-transformers = "^4.18"
-
-[package.source]
-type = "git"
-url = "https://github.com/ChristophAlt/pytorch-ie.git"
-reference = "remove_datasets"
-resolved_reference = "f35fa328fe9fb036f1d628d00468e196684d37bc"
+torchmetrics = ">=1,<2"
+transformers = ">=4.18,<5.0"
 
 [[package]]
 name = "pytorch-lightning"
@@ -2167,4 +2163,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "c47c186281af81e139759fa9ef042e6b4e4b39706937212b6d334ddefad7d0c5"
+content-hash = "05fdb17a8a21088696573d3a3356c1b815446af17e6589c28c11eb80d2e8788e"
