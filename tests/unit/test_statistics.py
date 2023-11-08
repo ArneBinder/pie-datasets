@@ -187,7 +187,6 @@ def test_statistics(dataset):
     }
 
 
-@pytest.mark.slow
 def test_statistics_with_tokenize(dataset):
     statistic = TokenCountCollector(
         text_field="text",
