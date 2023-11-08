@@ -8,10 +8,13 @@ from pytorch_ie.documents import TextBasedDocument
 
 from dataset_builders.pie.brat.brat import (
     BratDatasetLoader,
-    BratDocument,
-    BratDocumentWithMergedSpans,
     document_to_example,
     example_to_document,
+)
+from pie_datasets.document.types import (
+    Attribute,
+    BratDocument,
+    BratDocumentWithMergedSpans,
 )
 from tests.dataset_builders.common import PIE_BASE_PATH, PIE_DS_FIXTURE_DATA_PATH
 
@@ -40,7 +43,7 @@ def resolve_annotation(annotation: Annotation) -> Any:
             annotation.label,
             resolve_annotation(annotation.tail),
         )
-    elif isinstance(annotation, Annotation) and str(type(annotation)).endswith("brat.Attribute'>"):
+    elif isinstance(annotation, Attribute):
         result = (resolve_annotation(annotation.annotation), annotation.label)
         if annotation.value is not None:
             return result + (annotation.value,)
