@@ -19,7 +19,7 @@ import datasets
 from pytorch_ie.core.document import Document
 from pytorch_ie.utils.hydra import resolve_target, serialize_document_type
 
-from pie_datasets.dataset import Dataset, IterableDataset, get_pie_dataset_type
+from .dataset import Dataset, IterableDataset, get_pie_dataset_type
 
 logger = logging.getLogger(__name__)
 

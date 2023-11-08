@@ -6,7 +6,7 @@ from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocument
 
-from pie_datasets.builder import ArrowBasedBuilder
+from pie_datasets import ArrowBasedBuilder
 from tests import FIXTURES_ROOT
 
 

@@ -1,5 +1,6 @@
 from collections.abc import Iterator, Sequence
 from dataclasses import dataclass
+from pathlib import Path
 from typing import Union
 
 import numpy
@@ -16,8 +17,11 @@ from pytorch_ie.documents import TextBasedDocument
 from pytorch_ie.taskmodules import TransformerSpanClassificationTaskModule
 
 from pie_datasets import Dataset, IterableDataset
-from pie_datasets.dataset import get_pie_dataset_type
+from pie_datasets.core.dataset import get_pie_dataset_type
 from tests.conftest import TestDocument
+from tests.unit.core import TEST_PACKAGE
+
+TEST_MODULE = f"{TEST_PACKAGE}.{Path(__file__).stem}"
 
 
 def test_dataset(maybe_iterable_dataset):
@@ -281,12 +285,14 @@ def test_to_document_type_not_found(dataset_with_converter_functions):
     assert (
         str(excinfo.value)
         == "No valid key (either subclass or superclass) was found for the document type "
-        "'<class 'tests.unit.test_dataset.test_to_document_type_not_found.<locals>.TestDocumentWithSpans'>' "
+        f"'<class '{TEST_MODULE}.test_to_document_type_not_found.<locals>.TestDocumentWithSpans'>' "
         "in the document_converters of the dataset. Available keys: "
-        "{<class 'tests.unit.test_dataset.TestDocumentWithLabel'>}. Consider adding a respective converter "
+        "{<class '"
+        + TEST_MODULE
+        + ".TestDocumentWithLabel'>}. Consider adding a respective converter "
         "to the dataset with dataset.register_document_converter(my_converter_method) where "
         "my_converter_method should accept <class 'tests.conftest.TestDocument'> as input and return "
-        "'<class 'tests.unit.test_dataset.test_to_document_type_not_found.<locals>.TestDocumentWithSpans'>'."
+        f"'<class '{TEST_MODULE}.test_to_document_type_not_found.<locals>.TestDocumentWithSpans'>'."
     )
 
 
