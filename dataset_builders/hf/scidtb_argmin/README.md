@@ -6,7 +6,7 @@ Briefly summarize the dataset, its intended use and the supported tasks. Give an
 
 ### Supported Tasks and Leaderboards
 
-- **Tasks:** Argument Minning, Link Prediction, Component Classification, Relation Classification
+- **Tasks:** Argument Mining, Component Classification, Relation Classification
 - **Leaderboards:** https://paperswithcode.com/dataset/cdcp
 
 ### Languages
@@ -58,6 +58,8 @@ Provide the sizes of each split. As appropriate, provide any descriptive statist
 
 ### Curation Rationale
 
+"We propose to tackle the limitations posed by the lack of annotated data for argument mining in the scientific domain by leveraging existing Rhetorical Structure Theory (RST) (Mann et al., 1992) annotations in a corpus of computational linguistics abstracts (SciDTB) (Yang and Li, 2018)." (p. 42)
+
 What need motivated the creation of this dataset? What are some of the reasons underlying the major choices involved in putting it together?
 
 ### Source Data
@@ -65,6 +67,15 @@ What need motivated the creation of this dataset? What are some of the reasons u
 This section describes the source data (e.g. news text and headlines, social media posts, translated sentences,...)
 
 #### Initial Data Collection and Normalization
+
+This work is informed by previous research in the areas of argument mining, argumentation quality assessment and the relationship between discourse and argumentative structures and, from the methodological perspective, to transfer learning approaches.
+
+We add a new annotation layer to the Discourse Dependency TreeBank for Scientific Abstracts (SciDTB) (Yang and Li, 2018). SciDTB contains 798 abstracts from the ACL Anthology (Radev et al., 2013) annotated with elementary discourse units (EDUs)
+and relations from the RST Framework. (p. 43)
+
+We consider a subset of the SciDTB corpus consisting of 60 abstracts from the Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP) and transformed them into a format suitable for the GraPAT graph annotation tool (Sonntag and Stede, 2014).
+
+The corpus enriched with the argumentation level contains a total of 327 sentences, 8012 tokens, 862 discourse units and 352 argumentative units linked by 292 argumentative relations. (p. 43)
 
 Describe the data collection process. Describe any criteria for data selection or filtering. List any key words or search terms used. If possible, include runtime information for the collection process.
 
@@ -112,6 +123,10 @@ If efforts were made to anonymize the data, describe the anonymization process.
 
 ### Social Impact of Dataset
 
+"The development of automatic systems to support the quality assessment of scientific texts can facilitate the work of editors and referees of scientific publications and, at the same time, be of value for researchers to obtain feedback that can lead to improve the communication of their results...Aspects such as the argumentative structure of the text are key when analyzing its effectiveness with respect to its communication objectives (Walton and Walton, 1989)." (p. 41)
+
+"Being able to extract not only what is being stated by the authors of a text but also the reasons they provide to support it can be useful in multiple applications, ranging from a finegrained analysis of opinions to the generation of abstractive summaries of texts." (p. 41)
+
 Please discuss some of the ways you believe the use of this dataset will impact society.
 
 The statement should include both positive outlooks, such as outlining how technologies developed through its use may improve people's lives, and discuss the accompanying risks. These risks may range from making important decisions more opaque to people who are affected by the technology, to reinforcing existing harmful biases (whose specifics should be discussed in the next section), among other considerations.
@@ -119,6 +134,24 @@ The statement should include both positive outlooks, such as outlining how techn
 Also describe in this section if the proposed dataset contains a low-resource or under-represented language. If this is the case or if this task has any impact on underserved communities, please elaborate here.
 
 ### Discussion of Biases
+
+the types of argumentative units are
+distributed as follows: 31% of the units are of type
+proposal, 25% assertion, 21% result, 18% means,
+3% observation, and 2% description. In turn, the
+relations are distributed: 45% of type detail, 42%
+support, 9% additional, and 4% sequence. No attack relations were identified in the set of currently
+annotated texts.
+
+When considering the distance6
+of the units to their parent unit in the argumentation tree, we observe that the majority (57%) are
+linked to a unit that occurs right before or after it
+in the text, while 19% are linked to a unit with a
+distance of 1 unit in-between, 12% to a unit with a
+distance of 2 units, 6% to a unit with a distance of
+3, and 6% to a unit with a distance of 4 or more.
+
+(p. 44)
 
 Provide descriptions of specific biases that are likely to be reflected in the data, and state whether any steps were taken to reduce their impact.
 
@@ -134,6 +167,10 @@ If studies of the datasets have outlined other limitations of the dataset, such 
 
 ### Dataset Curators
 
+This work is (partly) supported by the Spanish
+Government under the Mar´ıa de Maeztu Units of
+Excellence Programme (MDM-2015-0502). (p. 49)
+
 List the people involved in collecting the dataset and their affiliation(s). If funding information is known, include it here.
 
 ### Licensing Information
@@ -142,14 +179,22 @@ Provide the license and link to the license webpage if available.
 
 ### Citation Information
 
-Provide the [BibTex](http://www.bibtex.org/)-formatted reference for the dataset. For example:
+```
+@article{yang2018scidtb,
+  title={SciDTB: Discourse dependency TreeBank for scientific abstracts},
+  author={Yang, An and Li, Sujian},
+  journal={arXiv preprint arXiv:1806.03653},
+  year={2018}
+}
+```
 
 ```
-@article{article_id,
-  author    = {Author List},
-  title     = {Dataset Paper Title},
-  journal   = {Publication Venue},
-  year      = {2525}
+@inproceedings{accuosto2019transferring,
+  title={Transferring knowledge from discourse to arguments: A case study with scientific abstracts},
+  author={Accuosto, Pablo and Saggion, Horacio},
+  booktitle={Proceedings of the 6th Workshop on Argument Mining},
+  pages={41--51},
+  year={2019}
 }
 ```
 
