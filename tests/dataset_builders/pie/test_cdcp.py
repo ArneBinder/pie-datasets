@@ -101,48 +101,35 @@ def generate_document_kwargs(hf_dataset, split):
     return CDCP()._generate_document_kwargs(hf_dataset[split])
 
 
-def test_example_to_document(hf_example, generate_document_kwargs):
-    doc = example_to_document(hf_example, **generate_document_kwargs)
-    assert doc is not None
+@pytest.fixture(scope="module")
+def generated_document(hf_example, generate_document_kwargs):
+    return example_to_document(hf_example, **generate_document_kwargs)
 
 
-def test_example_to_document_and_back(hf_example, generate_document_kwargs):
-    doc = example_to_document(hf_example, **generate_document_kwargs)
-    hf_example_back = document_to_example(doc, **generate_document_kwargs)
+def test_generated_document(generated_document, split):
+    assert isinstance(generated_document, CDCPDocument)
+    if split == "train":
+        assert generated_document.text == HF_EXAMPLE_00195["text"]
+        assert len(generated_document.propositions) == 3
+        assert len(generated_document.relations) == 2
+    elif split == "test":
+        assert generated_document.text == HF_EXAMPLE_00194["text"]
+        assert len(generated_document.propositions) == 3
+        assert len(generated_document.relations) == 1
+    else:
+        raise ValueError(f"Unknown split: {split}")
+
+
+@pytest.fixture(scope="module")
+def reversed_generated_document(generated_document, generate_document_kwargs):
+    return document_to_example(generated_document, **generate_document_kwargs)
+
+
+def test_example_to_document_and_back(hf_example, reversed_generated_document):
     _deep_compare(
-        obj=hf_example_back,
+        obj=reversed_generated_document,
         obj_expected=hf_example,
     )
-
-
-def _assert_no_span_overlap(document: Document, text_field: str, span_layer: str):
-    spans = document[span_layer]
-    text = getattr(document, text_field)
-    seq = [None] * len(text)
-    for span in spans:
-        assert seq[span.start : span.end] == [None] * len(text[span.start : span.end])
-        seq[span.start : span.end] = text[span.start : span.end]
-
-
-def test_assert_no_span_overlap():
-    @dataclasses.dataclass
-    class TextDocumentWithEntities(TextBasedDocument):
-        entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
-
-    doc0 = TextDocumentWithEntities(text="abcdefghijklmnop")
-    doc0.entities.append(LabeledSpan(start=0, end=4, label="A"))
-    doc0.entities.append(LabeledSpan(start=4, end=6, label="B"))
-
-    # this should work
-    _assert_no_span_overlap(document=doc0, text_field="text", span_layer="entities")
-
-    doc1 = TextDocumentWithEntities(text="abcdefghijklmnop")
-    doc1.entities.append(LabeledSpan(start=0, end=4, label="A"))
-    doc1.entities.append(LabeledSpan(start=2, end=6, label="B"))
-
-    # this should fail
-    with pytest.raises(AssertionError):
-        _assert_no_span_overlap(document=doc1, text_field="text", span_layer="entities")
 
 
 def test_example_to_document_and_back_all(hf_dataset, generate_document_kwargs, split):
@@ -174,6 +161,42 @@ def document(dataset, split) -> CDCPDocument:
     # semantically the same
     assert isinstance(result, Document)
     return result
+
+
+def test_compare_document_and_generated_document(document, generated_document):
+    assert document.text == generated_document.text
+    assert document.relations == generated_document.relations
+    assert document.metadata == generated_document.metadata
+
+
+def _assert_no_span_overlap(document: Document, text_field: str, span_layer: str):
+    spans = document[span_layer]
+    text = getattr(document, text_field)
+    seq = [None] * len(text)
+    for span in spans:
+        assert seq[span.start : span.end] == [None] * len(text[span.start : span.end])
+        seq[span.start : span.end] = text[span.start : span.end]
+
+
+def test_assert_no_span_overlap():
+    @dataclasses.dataclass
+    class TextDocumentWithEntities(TextBasedDocument):
+        entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
+
+    doc0 = TextDocumentWithEntities(text="abcdefghijklmnop")
+    doc0.entities.append(LabeledSpan(start=0, end=4, label="A"))
+    doc0.entities.append(LabeledSpan(start=4, end=6, label="B"))
+
+    # this should work
+    _assert_no_span_overlap(document=doc0, text_field="text", span_layer="entities")
+
+    doc1 = TextDocumentWithEntities(text="abcdefghijklmnop")
+    doc1.entities.append(LabeledSpan(start=0, end=4, label="A"))
+    doc1.entities.append(LabeledSpan(start=2, end=6, label="B"))
+
+    # this should fail
+    with pytest.raises(AssertionError):
+        _assert_no_span_overlap(document=doc1, text_field="text", span_layer="entities")
 
 
 @pytest.fixture(scope="module")
