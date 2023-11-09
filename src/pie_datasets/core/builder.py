@@ -40,6 +40,13 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
     # base datasets for each config.
     BASE_DATASET_PATHS: Dict[str, str] = {}
 
+    # The default revision (e.g. git commit) of the Huggingface dataset loading script that will be used
+    # as base dataset.
+    BASE_DATASET_REVISION: Optional[str] = None
+    # A mapping from config names to revisions (e.g. git commits) of the Huggingface dataset loading script
+    # that will be used as base dataset.
+    BASE_DATASET_REVISIONS: Dict[str, str] = {}
+
     # Define kwargs to create base configs. This should contain config names as keys
     # and the respective config kwargs dicts as values. If the config name is not contained, a new entry
     # {"name": config_name} will be created for it, i.e. the config name is passed as base config name.
@@ -84,6 +91,10 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
             # get base builder kwargs from mapping
             if self.BASE_BUILDER_KWARGS_DICT is not None:
                 base_builder_kwargs.update(self.BASE_BUILDER_KWARGS_DICT[config_name])
+
+            revision = self.BASE_DATASET_REVISIONS.get(config_name, self.BASE_DATASET_REVISION)
+            if revision is not None:
+                base_builder_kwargs["revision"] = revision
 
             base_builder_kwargs.update(base_dataset_kwargs)
             self.base_builder = datasets.load.load_dataset_builder(
