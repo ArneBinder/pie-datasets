@@ -121,13 +121,13 @@ def test_generated_document(generated_document, split):
 
 
 @pytest.fixture(scope="module")
-def reversed_generated_document(generated_document, generate_document_kwargs):
+def hf_example_back(generated_document, generate_document_kwargs):
     return document_to_example(generated_document, **generate_document_kwargs)
 
 
-def test_example_to_document_and_back(hf_example, reversed_generated_document):
+def test_example_to_document_and_back(hf_example, hf_example_back):
     _deep_compare(
-        obj=reversed_generated_document,
+        obj=hf_example_back,
         obj_expected=hf_example,
     )
 
