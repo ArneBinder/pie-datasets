@@ -63,19 +63,21 @@ from dataclasses import dataclass
 
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationLayer, annotation_field
-from pytorch_ie.documents import TextDocument
+from pytorch_ie.documents import TextBasedDocument
 
 @dataclass
-class CoNLL2003Document(TextDocument):
+class CoNLL2003Document(TextBasedDocument):
     entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 ```
 
-Here we derive from `TextDocument` that has a simple `text` string as base annotation target. The `CoNLL2003Document`
-adds one single annotation list called `entities` that consists of `LabeledSpan`s which reference the `text` field of
-the document. You can add further annotation types by adding `AnnotationLayer` fields that may also reference (i.e.
-`target`) other annotations as you like. The package
+Here we derive from `TextBasedDocument` that has a simple `text` string as base annotation target. The
+`CoNLL2003Document` adds one single annotation layer called `entities` that consists of `LabeledSpan`s which
+reference the `text` field of the document. You can add further annotation types by adding `AnnotationLayer`
+fields that may also reference (i.e. `target`) other annotations as you like. The package
 [pytorch_ie.annotations](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/annotations.py)
-contains some predefined annotation types.
+contains some predefined annotation types and the package
+[pytorch_ie.documents](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) defines
+some document types that you can use as base classes.
 
 2. A dataset config. This is similar to
    [creating a Huggingface dataset config](https://huggingface.co/docs/datasets/dataset_script#multiple-configurations).
