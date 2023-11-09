@@ -11,15 +11,13 @@ Briefly summarize the dataset, its intended use and the supported tasks. Give an
 
 ### Languages
 
-Provide a brief overview of the languages represented in the dataset. Describe relevant details about specifics of the language such as whether it is social media text, African American English,...
-
-When relevant, please provide [BCP-47 codes](https://tools.ietf.org/html/bcp47), which consist of a [primary language subtag](https://tools.ietf.org/html/bcp47#section-2.2.1), with a [script subtag](https://tools.ietf.org/html/bcp47#section-2.2.3) and/or [region subtag](https://tools.ietf.org/html/bcp47#section-2.2.4) if available.
+The language in the dataset is English (academic).
 
 ## Dataset Structure
 
 ### Data Instances
 
-- **Size of downloaded dataset files:** 5.37 MB
+- **Size of downloaded dataset files:**  MB
 
 Provide an JSON-formatted example and brief description of a typical instance in the dataset. If available, provide a link to further examples.
 
@@ -60,6 +58,12 @@ Provide the sizes of each split. As appropriate, provide any descriptive statist
 
 "We propose to tackle the limitations posed by the lack of annotated data for argument mining in the scientific domain by leveraging existing Rhetorical Structure Theory (RST) (Mann et al., 1992) annotations in a corpus of computational linguistics abstracts (SciDTB) (Yang and Li, 2018)." (p. 42)
 
+We introduce a fine-grained annotation
+scheme aimed at capturing information that accounts for the specificities of the scientific discourse, including the type of evidence that is offered to support a statement (e.g., background information, experimental data or interpretation of
+results). This can provide relevant information, for
+instance, to assess the argumentative strength of a
+text. (p. 44)
+
 What need motivated the creation of this dataset? What are some of the reasons underlying the major choices involved in putting it together?
 
 ### Source Data
@@ -72,10 +76,6 @@ This work is informed by previous research in the areas of argument mining, argu
 
 We add a new annotation layer to the Discourse Dependency TreeBank for Scientific Abstracts (SciDTB) (Yang and Li, 2018). SciDTB contains 798 abstracts from the ACL Anthology (Radev et al., 2013) annotated with elementary discourse units (EDUs)
 and relations from the RST Framework. (p. 43)
-
-We consider a subset of the SciDTB corpus consisting of 60 abstracts from the Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP) and transformed them into a format suitable for the GraPAT graph annotation tool (Sonntag and Stede, 2014).
-
-The corpus enriched with the argumentation level contains a total of 327 sentences, 8012 tokens, 862 discourse units and 352 argumentative units linked by 292 argumentative relations. (p. 43)
 
 Describe the data collection process. Describe any criteria for data selection or filtering. List any key words or search terms used. If possible, include runtime information for the collection process.
 
@@ -95,29 +95,19 @@ Describe other people represented or mentioned in the data. Where possible, link
 
 ### Annotations
 
-If the dataset contains annotations which are not part of the initial data collection, describe them in the following paragraphs.
-
 #### Annotation process
 
-If applicable, describe the annotation process and any tools used, or state otherwise. Describe the amount of data annotated, if not all. Describe or reference annotation guidelines provided to the annotators. If available, provide interannotator statistics. Describe any annotation validation processes.
+We consider a subset of the SciDTB corpus consisting of 60 abstracts from the Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP) and transformed them into a format suitable for the GraPAT graph annotation tool (Sonntag and Stede, 2014).
+
+The corpus enriched with the argumentation level contains a total of 327 sentences, 8012 tokens, 862 discourse units and 352 argumentative units linked by 292 argumentative relations. (p. 43)
 
 #### Who are the annotators?
 
-If annotations were collected for the source data (such as class labels or syntactic parses), state whether the annotations were produced by humans or machine generated.
-
-Describe the people or systems who originally created the annotations and their selection criteria if applicable.
-
-If available, include self-reported demographic or identity information for the annotators, but avoid inferring this information. Instead state that this information is unknown. See [Larson 2017](https://www.aclweb.org/anthology/W17-1601.pdf) for using identity categories as a variables, particularly gender.
-
-Describe the conditions under which the data was annotated (for example, if the annotators were crowdworkers, state what platform was used, or if the data was found, what website the data was found on). If compensation was provided, include that information here.
+\[More Information Needed\]
 
 ### Personal and Sensitive Information
 
-State whether the dataset uses identity categories and, if so, how the information is used. Describe where this information comes from (i.e. self-reporting, collecting from profiles, inferring, etc.). See [Larson 2017](https://www.aclweb.org/anthology/W17-1601.pdf) for using identity categories as a variables, particularly gender. State whether the data is linked to individuals and whether those individuals can be identified in the dataset, either directly or indirectly (i.e., in combination with other data).
-
-State whether the dataset contains other data that might be considered sensitive (e.g., data that reveals racial or ethnic origins, sexual orientations, religious beliefs, political opinions or union memberships, or locations; financial or health data; biometric or genetic data; forms of government identification, such as social security numbers; criminal history).
-
-If efforts were made to anonymize the data, describe the anonymization process.
+\[More Information Needed\]
 
 ## Considerations for Using the Data
 
@@ -126,12 +116,6 @@ If efforts were made to anonymize the data, describe the anonymization process.
 "The development of automatic systems to support the quality assessment of scientific texts can facilitate the work of editors and referees of scientific publications and, at the same time, be of value for researchers to obtain feedback that can lead to improve the communication of their results...Aspects such as the argumentative structure of the text are key when analyzing its effectiveness with respect to its communication objectives (Walton and Walton, 1989)." (p. 41)
 
 "Being able to extract not only what is being stated by the authors of a text but also the reasons they provide to support it can be useful in multiple applications, ranging from a finegrained analysis of opinions to the generation of abstractive summaries of texts." (p. 41)
-
-Please discuss some of the ways you believe the use of this dataset will impact society.
-
-The statement should include both positive outlooks, such as outlining how technologies developed through its use may improve people's lives, and discuss the accompanying risks. These risks may range from making important decisions more opaque to people who are affected by the technology, to reinforcing existing harmful biases (whose specifics should be discussed in the next section), among other considerations.
-
-Also describe in this section if the proposed dataset contains a low-resource or under-represented language. If this is the case or if this task has any impact on underserved communities, please elaborate here.
 
 ### Discussion of Biases
 
@@ -153,15 +137,9 @@ distance of 2 units, 6% to a unit with a distance of
 
 (p. 44)
 
-Provide descriptions of specific biases that are likely to be reflected in the data, and state whether any steps were taken to reduce their impact.
-
-For Wikipedia text, see for example [Dinan et al 2020 on biases in Wikipedia (esp. Table 1)](https://arxiv.org/abs/2005.00614), or [Blodgett et al 2020](https://www.aclweb.org/anthology/2020.acl-main.485/) for a more general discussion of the topic.
-
-If analyses have been run quantifying these biases, please add brief summaries and links to the studies here.
-
 ### Other Known Limitations
 
-If studies of the datasets have outlined other limitations of the dataset, such as annotation artifacts, please outline and cite them here.
+\[More Information Needed\]
 
 ## Additional Information
 
@@ -170,8 +148,6 @@ If studies of the datasets have outlined other limitations of the dataset, such 
 This work is (partly) supported by the Spanish
 Government under the Mar´ıa de Maeztu Units of
 Excellence Programme (MDM-2015-0502). (p. 49)
-
-List the people involved in collecting the dataset and their affiliation(s). If funding information is known, include it here.
 
 ### Licensing Information
 
@@ -188,6 +164,8 @@ Provide the license and link to the license webpage if available.
 }
 ```
 
+Yang & Li (2018)'s [DOI](10.18653/v1/P18-2071)
+
 ```
 @inproceedings{accuosto2019transferring,
   title={Transferring knowledge from discourse to arguments: A case study with scientific abstracts},
@@ -197,8 +175,6 @@ Provide the license and link to the license webpage if available.
   year={2019}
 }
 ```
-
-If the dataset has a [DOI](https://www.doi.org/), please provide it here.
 
 ### Contributions
 
