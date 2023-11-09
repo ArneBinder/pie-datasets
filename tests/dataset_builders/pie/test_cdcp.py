@@ -29,7 +29,7 @@ disable_caching()
 DATASET_NAME = "cdcp"
 SPLIT_SIZES = {"train": 581, "test": 150}
 HF_DATASET_PATH = CDCP.BASE_DATASET_PATH
-PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME  # "pie/cdcp"
+PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "cdcp_acl17.zip"
 
 HF_EXAMPLE_00195 = {
@@ -103,7 +103,7 @@ def generate_document_kwargs(hf_dataset, split):
 
 @pytest.fixture(scope="module")
 def generated_document(hf_example, generate_document_kwargs):
-    return example_to_document(hf_example, **generate_document_kwargs)
+    return CDCP()._generate_document(hf_example, **generate_document_kwargs)
 
 
 def test_generated_document(generated_document, split):

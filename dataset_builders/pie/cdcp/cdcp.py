@@ -39,8 +39,8 @@ class CDCPDocument(TextBasedDocument):
 
 def example_to_document(
     example: Dict[str, Any],
-    relation_label: Callable[[int], str],
-    proposition_label: Callable[[int], str],
+    relation_label: datasets.ClassLabel,
+    proposition_label: datasets.ClassLabel,
 ):
     document = CDCPDocument(id=example["id"], text=example["text"])
     for proposition_dict in dl2ld(example["propositions"]):
@@ -67,8 +67,8 @@ def example_to_document(
 
 def document_to_example(
     document: CDCPDocument,
-    relation_label: Callable[[int], str],
-    proposition_label: Callable[[int], str],
+    relation_label: datasets.ClassLabel,
+    proposition_label: datasets.ClassLabel,
 ) -> Dict[str, Any]:
     result = {"id": document.id, "text": document.text}
     proposition2dict = {}
