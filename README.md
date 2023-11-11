@@ -10,7 +10,10 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
 
-Dataset building scripts and utilities for [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie).
+Dataset building scripts and utilities for [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie). We parse all datasets into a common format that can be
+loaded directly from the Huggingface Hub. Taking advantage of
+[Huggingface datasets](https://huggingface.co/docs/datasets), the documents are cached in an arrow table and
+serialized / deserialized on the fly. Any changes or preprocessing applied to the documents will be cached as well.
 
 ## Setup
 
