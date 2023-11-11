@@ -277,6 +277,7 @@ class BratDatasetLoader(GeneratorBasedBuilder):
     ]
 
     BASE_DATASET_PATH = "DFKI-SLT/brat"
+    BASE_DATASET_REVISION = "70446e79e089d5e5cd5f3426061991a2fcfbf529"
 
     def _generate_document(self, example, **kwargs):
         return example_to_document(
