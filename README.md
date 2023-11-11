@@ -99,6 +99,7 @@ from pie_datasets import DatasetDict
 def duplicate_entities(document):
     new_document = document.copy()
     for entity in document.entities:
+        # we need to copy the entity because each annotation can only be part of one document
         new_document.entities.append(entity.copy())
     return new_document
 
