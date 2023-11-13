@@ -166,6 +166,7 @@ class Tacred(GeneratorBasedBuilder):
     }
 
     BASE_DATASET_PATH = "DFKI-SLT/tacred"
+    BASE_DATASET_REVISION = "c801dc186b40a532c5820b4662570390da90431b"
 
     BUILDER_CONFIGS = [
         TacredConfig(
