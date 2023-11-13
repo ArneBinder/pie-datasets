@@ -18,6 +18,7 @@ class Conll2003(GeneratorBasedBuilder):
     DOCUMENT_TYPE = CoNLL2003Document
 
     BASE_DATASET_PATH = "conll2003"
+    BASE_DATASET_REVISION = "01ad4ad271976c5258b9ed9b910469a806ff3288"
 
     BUILDER_CONFIGS = [
         datasets.BuilderConfig(
