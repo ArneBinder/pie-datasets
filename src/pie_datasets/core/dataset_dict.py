@@ -677,14 +677,15 @@ def load_dataset(*args, **kwargs) -> Union[DatasetDict, Dataset, IterableDataset
     if isinstance(dataset_or_dataset_dict, (Dataset, IterableDataset)):
         return dataset_or_dataset_dict
     elif isinstance(dataset_or_dataset_dict, (datasets.DatasetDict, datasets.IterableDatasetDict)):
-        for dataset in dataset_or_dataset_dict.values():
+        for name, dataset in dataset_or_dataset_dict.items():
             if not isinstance(dataset, (Dataset, IterableDataset)):
                 raise TypeError(
-                    f"expected pie_datasets.Dataset or pie_datasets.IterableDataset, but got {type(dataset)}"
+                    f'expected all splits to be {Dataset} or {IterableDataset}, but split "{name}" is of type '
+                    f"{type(dataset)}"
                 )
         return DatasetDict(dataset_or_dataset_dict)
     else:
         raise TypeError(
-            f"expected datasets.DatasetDict, pie_datasets.IterableDatasetDict, pie_datasets.Dataset, "
-            f"or pie_datasets.IterableDataset, but got {type(dataset_or_dataset_dict)}"
+            f"expected datasets.load_dataset to return {datasets.DatasetDict}, {datasets.IterableDatasetDict}, "
+            f"{Dataset}, or {IterableDataset}, but got {type(dataset_or_dataset_dict)}"
         )
