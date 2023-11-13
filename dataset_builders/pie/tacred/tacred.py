@@ -1,9 +1,9 @@
 from dataclasses import dataclass, field
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, Optional
 
 import datasets
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan, _post_init_single_label
-from pytorch_ie.core import Annotation, AnnotationList, Document, annotation_field
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan
+from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TokenBasedDocument,
@@ -18,10 +18,7 @@ class TokenRelation(Annotation):
     head_idx: int
     tail_idx: int
     label: str
-    score: float = 1.0
-
-    def __post_init__(self) -> None:
-        _post_init_single_label(self)
+    score: float = field(default=1.0, compare=False)
 
 
 @dataclass(eq=True, frozen=True)
@@ -31,10 +28,7 @@ class TokenAttribute(Annotation):
 
 
 @dataclass
-class TacredDocument(Document):
-    tokens: Tuple[str, ...]
-    id: Optional[str] = None
-    metadata: Dict[str, Any] = field(default_factory=dict)
+class TacredDocument(TokenBasedDocument):
     stanford_ner: AnnotationList[TokenAttribute] = annotation_field(target="tokens")
     stanford_pos: AnnotationList[TokenAttribute] = annotation_field(target="tokens")
     entities: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
@@ -50,8 +44,8 @@ class SimpleTacredDocument(TokenBasedDocument):
 
 def example_to_document(
     example: Dict[str, Any],
-    relation_int2str: Callable[[int], str],
-    ner_int2str: Callable[[int], str],
+    relation_labels: datasets.ClassLabel,
+    ner_labels: datasets.ClassLabel,
 ) -> TacredDocument:
     document = TacredDocument(
         tokens=tuple(example["token"]), id=example["id"], metadata=dict(doc_id=example["docid"])
@@ -76,17 +70,17 @@ def example_to_document(
     head = LabeledSpan(
         start=example["subj_start"],
         end=example["subj_end"],
-        label=ner_int2str(example["subj_type"]),
+        label=ner_labels.int2str(example["subj_type"]),
     )
     tail = LabeledSpan(
         start=example["obj_start"],
         end=example["obj_end"],
-        label=ner_int2str(example["obj_type"]),
+        label=ner_labels.int2str(example["obj_type"]),
     )
     document.entities.append(head)
     document.entities.append(tail)
 
-    relation_str = relation_int2str(example["relation"])
+    relation_str = relation_labels.int2str(example["relation"])
     relation = BinaryRelation(head=head, tail=tail, label=relation_str)
     document.relations.append(relation)
 
@@ -94,29 +88,20 @@ def example_to_document(
 
 
 def _entity_to_dict(
-    entity: LabeledSpan, key_prefix: str = "", label_mapping: Optional[Dict[str, Any]] = None
+    entity: LabeledSpan, key_prefix: str = "", labels: Optional[datasets.ClassLabel] = None
 ) -> Dict[str, Any]:
     return {
         f"{key_prefix}start": entity.start,
         f"{key_prefix}end": entity.end,
-        f"{key_prefix}type": label_mapping[entity.label]
-        if label_mapping is not None
-        else entity.label,
+        f"{key_prefix}type": labels.str2int(entity.label) if labels is not None else entity.label,
     }
 
 
 def document_to_example(
     document: TacredDocument,
-    ner_names: Optional[List[str]] = None,
-    relation_names: Optional[List[str]] = None,
+    ner_labels: Optional[datasets.ClassLabel] = None,
+    relation_labels: Optional[datasets.ClassLabel] = None,
 ) -> Dict[str, Any]:
-    ner2idx = {name: idx for idx, name in enumerate(ner_names)} if ner_names is not None else None
-    rel2idx = (
-        {name: idx for idx, name in enumerate(relation_names)}
-        if relation_names is not None
-        else None
-    )
-
     token = list(document.tokens)
     stanford_ner_dict = {ner.idx: ner.label for ner in document.stanford_ner}
     stanford_pos_dict = {pos.idx: pos.label for pos in document.stanford_pos}
@@ -135,14 +120,14 @@ def document_to_example(
     return {
         "id": document.id,
         "docid": document.metadata["doc_id"],
-        "relation": rel.label if rel2idx is None else rel2idx[rel.label],
+        "relation": rel.label if relation_labels is None else relation_labels.str2int(rel.label),
         "token": token,
         "stanford_ner": stanford_ner,
         "stanford_pos": stanford_pos,
         "stanford_deprel": stanford_deprel,
         "stanford_head": stanford_head,
-        **_entity_to_dict(obj, key_prefix="obj_", label_mapping=ner2idx),
-        **_entity_to_dict(subj, key_prefix="subj_", label_mapping=ner2idx),
+        **_entity_to_dict(obj, key_prefix="obj_", labels=ner_labels),
+        **_entity_to_dict(subj, key_prefix="subj_", labels=ner_labels),
     }
 
 
@@ -200,8 +185,8 @@ class Tacred(GeneratorBasedBuilder):
 
     def _generate_document_kwargs(self, dataset):
         return {
-            "ner_int2str": dataset.features["subj_type"].int2str,
-            "relation_int2str": dataset.features["relation"].int2str,
+            "ner_labels": dataset.features["subj_type"],
+            "relation_labels": dataset.features["relation"],
         }
 
     def _generate_document(self, example, **kwargs):
