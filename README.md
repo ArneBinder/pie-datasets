@@ -260,6 +260,10 @@ class Conll2003(GeneratorBasedBuilder):
     # The Huggingface identifier that points to the base dataset. This may be any string that works
     # as path with Huggingface `datasets.load_dataset`.
     BASE_DATASET_PATH = "conll2003"
+    # It is strongly recommended to also specify the revision (tag name, or branch name, or commit hash)
+    # of the base dataset. This ensures that the dataset will not change unexpectedly when the base dataset
+    # is updated.
+    BASE_DATASET_REVISION = "01ad4ad271976c5258b9ed9b910469a806ff3288"
 
     # The builder configs, see https://huggingface.co/docs/datasets/dataset_script for further information.
     BUILDER_CONFIGS = [
