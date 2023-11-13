@@ -2,7 +2,7 @@ import logging
 import os
 
 import pytest
-from datasets import load_dataset
+from datasets import ClassLabel, load_dataset
 from pytorch_ie.core import Document
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
@@ -13,6 +13,7 @@ from dataset_builders.pie.tacred.tacred import (
     example_to_document,
 )
 from tests import FIXTURES_ROOT
+from tests.conftest import CREATE_FIXTURE_DATA
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
     _deep_compare,
@@ -27,8 +28,6 @@ HF_DATASET_PATH = Tacred.BASE_DATASET_PATH
 SPLIT_NAMES = {"train", "validation", "test"}
 EXAMPLE_IDX = 0
 NUM_SAMPLES = 3
-
-DUMP_FIXTURE_DATA = False
 
 TACRED_DATA_DIR = os.getenv("TACRED_DATA_DIR", "") or None  # ~/datasets/tacred/data/json
 
@@ -78,7 +77,7 @@ def test_hf_dataset_samples(hf_dataset_samples):
         assert len(ds) == NUM_SAMPLES
 
 
-@pytest.mark.skipif(condition=not DUMP_FIXTURE_DATA, reason="don't dump fixture data")
+@pytest.mark.skipif(condition=not CREATE_FIXTURE_DATA, reason="don't dump fixture data")
 def test_dump_hf(hf_dataset, hf_samples_fn, hf_metadata_fn):
     for split, ds in hf_dataset.items():
         # save the dataset split
@@ -101,21 +100,25 @@ def hf_example(hf_dataset_samples, split_name, request):
 
 
 @pytest.fixture(scope="module")
-def ner_names(hf_metadata_fn, split_name):
-    return _load_json(hf_metadata_fn.format(split=split_name, idx_or_feature="ner_names"))
+def ner_labels(hf_metadata_fn, split_name):
+    return ClassLabel(
+        names=_load_json(hf_metadata_fn.format(split=split_name, idx_or_feature="ner_names"))
+    )
 
 
 @pytest.fixture(scope="module")
-def relation_names(hf_metadata_fn, split_name):
-    return _load_json(hf_metadata_fn.format(split=split_name, idx_or_feature="relation_names"))
+def relation_labels(hf_metadata_fn, split_name):
+    return ClassLabel(
+        names=_load_json(hf_metadata_fn.format(split=split_name, idx_or_feature="relation_names"))
+    )
 
 
 @pytest.fixture(scope="module")
-def document(hf_example, ner_names, relation_names):
+def document(hf_example, ner_labels, relation_labels):
     return example_to_document(
         hf_example,
-        ner_int2str=lambda idx: ner_names[idx],
-        relation_int2str=lambda idx: relation_names[idx],
+        ner_labels=ner_labels,
+        relation_labels=relation_labels,
     )
 
 
@@ -124,13 +127,13 @@ def test_document(document):
     assert isinstance(document, Tacred.DOCUMENT_TYPE)
 
 
-def test_example_to_document_and_back(hf_example, ner_names, relation_names):
+def test_example_to_document_and_back(hf_example, ner_labels, relation_labels):
     doc = example_to_document(
         hf_example,
-        ner_int2str=lambda idx: ner_names[idx],
-        relation_int2str=lambda idx: relation_names[idx],
+        ner_labels=ner_labels,
+        relation_labels=relation_labels,
     )
-    example_back = document_to_example(doc, ner_names=ner_names, relation_names=relation_names)
+    example_back = document_to_example(doc, ner_labels=ner_labels, relation_labels=relation_labels)
 
     _deep_compare(obj=example_back, obj_expected=hf_example)
 
@@ -142,17 +145,17 @@ def test_example_to_document_and_back(hf_example, ner_names, relation_names):
 @pytest.mark.slow
 def test_example_to_document_and_back_all(hf_dataset):
     for hf_ds in hf_dataset.values():
-        ner_names = hf_ds.features["subj_type"].names
-        relation_names = hf_ds.features["relation"].names
+        ner_labels = hf_ds.features["subj_type"]
+        relation_labels = hf_ds.features["relation"]
         for hf_ex in hf_ds:
             doc = example_to_document(
                 hf_ex,
-                ner_int2str=lambda idx: ner_names[idx],
-                relation_int2str=lambda idx: relation_names[idx],
+                ner_labels=ner_labels,
+                relation_labels=relation_labels,
             )
             assert isinstance(doc, Tacred.DOCUMENT_TYPE)
             example_back = document_to_example(
-                doc, ner_names=ner_names, relation_names=relation_names
+                doc, ner_labels=ner_labels, relation_labels=relation_labels
             )
 
             _deep_compare(obj=example_back, obj_expected=hf_ex)
