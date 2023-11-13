@@ -37,10 +37,10 @@ datasets by following the [instructions below](#how-to-create-your-own-pie-datas
 ### General
 
 ```python
-from pie_datasets import DatasetDict
+from pie_datasets import load_dataset
 
 # load the dataset from https://huggingface.co/datasets/pie/conll2003
-dataset = DatasetDict.load_dataset("pie/conll2003")
+dataset = load_dataset("pie/conll2003")
 
 print(dataset["train"][0])
 # >>> CoNLL2003Document(text='EU rejects German call to boycott British lamb .', id='0', metadata={})
@@ -63,9 +63,9 @@ Similar to [Huggingface datasets](https://huggingface.co/docs/datasets), you can
 various ways. Here are some examples:
 
 ```python
-from pie_datasets import DatasetDict
+from pie_datasets import load_dataset
 
-dataset = DatasetDict.load_dataset("pie/conll2003")
+dataset = load_dataset("pie/conll2003")
 
 # re-create a validation split from train split concatenated with the original validation split
 dataset_with_new_val = dataset.concat_splits(
@@ -84,17 +84,17 @@ dataset_without_test = dataset_with_new_val.drop_splits(["test"])
 
 ### Adjusting dataset entries
 
-Calling `DatasetDict.map` will apply the given function to all documents in the dataset. Internally, that relies
+Calling `map` on the dataset will apply the given function to all its documents. Internally, that relies
 on [datasets.Dataset.map](https://huggingface.co/docs/datasets/v2.4.0/package_reference/main_classes.html#datasets.Dataset.map).
 Thus, the function can be any function that takes a document as input and returns a document as output. If the
 function returns a different document type, you need to provide it as `result_document_type` argument to
-`DatasetDict.map`. Note, that **the result is cached for each split, so that re-running the same function on the
+`map`. Note, that **the result is cached for each split, so that re-running the same function on the
 same dataset will be a no-op**.
 
 Example where the function returns the same document type:
 
 ```python
-from pie_datasets import DatasetDict
+from pie_datasets import load_dataset
 
 def duplicate_entities(document):
     new_document = document.copy()
@@ -103,7 +103,7 @@ def duplicate_entities(document):
         new_document.entities.append(entity.copy())
     return new_document
 
-dataset = DatasetDict.load_dataset("pie/conll2003")
+dataset = load_dataset("pie/conll2003")
 len(dataset["train"][0].entities)
 # >>> 3
 
@@ -123,7 +123,7 @@ from dataclasses import dataclass
 from pytorch_ie.core import AnnotationLayer, annotation_field
 from pytorch_ie.documents import TextBasedDocument
 from pytorch_ie.annotations import LabeledSpan, Span
-from pie_datasets import DatasetDict
+from pie_datasets import load_dataset
 
 @dataclass
 class CoNLL2003DocumentWithWords(TextBasedDocument):
@@ -141,7 +141,7 @@ def add_words(document) -> CoNLL2003DocumentWithWords:
         new_document.words.append(word_annotation)
     return new_document
 
-dataset = DatasetDict.load_dataset("pie/conll2003")
+dataset = load_dataset("pie/conll2003")
 dataset.document_type
 # >>> <class 'datasets_modules.datasets.pie--conll2003.821bfce48d2ebc3533db067c4d8e89396155c65cd311d2341a82acf81f561885.conll2003.CoNLL2003Document'>
 
@@ -161,17 +161,17 @@ converted_dataset["train"][0].words
 ```
 
 We can also **register a document converter** for a specific document type. This will be used when calling
-`DatasetDict.to_document_type` with the respective document type. The following code will produce the same result
+`to_document_type` with the respective document type. The following code will produce the same result
 as the previous one:
 
 ```python
-dataset = DatasetDict.load_dataset("pie/conll2003")
+dataset = load_dataset("pie/conll2003")
 
 # Register add_words as a converter function for the target document type CoNLL2003DocumentWithWords.
 # Since add_words specifies the return type, we can omit the document type here.
 dataset.register_document_converter(add_words)
 
-# Determine the matching converter entry for the target document type and apply it with DatasetDict.map.
+# Determine the matching converter entry for the target document type and apply it with dataset.map.
 converted_dataset = dataset.to_document_type(CoNLL2003DocumentWithWords)
 ```
 
@@ -184,13 +184,13 @@ and [span classification](https://github.com/ChristophAlt/pytorch-ie/blob/main/s
 out-of-the-box. The following code will load the dataset and convert it to the required document type:
 
 ```python
-from pie_datasets import DatasetDict
+from pie_datasets import load_dataset
 from pytorch_ie.taskmodules import TransformerTokenClassificationTaskModule
 
 taskmodule = TransformerTokenClassificationTaskModule(tokenizer_name_or_path="bert-base-cased")
 # the taskmodule expects TextDocumentWithLabeledSpans as input and the conll2003 dataset comes with a
 # default converter for that document type. Thus, we can directly load the dataset and convert it.
-dataset = DatasetDict.load_dataset("pie/conll2003").to_document_type(taskmodule.document_type)
+dataset = load_dataset("pie/conll2003").to_document_type(taskmodule.document_type)
 ...
 ```
 
@@ -290,7 +290,7 @@ class Conll2003(GeneratorBasedBuilder):
     # [OPTIONAL] Define how the dataset will be converted to a different document type. Here, we add a
     # converter for the generic document type `TextDocumentWithLabeledSpans` that is used by the PIE
     # taskmodules for token and span classification. This allows to directly call
-    # `DatasetDict.load_dataset("pie/conll2003").to_document_type(TextDocumentWithLabeledSpans)`.
+    # `pie_datasets.load_dataset("pie/conll2003").to_document_type(TextDocumentWithLabeledSpans)`.
     DOCUMENT_CONVERTERS = {
         TextDocumentWithLabeledSpans: {
             # if the converter is a simple dictionary, just rename the layer according that
@@ -300,7 +300,7 @@ class Conll2003(GeneratorBasedBuilder):
 ```
 
 The full script can be found here: [dataset_builders/pie/conll2003/conll2003.py](dataset_builders/pie/conll2003/conll2003.py). Note, that to
-load the dataset with `DatasetDict.load_dataset`, the script has to be located in a directory with the same name
+load the dataset with `pie_datasets.load_dataset`, the script has to be located in a directory with the same name
 (as it is the case for standard Huggingface dataset loading scripts).
 
 ## Development
