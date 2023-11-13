@@ -565,3 +565,25 @@ def test_load_dataset_conll2003_single_split():
     assert doc.text == "EU rejects German call to boycott British lamb ."
     resolved_entities = [(str(ent), ent.label) for ent in doc.entities]
     assert resolved_entities == [("EU", "ORG"), ("German", "MISC"), ("British", "MISC")]
+
+
+def test_load_dataset_conll2003_wrong_type():
+    with pytest.raises(TypeError) as excinfo:
+        load_dataset("conll2003")
+    assert (
+        str(excinfo.value)
+        == "expected all splits to be <class 'pie_datasets.core.dataset.Dataset'> or "
+        "<class 'pie_datasets.core.dataset.IterableDataset'>, but split \"train\" is of type "
+        "<class 'datasets.arrow_dataset.Dataset'>"
+    )
+
+
+def test_load_dataset_conll2003_wrong_type_single_split():
+    with pytest.raises(TypeError) as excinfo:
+        load_dataset("conll2003", split="train")
+    assert (
+        str(excinfo.value)
+        == "expected datasets.load_dataset to return <class 'datasets.dataset_dict.DatasetDict'>, "
+        "<class 'datasets.dataset_dict.IterableDatasetDict'>, <class 'pie_datasets.core.dataset.Dataset'>, "
+        "or <class 'pie_datasets.core.dataset.IterableDataset'>, but got <class 'datasets.arrow_dataset.Dataset'>"
+    )
