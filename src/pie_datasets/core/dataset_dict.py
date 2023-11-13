@@ -670,3 +670,21 @@ class DatasetDict(datasets.DatasetDict):
             }
         )
         return result
+
+
+def load_dataset(*args, **kwargs) -> Union[DatasetDict, Dataset, IterableDataset]:
+    dataset_or_dataset_dict = datasets.load_dataset(*args, **kwargs)
+    if isinstance(dataset_or_dataset_dict, (Dataset, IterableDataset)):
+        return dataset_or_dataset_dict
+    elif isinstance(dataset_or_dataset_dict, (datasets.DatasetDict, datasets.IterableDatasetDict)):
+        for dataset in dataset_or_dataset_dict.values():
+            if not isinstance(dataset, (Dataset, IterableDataset)):
+                raise TypeError(
+                    f"expected pie_datasets.Dataset or pie_datasets.IterableDataset, but got {type(dataset)}"
+                )
+        return DatasetDict(dataset_or_dataset_dict)
+    else:
+        raise TypeError(
+            f"expected datasets.DatasetDict, pie_datasets.IterableDatasetDict, pie_datasets.Dataset, "
+            f"or pie_datasets.IterableDataset, but got {type(dataset_or_dataset_dict)}"
+        )
