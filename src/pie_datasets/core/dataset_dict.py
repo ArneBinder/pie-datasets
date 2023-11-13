@@ -670,3 +670,22 @@ class DatasetDict(datasets.DatasetDict):
             }
         )
         return result
+
+
+def load_dataset(*args, **kwargs) -> Union[DatasetDict, Dataset, IterableDataset]:
+    dataset_or_dataset_dict = datasets.load_dataset(*args, **kwargs)
+    if isinstance(dataset_or_dataset_dict, (Dataset, IterableDataset)):
+        return dataset_or_dataset_dict
+    elif isinstance(dataset_or_dataset_dict, (datasets.DatasetDict, datasets.IterableDatasetDict)):
+        for name, dataset in dataset_or_dataset_dict.items():
+            if not isinstance(dataset, (Dataset, IterableDataset)):
+                raise TypeError(
+                    f'expected all splits to be {Dataset} or {IterableDataset}, but split "{name}" is of type '
+                    f"{type(dataset)}"
+                )
+        return DatasetDict(dataset_or_dataset_dict)
+    else:
+        raise TypeError(
+            f"expected datasets.load_dataset to return {datasets.DatasetDict}, {datasets.IterableDatasetDict}, "
+            f"{Dataset}, or {IterableDataset}, but got {type(dataset_or_dataset_dict)}"
+        )

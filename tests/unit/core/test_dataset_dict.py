@@ -9,7 +9,7 @@ from pytorch_ie.annotations import Label, LabeledSpan
 from pytorch_ie.core import AnnotationList, Document, annotation_field
 from pytorch_ie.documents import TextBasedDocument, TextDocument
 
-from pie_datasets import Dataset, DatasetDict, IterableDataset
+from pie_datasets import Dataset, DatasetDict, IterableDataset, load_dataset
 from pie_datasets.core.dataset_dict import (
     EnterDatasetDictMixin,
     EnterDatasetMixin,
@@ -541,3 +541,49 @@ def test_to_document_type_noop(dataset_dict):
     dataset_dict_converted = dataset_dict.to_document_type(DocumentWithEntitiesAndRelations)
     assert dataset_dict_converted.document_type == DocumentWithEntitiesAndRelations
     assert dataset_dict_converted == dataset_dict
+
+
+def test_load_dataset_conll2003():
+    dataset_dict = load_dataset("pie/conll2003")
+    assert isinstance(dataset_dict, DatasetDict)
+    assert set(dataset_dict) == {"train", "test", "validation"}
+    split_sizes = {split: len(dataset_dict[split]) for split in dataset_dict}
+    assert split_sizes == {"train": 14041, "test": 3453, "validation": 3250}
+    doc = dataset_dict["train"][0]
+    assert isinstance(doc, TextBasedDocument)
+    assert doc.text == "EU rejects German call to boycott British lamb ."
+    resolved_entities = [(str(ent), ent.label) for ent in doc.entities]
+    assert resolved_entities == [("EU", "ORG"), ("German", "MISC"), ("British", "MISC")]
+
+
+def test_load_dataset_conll2003_single_split():
+    dataset = load_dataset("pie/conll2003", split="train")
+    assert isinstance(dataset, Dataset)
+    assert len(dataset) == 14041
+    doc = dataset[0]
+    assert isinstance(doc, TextBasedDocument)
+    assert doc.text == "EU rejects German call to boycott British lamb ."
+    resolved_entities = [(str(ent), ent.label) for ent in doc.entities]
+    assert resolved_entities == [("EU", "ORG"), ("German", "MISC"), ("British", "MISC")]
+
+
+def test_load_dataset_conll2003_wrong_type():
+    with pytest.raises(TypeError) as excinfo:
+        load_dataset("conll2003")
+    assert (
+        str(excinfo.value)
+        == "expected all splits to be <class 'pie_datasets.core.dataset.Dataset'> or "
+        "<class 'pie_datasets.core.dataset.IterableDataset'>, but split \"train\" is of type "
+        "<class 'datasets.arrow_dataset.Dataset'>"
+    )
+
+
+def test_load_dataset_conll2003_wrong_type_single_split():
+    with pytest.raises(TypeError) as excinfo:
+        load_dataset("conll2003", split="train")
+    assert (
+        str(excinfo.value)
+        == "expected datasets.load_dataset to return <class 'datasets.dataset_dict.DatasetDict'>, "
+        "<class 'datasets.dataset_dict.IterableDatasetDict'>, <class 'pie_datasets.core.dataset.Dataset'>, "
+        "or <class 'pie_datasets.core.dataset.IterableDataset'>, but got <class 'datasets.arrow_dataset.Dataset'>"
+    )
