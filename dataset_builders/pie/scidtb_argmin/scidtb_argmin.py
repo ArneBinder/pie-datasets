@@ -3,7 +3,6 @@ import logging
 from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import datasets
-from pytorch_ie import token_based_document_to_text_based
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import AnnotationList, Document, annotation_field
 from pytorch_ie.documents import (
@@ -13,6 +12,7 @@ from pytorch_ie.documents import (
 from pytorch_ie.utils.span import bio_tags_to_spans
 
 from pie_datasets import GeneratorBasedBuilder
+from pie_datasets.document.conversion import token_based_document_to_text_based
 
 log = logging.getLogger(__name__)
 
@@ -45,14 +45,14 @@ class SimplifiedSciDTBArgminDocument(TokenBasedDocument):
 
 def example_to_document(
     example: Dict[str, Any],
-    unit_bio_int2str: Callable[[int], str],
-    unit_label_int2str: Callable[[int], str],
-    relation_int2str: Callable[[int], str],
+    unit_bio: datasets.ClassLabel,
+    unit_label: datasets.ClassLabel,
+    relation: datasets.ClassLabel,
 ):
     document = SciDTBArgminDocument(id=example["id"], tokens=tuple(example["data"]["token"]))
-    bio_tags = unit_bio_int2str(example["data"]["unit-bio"])
-    unit_labels = unit_label_int2str(example["data"]["unit-label"])
-    roles = relation_int2str(example["data"]["role"])
+    bio_tags = unit_bio.int2str(example["data"]["unit-bio"])
+    unit_labels = unit_label.int2str(example["data"]["unit-label"])
+    roles = relation.int2str(example["data"]["role"])
     tag_sequence = [
         f"{bio}-{label}|{role}|{parent_offset}"
         for bio, label, role, parent_offset in zip(
@@ -73,7 +73,7 @@ def example_to_document(
     ]
     document.units.extend(units)
 
-    # TODO: check if direction of the relation is correct (what is the head / tail of the relation?)
+    # The relation direction is as in "f{head} {relation_label} {tail}"
     relations = []
     for idx, parent_offset in enumerate(span_parent_offsets):
         if span_roles[idx] != "none":
@@ -90,9 +90,9 @@ def example_to_document(
 
 def document_to_example(
     document: SciDTBArgminDocument,
-    unit_bio_str2int: Callable[[str], int],
-    unit_label_str2int: Callable[[str], int],
-    relation_str2int: Callable[[str], int],
+    unit_bio: datasets.ClassLabel,
+    unit_label: datasets.ClassLabel,
+    relation: datasets.ClassLabel,
 ) -> Dict[str, Any]:
     unit2idx = {unit: idx for idx, unit in enumerate(document.units)}
     unit2parent_relation = {relation.head: relation for relation in document.relations}
@@ -122,9 +122,9 @@ def document_to_example(
 
     data = {
         "token": list(document.tokens),
-        "unit-bio": unit_bio_str2int(bio_tags),
-        "unit-label": unit_label_str2int(unit_labels),
-        "role": relation_str2int(roles),
+        "unit-bio": unit_bio.str2int(bio_tags),
+        "unit-label": unit_label.str2int(unit_labels),
+        "role": relation.str2int(roles),
         "parent-offset": [int(idx_str) for idx_str in parent_offsets],
     }
     result = {"id": document.id, "data": data}
@@ -154,6 +154,7 @@ class SciDTBArgmin(GeneratorBasedBuilder):
     }
 
     BASE_DATASET_PATH = "DFKI-SLT/scidtb_argmin"
+    BASE_DATASET_REVISION = "8c02587edcb47ab5b102692bd10bfffd1844a09b"
 
     BUILDER_CONFIGS = [datasets.BuilderConfig(name="default")]
 
@@ -161,15 +162,15 @@ class SciDTBArgmin(GeneratorBasedBuilder):
 
     def _generate_document_kwargs(self, dataset):
         return {
-            "unit_bio_int2str": dataset.features["data"].feature["unit-bio"].int2str,
-            "unit_label_int2str": dataset.features["data"].feature["unit-label"].int2str,
-            "relation_int2str": dataset.features["data"].feature["role"].int2str,
+            "unit_bio": dataset.features["data"].feature["unit-bio"],
+            "unit_label": dataset.features["data"].feature["unit-label"],
+            "relation": dataset.features["data"].feature["role"],
         }
 
-    def _generate_document(self, example, unit_bio_int2str, unit_label_int2str, relation_int2str):
+    def _generate_document(self, example, unit_bio, unit_label, relation):
         return example_to_document(
             example,
-            unit_bio_int2str=unit_bio_int2str,
-            unit_label_int2str=unit_label_int2str,
-            relation_int2str=relation_int2str,
+            unit_bio=unit_bio,
+            unit_label=unit_label,
+            relation=relation,
         )

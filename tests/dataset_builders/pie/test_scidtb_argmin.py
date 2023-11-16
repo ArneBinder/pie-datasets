@@ -60,42 +60,38 @@ def test_hf_example(hf_example, hf_example_expected):
 
 @pytest.fixture(scope="module")
 def generate_document_kwargs(hf_dataset):
-    return {
-        "unit_bio_int2str": hf_dataset["train"].features["data"].feature["unit-bio"].int2str,
-        "unit_label_int2str": hf_dataset["train"].features["data"].feature["unit-label"].int2str,
-        "relation_int2str": hf_dataset["train"].features["data"].feature["role"].int2str,
-    }
+    return SciDTBArgmin()._generate_document_kwargs(hf_dataset["train"])
 
 
 @pytest.fixture(scope="module")
-def convert_back_kwargs(hf_dataset):
-    return {
-        "unit_bio_str2int": hf_dataset["train"].features["data"].feature["unit-bio"].str2int,
-        "unit_label_str2int": hf_dataset["train"].features["data"].feature["unit-label"].str2int,
-        "relation_str2int": hf_dataset["train"].features["data"].feature["role"].str2int,
-    }
+def generated_document(hf_example, generate_document_kwargs):
+    return SciDTBArgmin()._generate_document(hf_example, **generate_document_kwargs)
 
 
-def test_example_to_document(hf_example, generate_document_kwargs):
-    doc = example_to_document(hf_example, **generate_document_kwargs)
-    assert doc is not None
+def test_generated_document(generated_document):
+    assert isinstance(generated_document, SciDTBArgminDocument)
+    assert len(generated_document.tokens) == 189
+    assert str(generated_document.tokens[:5]) == "('This', 'paper', 'presents', 'a', 'deep')"
+    assert len(generated_document.units) == 6
+    assert len(generated_document.relations) == 5
 
 
-def test_example_to_document_and_back(hf_example, generate_document_kwargs, convert_back_kwargs):
-    doc = example_to_document(hf_example, **generate_document_kwargs)
-    hf_example_back = document_to_example(doc, **convert_back_kwargs)
+@pytest.fixture(scope="module")
+def hf_example_back(generated_document, generate_document_kwargs):
+    return document_to_example(generated_document, **generate_document_kwargs)
+
+
+def test_example_to_document_and_back(hf_example, hf_example_back):
     _deep_compare(
         obj=hf_example_back,
         obj_expected=hf_example,
     )
 
 
-def test_example_to_document_and_back_all(
-    hf_dataset, generate_document_kwargs, convert_back_kwargs
-):
+def test_example_to_document_and_back_all(hf_dataset, generate_document_kwargs):
     for hf_ex in hf_dataset["train"]:
         doc = example_to_document(hf_ex, **generate_document_kwargs)
-        hf_example_back = document_to_example(doc, **convert_back_kwargs)
+        hf_example_back = document_to_example(doc, **generate_document_kwargs)
         _deep_compare(
             obj=hf_example_back,
             obj_expected=hf_ex,
@@ -120,6 +116,12 @@ def document(dataset) -> SciDTBArgminDocument:
     # semantically the same
     assert isinstance(result, Document)
     return result
+
+
+def test_compare_document_and_generated_document(document, generated_document):
+    # cannot compare document.tokens == generated_document.tokens because type list != type tuple
+    # cannot compare document.relations == generated_document.relations because type list != type tuple
+    assert document.metadata == generated_document.metadata
 
 
 def test_pie_dataset(document):
