@@ -257,6 +257,7 @@ class Docred(ArrowBasedBuilder):
     }
 
     BASE_DATASET_PATH = "tonytan48/Re-DocRED"
+    BASE_DATASET_REVISION = "e0ab3489edfe72c968261bffed5243b6fefddd22"
 
     BUILDER_CONFIGS = [
         DocredConfig(

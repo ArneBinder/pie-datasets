@@ -257,6 +257,7 @@ class Docred(GeneratorBasedBuilder):
     }
 
     BASE_DATASET_PATH = "docred"
+    BASE_DATASET_REVISION = "7985b4e0371e6c61a756feb41b7b27becf71c666"
 
     BUILDER_CONFIGS = [
         DocredConfig(
