@@ -1,8 +1,10 @@
 # Dataset Card for "SciDTB Argmin"
 
-### \[Dataset Summary\]
+### Dataset Summary
 
-Briefly summarize the dataset, its intended use and the supported tasks. Give an overview of how and why the dataset was created. The summary should explicitly mention the languages present in the dataset (possibly in broad terms, e.g. *translations between several pairs of European languages*), and describe the domain, topic, or genre covered.
+Built from 60 English scientific abstracts in the larger annotated dataset, *Discourse Dependency TreeBank for Scientific Abstracts* ([Yang & Li, 2018](https://aclanthology.org/P18-2071)), [Accuosto and Saggion (2020)](https://aclanthology.org/W19-4505.pdf) offered a fine-grained annotated dataset for the argumentative component classification and relation classification tasks.
+
+The dataset contains 327 sentences, 8012 tokens, 862 discourse units and 352 argumentative units (of 6 labels) linked by 292 argumentative relations (of 5 labels).
 
 ### Supported Tasks and Leaderboards
 
@@ -15,40 +17,40 @@ The language in the dataset is English (academic).
 
 ## Dataset Structure
 
-### \[Data Instances\]
+### Data Instances
 
 - **Size of downloaded dataset files:** 32.4 KB
 
 ```
 {
-  'example_field': ...,
-  ...
+  'id': 'D14-1002-fexp-corpus',
+  'data': {
+    'token': [ "This", "paper", "presents", "a", "deep", "semantic",...]
+    'unit-bio': [ 0, 1, 1, 1, 1,...]
+    'unit-label': [ 0, 0, 0, 0, 0,...]
+    "role": [ 4, 4, 4, 4, 4,...]
+    'parent-offset': [ 0, 0, 0, 0, 0,...]
+    }
 }
 ```
 
-Provide any additional information that is not covered in the other sections about the data here. In particular describe any relationships between data points and if these relationships are made explicit.
+### Data Fields
 
-### \[Data Fields\]
+- `id`: the instance `id` of the document, a `string` feature
+- `data`: a `dictionary` feature, contains:
+  - `token`: word tokens of the whole document, a `list` of `string` feature
+  - `unit-bio`: the binary label indicating whether the token at a particular index is the beginning of a unit (labeled as 0) or not (labeled as 1), a `list` of `int` feature
+  - `unit-label`: the span label (which the token belongs to) indicating the argumentation type, a `list` of `int` feature (see [label list](https://huggingface.co/datasets/DFKI-SLT/scidtb_argmin/blob/main/scidtb_argmin.py#L42-50))
+  - `role`: the span label (which the token belongs to) indicating the argumentation relation to another span, a `list` of `int` feature (see [label list](https://huggingface.co/datasets/DFKI-SLT/scidtb_argmin/blob/main/scidtb_argmin.py#L51))
+  - `parent-offset`:
 
-List and describe the fields present in the dataset. Mention their data type, and whether they are used as input or output in any of the tasks the dataset currently supports. If the data has span indices, describe their attributes, such as whether they are at the character level or word level, whether they are contiguous or not, etc. If the datasets contains example IDs, state whether they have an inherent meaning, such as a mapping to other datasets or pointing to relationships between data points.
+### Data Splits
 
-- `example_field`: description of `example_field`
-
-Note that the descriptions can be initialized with the **Show Markdown Data Fields** output of the [Datasets Tagging app](https://huggingface.co/spaces/huggingface/datasets-tagging), you will then only need to refine the generated descriptions.
-
-### \[Data Splits\]
-
-Describe and name the splits in the dataset if there are more than one.
-
-Describe any criteria for splitting the data, if used. If there are differences between the splits (e.g. if the training annotations are machine-generated and the dev and test ones are created by humans, or if different numbers of annotators contributed to each example), describe them here.
-
-Provide the sizes of each split. As appropriate, provide any descriptive statistics for the features, such as average length.  For example:
-
-|                                 | train | validation | test |
-| ------------------------------- | ----: | ---------: | ---: |
-| Input Sentences                 |       |            |      |
-| Span Labels<br/>- A<br/>- B     |       |            |      |
-| Relation Labels<br/>- A<br/>- B |       |            |      |
+|                                                                                                                     |                                      train |
+| ------------------------------------------------------------------------------------------------------------------- | -----------------------------------------: |
+| Size                                                                                                                |                                         60 |
+| Span Labels<br/>- `Proposal`<br/>- `Mean`<br/>- `Result`<br/>- `Observation`<br/> - `Assertion`<br/>- `Description` | <br/>110<br/>63<br/>74<br/>11<br/>88<br/>7 |
+| Relation Labels<br/>- `Support`<br/>- `Attack`<br/>- `Detail`<br/>- `Sequence`<br/>- `Additional`                   |       <br/>126<br/>0<br/>129<br/>11<br/>27 |
 
 ## Dataset Creation
 
@@ -56,11 +58,7 @@ Provide the sizes of each split. As appropriate, provide any descriptive statist
 
 "We propose to tackle the limitations posed by the lack of annotated data for argument mining in the scientific domain by leveraging existing Rhetorical Structure Theory (RST) (Mann et al., 1992) annotations in a corpus of computational linguistics abstracts (SciDTB) (Yang and Li, 2018)." (p. 42)
 
-We introduce a fine-grained annotation
-scheme aimed at capturing information that accounts for the specificities of the scientific discourse, including the type of evidence that is offered to support a statement (e.g., background information, experimental data or interpretation of
-results). This can provide relevant information, for
-instance, to assess the argumentative strength of a
-text. (p. 44)
+"We introduce a fine-grained annotation scheme aimed at capturing information that accounts for the specificities of the scientific discourse, including the type of evidence that is offered to support a statement (e.g., background information, experimental data or interpretation of results). This can provide relevant information, for instance, to assess the argumentative strength of a text." (p. 44)
 
 ### Source Data
 
@@ -68,12 +66,10 @@ The source data is available online at https://emnlp2014.org/.
 
 #### Initial Data Collection and Normalization
 
-This work is informed by previous research in the areas of argument mining, argumentation quality assessment and the relationship between discourse and argumentative structures and, from the methodological perspective, to transfer learning approaches.
+"This work is informed by previous research in the areas of argument mining, argumentation quality assessment and the relationship between discourse and argumentative structures and, from the methodological perspective, to transfer learning approaches." Previously, Yang and Li (2018) divided a passage into non-overlapping text spans, which are named elementary discourse units (EDUs). They followed the criterion of Polanyi (1988) and Irmer (2011) and the guidelines defined by (Carlson and Marcu, 2001).
 
-We add a new annotation layer to the Discourse Dependency TreeBank for Scientific Abstracts (SciDTB) (Yang and Li, 2018). SciDTB contains 798 abstracts from the ACL Anthology (Radev et al., 2013) annotated with elementary discourse units (EDUs)
-and relations from the RST Framework. (p. 43)
-
-Previously, Yang and Li (2018) divided a passage into non-overlapping text spans, which are named elementary discourse units (EDUs). They followed the criterion of Polanyi (1988) and Irmer (2011) and the guidelines defined by (Carlson and Marcu, 2001).
+"We add a new annotation layer to the Discourse Dependency TreeBank for Scientific Abstracts (SciDTB) (Yang and Li, 2018). SciDTB contains 798 abstracts from the ACL Anthology (Radev et al., 2013) annotated with elementary discourse units (EDUs)
+and relations from the RST Framework." (p. 43)
 
 #### Who are the source language producers?
 
@@ -105,21 +101,9 @@ The corpus enriched with the argumentation level contains a total of 327 sentenc
 
 ### Discussion of Biases
 
-the types of argumentative units are
-distributed as follows: 31% of the units are of type
-proposal, 25% assertion, 21% result, 18% means,
-3% observation, and 2% description. In turn, the
-relations are distributed: 45% of type detail, 42%
-support, 9% additional, and 4% sequence. No attack relations were identified in the set of currently
-annotated texts.
+"The types of argumentative units are distributed as follows: 31% of the units are of type proposal, 25% assertion, 21% result, 18% means, 3% observation, and 2% description. In turn, the relations are distributed: 45% of type detail, 42% support, 9% additional, and 4% sequence. No attack relations were identified in the set of currently annotated texts."
 
-When considering the distance6
-of the units to their parent unit in the argumentation tree, we observe that the majority (57%) are
-linked to a unit that occurs right before or after it
-in the text, while 19% are linked to a unit with a
-distance of 1 unit in-between, 12% to a unit with a
-distance of 2 units, 6% to a unit with a distance of
-3, and 6% to a unit with a distance of 4 or more.
+"When considering the distance of the units to their parent unit in the argumentation tree, we observe that the majority (57%) are linked to a unit that occurs right before or after it in the text, while 19% are linked to a unit with a distance of 1 unit in-between, 12% to a unit with a distance of 2 units, 6% to a unit with a distance of 3, and 6% to a unit with a distance of 4 or more."
 
 (p. 44)
 
@@ -131,33 +115,13 @@ distance of 2 units, 6% to a unit with a distance of
 
 ### Dataset Curators
 
-This work is (partly) supported by the Spanish
-Government under the Marı´a de Maeztu Units of
-Excellence Programme (MDM-2015-0502). (p. 49)
+This work is (partly) supported by the Spanish Government under the Marı´a de Maeztu Units of Excellence Programme (MDM-2015-0502). (p. 49)
 
 ### Licensing Information
 
 \[More Information Needed\]
 
 ### Citation Information
-
-```
-@inproceedings{yang-li-2018-scidtb,
-    title = "{S}ci{DTB}: Discourse Dependency {T}ree{B}ank for Scientific Abstracts",
-    author = "Yang, An  and
-      Li, Sujian",
-    editor = "Gurevych, Iryna  and
-      Miyao, Yusuke",
-    booktitle = "Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers)",
-    month = jul,
-    year = "2018",
-    address = "Melbourne, Australia",
-    publisher = "Association for Computational Linguistics",
-    url = "https://aclanthology.org/P18-2071",
-    doi = "10.18653/v1/P18-2071",
-    pages = "444--449",
-    }
-```
 
 ```
 @inproceedings{accuosto-saggion-2019-transferring,
@@ -177,6 +141,24 @@ Excellence Programme (MDM-2015-0502). (p. 49)
 }
 ```
 
+```
+@inproceedings{yang-li-2018-scidtb,
+    title = "{S}ci{DTB}: Discourse Dependency {T}ree{B}ank for Scientific Abstracts",
+    author = "Yang, An  and
+      Li, Sujian",
+    editor = "Gurevych, Iryna  and
+      Miyao, Yusuke",
+    booktitle = "Proceedings of the 56th Annual Meeting of the Association for Computational Linguistics (Volume 2: Short Papers)",
+    month = jul,
+    year = "2018",
+    address = "Melbourne, Australia",
+    publisher = "Association for Computational Linguistics",
+    url = "https://aclanthology.org/P18-2071",
+    doi = "10.18653/v1/P18-2071",
+    pages = "444--449",
+    }
+```
+
 ### Contributions
 
-Thanks to [@github-username](https://github.com/%3Cgithub-username%3E) for adding this dataset.
+Thanks to [@idalr](https://github.com/idalr) for adding this dataset.
