@@ -167,6 +167,7 @@ class MultiTacred(GeneratorBasedBuilder):
     }
 
     BASE_DATASET_PATH = "DFKI-SLT/multitacred"
+    BASE_DATASET_REVISION = "a53e7be7c5dcc3b5e9880f8d037cd1450f3325e9"
 
     BUILDER_CONFIGS = [
         MultiTacredConfig(
