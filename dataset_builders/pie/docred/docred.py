@@ -6,7 +6,7 @@ from typing import Any, Dict, List, Optional, Tuple
 import datasets
 from pytorch_ie.annotations import LabeledSpan, Span
 from pytorch_ie.core import Annotation, AnnotationList, Document, annotation_field
-from pytorch_ie.documents import TextDocumentWithLabeledSpans
+from pytorch_ie.documents import TextDocumentWithLabeledSpans, TokenBasedDocument
 
 from pie_datasets import GeneratorBasedBuilder
 
@@ -32,16 +32,14 @@ class BinaryRelationWithEvidence(Annotation):
 
 
 @dataclasses.dataclass
-class DocredDocument(Document):
-    title: str
-    tokens: List[str] = dataclasses.field(default_factory=list)
+class DocredDocument(TokenBasedDocument):
+    title: Optional[str] = None
     sentences: AnnotationList[Span] = annotation_field(target="tokens")
     entity_mentions: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
     entities: AnnotationList[AnnotationCollection] = annotation_field(target="entity_mentions")
     relations: AnnotationList[BinaryRelationWithEvidence] = annotation_field(
         targets=["entities", "sentences"]
     )
-    metadata: Dict[str, Any] = dataclasses.field(default_factory=dict)
 
 
 def dict_list2list_dict(dict_of_lists: Dict[str, List[Any]]) -> List[Dict[str, Any]]:
@@ -61,13 +59,17 @@ def list_dict2dict_list(
 def example2document(
     example: Dict[str, Any], variant: str, verbose: bool = False
 ) -> DocredDocument:
-    document = DocredDocument(title=example["title"])
+    tokens = []
+    sentences = []
     start = 0
     for idx, sent in enumerate(example["sents"]):
-        document.tokens.extend(sent)
-        end = len(document.tokens)
-        document.sentences.append(Span(start=start, end=end))
+        tokens.extend(sent)
+        end = len(tokens)
+        sentences.append(Span(start=start, end=end))
         start = end
+
+    document = DocredDocument(title=example["title"], tokens=tuple(tokens))
+    document.sentences.extend(sentences)
 
     for idx, vertex in enumerate(example["vertexSet"]):
         current_entity_mentions: List[LabeledSpan] = []
@@ -270,5 +272,5 @@ class Docred(GeneratorBasedBuilder):
     def _generate_document_kwargs(self, dataset):
         return {"variant": self.config.name}
 
-    def _generate_document(self, example, variant, **kwargs):
-        return example2document(example, variant)
+    def _generate_document(self, example, **kwargs):
+        return example2document(example, **kwargs)
