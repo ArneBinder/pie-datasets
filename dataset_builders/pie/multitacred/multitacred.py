@@ -3,7 +3,6 @@ from dataclasses import dataclass
 from typing import Any, Callable, Dict, List, Optional
 
 import datasets
-from pytorch_ie import token_based_document_to_text_based
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import (
@@ -12,6 +11,7 @@ from pytorch_ie.documents import (
 )
 
 from pie_datasets import GeneratorBasedBuilder
+from pie_datasets.document.conversion import token_based_document_to_text_based
 
 _BACKTRANSLATION_TEST_SPLIT = "backtranslated_test"
 
