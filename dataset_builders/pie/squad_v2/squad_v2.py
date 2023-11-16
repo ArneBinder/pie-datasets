@@ -112,7 +112,7 @@ class SquadV2(GeneratorBasedBuilder):
         ),
     ]
 
-    DEFAULT_CONFIG_NAME = "squad_v2"  # type: ignore
+    DEFAULT_CONFIG_NAME = "squad_v2"
 
     def _generate_document(self, example):
         return example_to_document(example)
