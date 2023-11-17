@@ -1,0 +1,21 @@
+{
+  "id": "micro_b001",
+  "topic_id": "waste_separation",
+  "stance": 1,
+  "text": "Yes, it's annoying and cumbersome to separate your rubbish properly all the time. Three different bin bags stink away in the kitchen and have to be sorted into different wheelie bins. But still Germany produces way too much rubbish and too many resources are lost when what actually should be separated and recycled is burnt. We Berliners should take the chance and become pioneers in waste separation!",
+  "edus": {
+    "id": ["e1", "e2", "e3", "e4", "e5"],
+    "start": [0, 82, 184, 232, 326],
+    "end": [81, 183, 231, 325, 402]
+  },
+  "adus": {
+    "id": ["a1", "a2", "a3", "a4", "a5"],
+    "type": [0, 0, 1, 1, 1]
+  },
+  "edges": {
+    "id": ["c1", "c10", "c2", "c3", "c4", "c6", "c7", "c8", "c9"],
+    "src": ["a1", "e5", "a2", "a3", "a4", "e1", "e2", "e3", "e4"],
+    "trg": ["a5", "a5", "a1", "c1", "c3", "a1", "a2", "a3", "a4"],
+    "type": [4, 0, 1, 5, 3, 0, 0, 0, 0]
+  }
+}

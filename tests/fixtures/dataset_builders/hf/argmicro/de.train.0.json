@@ -1,0 +1,21 @@
+{
+  "id": "micro_b001",
+  "topic_id": "waste_separation",
+  "stance": 1,
+  "text": "Ja, seinen Müll immer ordentlich zu trennen ist nervig und mühselig. Drei verschiedene Müllbeutel müffeln in der Küche und müssen in drei unterschiedliche Tonnen einsortiert werden. Aber immer noch wird in Deutschland viel zu viel Müll produziert und zu viele Ressourcen gehen verloren, wenn zusammen verbrannt wird, was getrennt eigentlich verwertet werden könnte. Wir Berliner sollten die Chance nutzen und Vorreiter im Mülltrennen werden!",
+  "edus": {
+    "id": ["e1", "e2", "e3", "e4", "e5"],
+    "start": [0, 69, 182, 247, 366],
+    "end": [68, 181, 246, 365, 441]
+  },
+  "adus": {
+    "id": ["a1", "a2", "a3", "a4", "a5"],
+    "type": [0, 0, 1, 1, 1]
+  },
+  "edges": {
+    "id": ["c1", "c10", "c2", "c3", "c4", "c6", "c7", "c8", "c9"],
+    "src": ["a1", "e5", "a2", "a3", "a4", "e1", "e2", "e3", "e4"],
+    "trg": ["a5", "a5", "a1", "c1", "c3", "a1", "a2", "a3", "a4"],
+    "type": [4, 0, 1, 5, 3, 0, 0, 0, 0]
+  }
+}
