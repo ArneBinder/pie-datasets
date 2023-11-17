@@ -7,13 +7,13 @@ This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for t
 
 The document type for this dataset is `SciDTBArgminDocument` which defines the following data fields:
 
-- `token` (Tuple, str)
+- `tokens` (Tuple of string)
 - `id` (str, optional)
 - `metadata` (dictionary, optional)
 
 and the following annotation layers:
 
-- `units` (annotation type: `LabeledSpan`, target: `token`)
+- `units` (annotation type: `LabeledSpan`, target: `tokens`)
 - `relations` (annotation type: `BinaryRelation`, target: `units`)
 
 See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/annotations.py) for the annotation type definitions.

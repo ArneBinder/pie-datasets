@@ -18,11 +18,7 @@ from pie_datasets import DatasetDict
 from pie_datasets.document.conversion import tokenize_document
 from pie_datasets.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
 from tests import FIXTURES_ROOT
-from tests.dataset_builders.common import (
-    HF_DS_FIXTURE_DATA_PATH,
-    PIE_BASE_PATH,
-    _deep_compare,
-)
+from tests.dataset_builders.common import HF_DS_FIXTURE_DATA_PATH, PIE_BASE_PATH
 
 disable_caching()
 
@@ -48,13 +44,9 @@ def hf_example(hf_dataset):
     return hf_dataset["train"][0]
 
 
-@pytest.fixture(scope="module")
-def hf_example_expected():
-    return json.load(open(HF_DS_FIXTURE_DATA_PATH / DATASET_NAME / "train.0.json"))
-
-
-def test_hf_example(hf_example, hf_example_expected):
+def test_hf_example(hf_example):
     assert hf_example is not None
+    hf_example_expected = json.load(open(HF_DS_FIXTURE_DATA_PATH / DATASET_NAME / "train.0.json"))
     assert hf_example == hf_example_expected
 
 
@@ -82,20 +74,14 @@ def hf_example_back(generated_document, generate_document_kwargs):
 
 
 def test_example_to_document_and_back(hf_example, hf_example_back):
-    _deep_compare(
-        obj=hf_example_back,
-        obj_expected=hf_example,
-    )
+    assert hf_example_back == hf_example
 
 
 def test_example_to_document_and_back_all(hf_dataset, generate_document_kwargs):
     for hf_ex in hf_dataset["train"]:
         doc = example_to_document(hf_ex, **generate_document_kwargs)
         hf_example_back = document_to_example(doc, **generate_document_kwargs)
-        _deep_compare(
-            obj=hf_example_back,
-            obj_expected=hf_ex,
-        )
+        assert hf_example_back == hf_ex
 
 
 @pytest.fixture(scope="module")
@@ -119,7 +105,9 @@ def document(dataset) -> SciDTBArgminDocument:
 
 
 def test_compare_document_and_generated_document(document, generated_document):
+    assert document.id == generated_document.id
     assert document.tokens == generated_document.tokens
+    assert document.units == generated_document.units
     assert document.relations == generated_document.relations
     assert document.metadata == generated_document.metadata
 

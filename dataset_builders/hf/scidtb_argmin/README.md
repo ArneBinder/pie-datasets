@@ -39,10 +39,10 @@ The language in the dataset is English (academic).
 - `id`: the instance `id` of the document, a `string` feature
 - `data`: a `dictionary` feature, contains:
   - `token`: word tokens of the whole document, a `list` of `string` feature
-  - `unit-bio`: the binary label indicating whether the token at a particular index is the beginning of a unit (labeled as 0) or not (labeled as 1), a `list` of `int` feature
+  - `unit-bio`: the BIO label indicating whether the token at a particular index is the beginning of a unit (labeled as 0) or not (labeled as 1), a `list` of `int` feature
   - `unit-label`: the span label (which the token belongs to) indicating the argumentation type, a `list` of `int` feature (see [label list](https://huggingface.co/datasets/DFKI-SLT/scidtb_argmin/blob/main/scidtb_argmin.py#L42-50))
-  - `role`: the span label (which the token belongs to) indicating the argumentation relation to another span, a `list` of `int` feature (see [label list](https://huggingface.co/datasets/DFKI-SLT/scidtb_argmin/blob/main/scidtb_argmin.py#L51))
-  - `parent-offset`:
+  - `role`: the relation label (of the span which the token belongs to) indicating the argumentation relation to another span, a `list` of `int` feature (see [label list](https://huggingface.co/datasets/DFKI-SLT/scidtb_argmin/blob/main/scidtb_argmin.py#L51))
+  - `parent-offset`: the distance from the current span to the span it has a relation with (as indicated in `role`), a `list` of `int` feature
 
 ### Data Splits
 
@@ -68,8 +68,7 @@ The source data is available online at https://emnlp2014.org/.
 
 "This work is informed by previous research in the areas of argument mining, argumentation quality assessment and the relationship between discourse and argumentative structures and, from the methodological perspective, to transfer learning approaches." Previously, Yang and Li (2018) divided a passage into non-overlapping text spans, which are named elementary discourse units (EDUs). They followed the criterion of Polanyi (1988) and Irmer (2011) and the guidelines defined by (Carlson and Marcu, 2001). For more information about the initial data collection and annotation, please see the SciDTB's [dataset card](https://huggingface.co/datasets/DFKI-SLT/scidtb).
 
-"We add a new annotation layer to the Discourse Dependency TreeBank for Scientific Abstracts (SciDTB) (Yang and Li, 2018). SciDTB contains 798 abstracts from the ACL Anthology (Radev et al., 2013) annotated with elementary discourse units (EDUs)
-and relations from the RST Framework." (p. 43)
+The current authors added a new annotation layer for to the elementary discourse units (EDUs) annotated by Yang & Li (2018), namely, fine-grained argumentative labels and relation labels from the RST Framework. (p. 43)
 
 #### Who are the source language producers?
 
@@ -79,9 +78,10 @@ No demography or identity information of the source language producer is reporte
 
 #### Annotation process
 
-We consider a subset of the SciDTB corpus consisting of 60 abstracts from the Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP) and transformed them into a format suitable for the GraPAT graph annotation tool (Sonntag and Stede, 2014).
+"We consider a subset of the SciDTB corpus consisting of 60 abstracts from the Proceedings of the 2014 Conference on Empirical Methods in Natural Language Processing (EMNLP) and transformed them into a format suitable for the GraPAT graph annotation tool (Sonntag and Stede, 2014).
 
-The corpus enriched with the argumentation level contains a total of 327 sentences, 8012 tokens, 862 discourse units and 352 argumentative units linked by 292 argumentative relations. (p. 43)
+"...The corpus enriched with the argumentation level contains a total of 327 sentences, 8012 tokens, 862 discourse units and 352 argumentative units linked by 292 argumentative relations."
+(p. 43)
 
 #### Who are the annotators?
 
@@ -123,6 +123,8 @@ This work is (partly) supported by the Spanish Government under the Marı´a de 
 
 ### Citation Information
 
+The current dataset:
+
 ```
 @inproceedings{accuosto-saggion-2019-transferring,
     title = "Transferring Knowledge from Discourse to Arguments: A Case Study with Scientific Abstracts",
@@ -140,6 +142,8 @@ This work is (partly) supported by the Spanish Government under the Marı´a de 
     pages = "41--51",
 }
 ```
+
+The original SciDTB dataset:
 
 ```
 @inproceedings{yang-li-2018-scidtb,
