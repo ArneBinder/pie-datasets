@@ -119,8 +119,8 @@ def document(dataset) -> SciDTBArgminDocument:
 
 
 def test_compare_document_and_generated_document(document, generated_document):
-    # cannot compare document.tokens == generated_document.tokens because type list != type tuple
-    # cannot compare document.relations == generated_document.relations because type list != type tuple
+    assert document.tokens == generated_document.tokens  # because type list != type tuple
+    assert document.relations == generated_document.relations  # because type list != type tuple
     assert document.metadata == generated_document.metadata
 
 

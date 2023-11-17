@@ -29,10 +29,7 @@ def labels_and_spans_to_bio_tags(
 
 
 @dataclasses.dataclass
-class SciDTBArgminDocument(Document):
-    tokens: Tuple[str, ...]
-    id: Optional[str] = None
-    metadata: Dict[str, Any] = dataclasses.field(default_factory=dict)
+class SciDTBArgminDocument(TokenBasedDocument):
     units: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
     relations: AnnotationList[BinaryRelation] = annotation_field(target="units")
 
