@@ -119,8 +119,8 @@ def document(dataset) -> SciDTBArgminDocument:
 
 
 def test_compare_document_and_generated_document(document, generated_document):
-    assert document.tokens == generated_document.tokens  # because type list != type tuple
-    assert document.relations == generated_document.relations  # because type list != type tuple
+    assert document.tokens == generated_document.tokens
+    assert document.relations == generated_document.relations
     assert document.metadata == generated_document.metadata
 
 
@@ -132,40 +132,40 @@ def test_pie_dataset(document):
     assert len(units) == 6
     assert (
         str(units[0])
-        == "['This', 'paper', 'presents', 'a', 'deep', 'semantic', 'similarity', 'model', '-LRB-', 'DSSM', '-RRB-', "
+        == "('This', 'paper', 'presents', 'a', 'deep', 'semantic', 'similarity', 'model', '-LRB-', 'DSSM', '-RRB-', "
         "',', 'a', 'special', 'type', 'of', 'deep', 'neural', 'networks', 'designed', 'for', 'text', 'analysis', "
         "',', 'for', 'recommending', 'target', 'documents', 'to', 'be', 'of', 'interest', 'to', 'a', 'user', "
-        "'based', 'on', 'a', 'source', 'document', 'that', 'she', 'is', 'reading', '.']"
+        "'based', 'on', 'a', 'source', 'document', 'that', 'she', 'is', 'reading', '.')"
     )
     assert (
         str(units[1])
-        == "['We', 'observe', ',', 'identify', ',', 'and', 'detect', 'naturally', 'occurring', 'signals', 'of', "
+        == "('We', 'observe', ',', 'identify', ',', 'and', 'detect', 'naturally', 'occurring', 'signals', 'of', "
         "'interestingness', 'in', 'click', 'transitions', 'on', 'the', 'Web', 'between', 'source', 'and', "
         "'target', 'documents', ',', 'which', 'we', 'collect', 'from', 'commercial', 'Web', 'browser', 'logs', "
-        "'.']"
+        "'.')"
     )
     assert (
         str(units[2])
-        == "['The', 'DSSM', 'is', 'trained', 'on', 'millions', 'of', 'Web', 'transitions', ',', 'and', 'maps', "
+        == "('The', 'DSSM', 'is', 'trained', 'on', 'millions', 'of', 'Web', 'transitions', ',', 'and', 'maps', "
         "'source-target', 'document', 'pairs', 'to', 'feature', 'vectors', 'in', 'a', 'latent', 'space', 'in', "
         "'such', 'a', 'way', 'that', 'the', 'distance', 'between', 'source', 'documents', 'and', 'their', "
-        "'corresponding', 'interesting', 'targets', 'in', 'that', 'space', 'is', 'minimized', '.']"
+        "'corresponding', 'interesting', 'targets', 'in', 'that', 'space', 'is', 'minimized', '.')"
     )
     assert (
         str(units[3])
-        == "['The', 'effectiveness', 'of', 'the', 'DSSM', 'is', 'demonstrated', 'using', 'two', 'interestingness', "
-        "'tasks', ':', 'automatic', 'highlighting', 'and', 'contextual', 'entity', 'search', '.']"
+        == "('The', 'effectiveness', 'of', 'the', 'DSSM', 'is', 'demonstrated', 'using', 'two', 'interestingness', "
+        "'tasks', ':', 'automatic', 'highlighting', 'and', 'contextual', 'entity', 'search', '.')"
     )
     assert (
         str(units[4])
-        == "['The', 'results', 'on', 'large-scale', ',', 'real-world', 'datasets', 'show', 'that', 'the', "
-        "'semantics', 'of', 'documents', 'are', 'important', 'for', 'modeling', 'interestingness']"
+        == "('The', 'results', 'on', 'large-scale', ',', 'real-world', 'datasets', 'show', 'that', 'the', "
+        "'semantics', 'of', 'documents', 'are', 'important', 'for', 'modeling', 'interestingness')"
     )
     assert (
         str(units[5])
-        == "['and', 'that', 'the', 'DSSM', 'leads', 'to', 'significant', 'quality', 'improvement', 'on', 'both', "
+        == "('and', 'that', 'the', 'DSSM', 'leads', 'to', 'significant', 'quality', 'improvement', 'on', 'both', "
         "'tasks', ',', 'outperforming', 'not', 'only', 'the', 'classic', 'document', 'models', 'that', 'do', "
-        "'not', 'use', 'semantics', 'but', 'also', 'state-of-the-art', 'topic', 'models', '.']"
+        "'not', 'use', 'semantics', 'but', 'also', 'state-of-the-art', 'topic', 'models', '.')"
     )
 
     assert len(relations) == 5
