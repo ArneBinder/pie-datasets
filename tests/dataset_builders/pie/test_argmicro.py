@@ -298,11 +298,11 @@ def test_compare_document_and_generated_document(document, generated_document, l
         # 'rel_add_ids': {'a4': 'c4'}' !=  'rel_add_ids': {'a2': None, 'a3': None, 'a4': 'c4', 'a5': None, 'a6': None}'
         # it looks like Huggingface datasets creates a kind of schema from the data and adds all keys it finds
         for k in set(generated_document.metadata) | set(casted_document.metadata):
-            v = generated_document.metadata[k]
-            v_expected = casted_document.metadata[k]
+            v_expected = generated_document.metadata[k]
+            v = casted_document.metadata[k]
             if isinstance(v, dict):
-                v_expected_without_none = {k: v for k, v in v_expected.items() if v is not None}
-                assert v == v_expected_without_none
+                v_without_none = {k: v for k, v in v.items() if v is not None}
+                assert v_without_none == v_expected
             else:
                 assert v == v_expected
     elif language == "de":
