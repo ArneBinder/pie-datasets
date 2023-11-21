@@ -297,8 +297,8 @@ def test_compare_document_and_generated_document(document, generated_document, l
             casted_document.relations == generated_document.relations
         )  # contents seem to be identical, but doesn't work
 
-        # contents of metadata are different: there are additional keys with None values
-        # e.g., 'rel_add_ids': {'a4': 'c4'}' !=  'rel_add_ids': {'a2': None, 'a3': None, 'a4': 'c4', 'a5': None, 'a6': None}'
+        # contents of metadata are different: there are additional keys with None values e.g.,
+        # 'rel_add_ids': {'a4': 'c4'}' !=  'rel_add_ids': {'a2': None, 'a3': None, 'a4': 'c4', 'a5': None, 'a6': None}'
         # it looks like Huggingface datasets creates a kind of schema from the data and adds all keys it finds
         for k in set(generated_document.metadata) | set(casted_document.metadata):
             v = generated_document.metadata[k]
