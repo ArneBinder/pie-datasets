@@ -1,11 +1,12 @@
+import copy
 import dataclasses
 import logging
 from collections import defaultdict
 from itertools import combinations
-from typing import Any, Callable, Dict, List, Optional, Set, Tuple
+from typing import Any, Dict, List, Optional, Set, Tuple
 
 import datasets
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
+from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
 from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import (
     TextBasedDocument,
@@ -41,7 +42,7 @@ class MultiRelation(Annotation):
 @dataclasses.dataclass
 class ArgMicroDocument(TextBasedDocument):
     topic_id: Optional[str] = None
-    stance: Optional[str] = None
+    stance: AnnotationList[Label] = annotation_field()
     edus: AnnotationList[Span] = annotation_field(target="text")
     adus: AnnotationList[LabeledAnnotationCollection] = annotation_field(target="edus")
     relations: AnnotationList[MultiRelation] = annotation_field(target="adus")
@@ -58,8 +59,10 @@ def example_to_document(
         id=example["id"],
         text=example["text"],
         topic_id=example["topic_id"] if example["topic_id"] != "UNDEFINED" else None,
-        stance=stance if stance != "UNDEFINED" else None,
     )
+    if stance != "UNDEFINED":
+        document.stance.append(Label(label=stance))
+
     # build EDUs
     edus_dict = {
         edu["id"]: Span(start=edu["start"], end=edu["end"]) for edu in dl2ld(example["edus"])
@@ -131,11 +134,12 @@ def document_to_example(
     edge_type_label: datasets.ClassLabel,
     stance_label: datasets.ClassLabel,
 ) -> Dict[str, Any]:
+    stance = document.stance[0].label if len(document.stance) else "UNDEFINED"
     result = {
         "id": document.id,
         "text": document.text,
         "topic_id": document.topic_id or "UNDEFINED",
-        "stance": stance_label.str2int(document.stance or "UNDEFINED"),
+        "stance": stance_label.str2int(stance),
     }
 
     # construct EDUs
@@ -243,8 +247,9 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
             rel = BinaryRelation(label="joint", head=adu2entity[head2], tail=adu2entity[head1])
             relations.append(rel)
 
-    metadata = dict(doc.metadata)
-    metadata["stance"] = doc.stance
+    metadata = copy.deepcopy(doc.metadata)
+    if len(doc.stance) > 0:
+        metadata["stance"] = doc.stance[0].label
     metadata["topic"] = doc.topic_id
     result = TextDocumentWithLabeledSpansAndBinaryRelations(
         text=doc.text, id=doc.id, metadata=doc.metadata
@@ -274,10 +279,5 @@ class ArgMicro(GeneratorBasedBuilder):
             "stance_label": dataset.features["stance"],
         }
 
-    def _generate_document(self, example, adu_type_label, edge_type_label, stance_label):
-        return example_to_document(
-            example,
-            adu_type_label=adu_type_label,
-            edge_type_label=edge_type_label,
-            stance_label=stance_label,
-        )
+    def _generate_document(self, example, **kwargs):
+        return example_to_document(example, **kwargs)

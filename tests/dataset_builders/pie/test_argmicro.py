@@ -143,12 +143,16 @@ def generated_document(hf_dataset, language, generate_document_kwargs):
     )
 
 
+def test_generated_document(generated_document):
+    assert isinstance(generated_document, ArgMicroDocument)
+
+
 def test_example_to_document(generated_document, language):
     assert isinstance(generated_document, ArgMicroDocument)
     assert generated_document is not None
     assert generated_document.id == "micro_b001"
     assert generated_document.topic_id == "waste_separation"
-    assert generated_document.stance == "pro"
+    assert generated_document.stance[0].label == "pro"
     assert len(generated_document.edus) == 5
     assert generated_document.metadata["edu_ids"] == ["e1", "e2", "e3", "e4", "e5"]
     edus_dict = {
@@ -277,18 +281,33 @@ def document(dataset) -> ArgMicroDocument:
 
 
 def test_compare_document_and_generated_document(document, generated_document, language):
+    casted_document = document.as_type(type(generated_document))
     if language == "en":
-        document = document.as_type(type(generated_document))
-        assert document.id == generated_document.id
-        assert document.topic_id == generated_document.topic_id
-        assert document.text == generated_document.text
-        assert document.edus == generated_document.edus
-        assert document.adus == generated_document.adus
-        assert document.stance == generated_document.stance  # contents are different: 1 != 'pro'
-        assert document.relations == generated_document.relations
+        assert casted_document.id == generated_document.id
+        assert casted_document.topic_id == generated_document.topic_id
+        assert casted_document.text == generated_document.text
+        assert casted_document.edus == generated_document.edus
         assert (
-            document.metadata == generated_document.metadata
-        )  # contents are different; e.g., 'rel_add_ids': {'a4': 'c4'}' !=  'rel_add_ids': {'a2': None, 'a3': None, 'a4': 'c4', 'a5': None, 'a6': None}'
+            casted_document.adus == generated_document.adus
+        )  # contents seem to be identical, but doesn't work
+        assert (
+            casted_document.stance == generated_document.stance
+        )  # contents are different: 1 != 'pro'
+        assert (
+            casted_document.relations == generated_document.relations
+        )  # contents seem to be identical, but doesn't work
+
+        # contents of metadata are different: there are additional keys with None values
+        # e.g., 'rel_add_ids': {'a4': 'c4'}' !=  'rel_add_ids': {'a2': None, 'a3': None, 'a4': 'c4', 'a5': None, 'a6': None}'
+        # it looks like Huggingface datasets creates a kind of schema from the data and adds all keys it finds
+        for k in set(generated_document.metadata) | set(casted_document.metadata):
+            v = generated_document.metadata[k]
+            v_expected = casted_document.metadata[k]
+            if isinstance(v, dict):
+                v_expected_without_none = {k: v for k, v in v_expected.items() if v is not None}
+                assert v == v_expected_without_none
+            else:
+                assert v == v_expected
     elif language == "de":
         # we don't check because we only call the dataset in English
         pass
