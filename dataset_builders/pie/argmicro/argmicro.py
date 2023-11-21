@@ -1,10 +1,11 @@
 import dataclasses
 import logging
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from itertools import combinations
+from typing import Any, Callable, Dict, List, Optional, Set, Tuple
 
 import datasets
-from pytorch_ie.annotations import Span
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
 from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import (
     TextBasedDocument,
@@ -261,6 +262,10 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
 
 class ArgMicro(GeneratorBasedBuilder):
     DOCUMENT_TYPE = ArgMicroDocument
+
+    DOCUMENT_CONVERTERS = {
+        TextDocumentWithLabeledSpansAndBinaryRelations: convert_to_text_document_with_labeled_spans_and_binary_relations
+    }
 
     BASE_DATASET_PATH = "DFKI-SLT/argmicro"
     BASE_DATASET_REVISION = "22958d585f5c0c646c81ac62947bdf6cf9ab3cc5"
