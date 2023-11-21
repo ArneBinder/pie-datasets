@@ -44,35 +44,29 @@ def hf_dataset(language):
 
 
 @pytest.fixture(scope="module")
-def adu_type_int2str(hf_dataset):
+def generate_document_kwargs(hf_dataset, language):
     ds = hf_dataset["train"]
-    return ds.features["adus"].feature["type"].int2str
+    return ArgMicro(config_name=language)._generate_document_kwargs(ds)
 
 
-@pytest.fixture(scope="module")
-def edge_type_int2str(hf_dataset):
-    ds = hf_dataset["train"]
-    return ds.features["edges"].feature["type"].int2str
-
-
-@pytest.fixture(scope="module")
-def stance_int2str(hf_dataset):
-    ds = hf_dataset["train"]
-    return ds.features["stance"].int2str
-
-
-def test_hf_dataset(hf_dataset, language, adu_type_int2str, edge_type_int2str, stance_int2str):
+def test_hf_dataset(hf_dataset, language, generate_document_kwargs):
     assert hf_dataset is not None
     assert {name: len(ds) for name, ds in hf_dataset.items()} == SPLIT_SIZES
     ds = hf_dataset["train"]
     # check
     topic_id_values = Counter([ex["topic_id"] for ex in ds])
-    stance_values = Counter([stance_int2str(ex["stance"]) for ex in ds])
+    stance_values = Counter(
+        [generate_document_kwargs["stance_label"].int2str(ex["stance"]) for ex in ds]
+    )
     adu_type_values = Counter()
     edge_type_values = Counter()
     for ex in ds:
-        adu_type_values.update([adu_type_int2str(t) for t in ex["adus"]["type"]])
-        edge_type_values.update([edge_type_int2str(t) for t in ex["edges"]["type"]])
+        adu_type_values.update(
+            [generate_document_kwargs["adu_type_label"].int2str(t) for t in ex["adus"]["type"]]
+        )
+        edge_type_values.update(
+            [generate_document_kwargs["edge_type_label"].int2str(t) for t in ex["edges"]["type"]]
+        )
     assert dict(topic_id_values) == {
         "UNDEFINED": 23,
         "higher_dog_poo_fines": 9,
@@ -111,22 +105,24 @@ def hf_example(hf_dataset):
     return hf_dataset["train"][0]
 
 
-def test_hf_example(
-    hf_example, hf_dataset, language, adu_type_int2str, edge_type_int2str, stance_int2str
-):
+def test_hf_example(hf_example, hf_dataset, language, generate_document_kwargs):
     fixture_path = HF_DS_FIXTURE_DATA_PATH / DATASET_NAME / f"{language}.train.0.json"
     # hf_example_expected = json.loads(fixture_path.read_text())
     hf_example_expected = json.loads(open(fixture_path, encoding="utf-8").read())
     assert hf_example == hf_example_expected
-    assert stance_int2str(hf_example["stance"]) == "pro"
-    assert [adu_type_int2str(t) for t in hf_example["adus"]["type"]] == [
+    assert generate_document_kwargs["stance_label"].int2str(hf_example["stance"]) == "pro"
+    assert [
+        generate_document_kwargs["adu_type_label"].int2str(t) for t in hf_example["adus"]["type"]
+    ] == [
         "opp",
         "opp",
         "pro",
         "pro",
         "pro",
     ]
-    assert [edge_type_int2str(t) for t in hf_example["edges"]["type"]] == [
+    assert [
+        generate_document_kwargs["edge_type_label"].int2str(t) for t in hf_example["edges"]["type"]
+    ] == [
         "reb",
         "seg",
         "sup",
@@ -139,38 +135,46 @@ def test_hf_example(
     ]
 
 
-def test_example_to_document(
-    hf_example, adu_type_int2str, edge_type_int2str, stance_int2str, language
-):
-    doc = example_to_document(
-        hf_example,
-        adu_type_int2str=adu_type_int2str,
-        edge_type_int2str=edge_type_int2str,
-        stance_int2str=stance_int2str,
+# need to find bug
+@pytest.fixture(scope="module")
+def generated_document(hf_dataset, language, generate_document_kwargs):
+    return ArgMicro(config_name=language)._generate_document(
+        hf_dataset["train"][0], **generate_document_kwargs
     )
-    assert doc is not None
-    assert doc.id == "micro_b001"
-    assert doc.topic_id == "waste_separation"
-    assert doc.stance == "pro"
-    assert len(doc.edus) == 5
-    assert doc.metadata["edu_ids"] == ["e1", "e2", "e3", "e4", "e5"]
-    edus_dict = {edu_id: edu for edu_id, edu in zip(doc.metadata["edu_ids"], doc.edus)}
+
+
+def test_generated_document(generated_document):
+    assert isinstance(generated_document, ArgMicroDocument)
+
+
+def test_example_to_document(generated_document, language):
+    assert isinstance(generated_document, ArgMicroDocument)
+    assert generated_document is not None
+    assert generated_document.id == "micro_b001"
+    assert generated_document.topic_id == "waste_separation"
+    assert generated_document.stance == "pro"
+    assert len(generated_document.edus) == 5
+    assert generated_document.metadata["edu_ids"] == ["e1", "e2", "e3", "e4", "e5"]
+    edus_dict = {
+        edu_id: edu
+        for edu_id, edu in zip(generated_document.metadata["edu_ids"], generated_document.edus)
+    }
     if language == "en":
         assert (
-            str(doc.edus[0])
+            str(generated_document.edus[0])
             == "Yes, it's annoying and cumbersome to separate your rubbish properly all the time."
         )
         assert (
-            str(doc.edus[1])
+            str(generated_document.edus[1])
             == "Three different bin bags stink away in the kitchen and have to be sorted into different wheelie bins."
         )
-        assert str(doc.edus[2]) == "But still Germany produces way too much rubbish"
+        assert str(generated_document.edus[2]) == "But still Germany produces way too much rubbish"
         assert (
-            str(doc.edus[3])
+            str(generated_document.edus[3])
             == "and too many resources are lost when what actually should be separated and recycled is burnt."
         )
         assert (
-            str(doc.edus[4])
+            str(generated_document.edus[4])
             == "We Berliners should take the chance and become pioneers in waste separation!"
         )
     elif language == "de":
@@ -179,30 +183,38 @@ def test_example_to_document(
     else:
         raise ValueError(f"Unknown language {language}")
 
-    assert len(doc.adus) == 5
-    assert doc.metadata["adu_ids"] == ["a1", "a2", "a3", "a4", "a5"]
-    adus_dict = {adu_id: adu for adu_id, adu in zip(doc.metadata["adu_ids"], doc.adus)}
-    assert doc.adus[0].label == "opp"
-    assert len(doc.adus[0].annotations) == 1
-    assert doc.adus[0].annotations[0] == doc.edus[0]
-    assert doc.adus[1].label == "opp"
-    assert len(doc.adus[1].annotations) == 1
-    assert doc.adus[1].annotations[0] == doc.edus[1]
-    assert doc.adus[2].label == "pro"
-    assert len(doc.adus[2].annotations) == 1
-    assert doc.adus[2].annotations[0] == doc.edus[2]
-    assert doc.adus[3].label == "pro"
-    assert len(doc.adus[3].annotations) == 1
-    assert doc.adus[3].annotations[0] == doc.edus[3]
-    assert doc.adus[4].label == "pro"
-    assert len(doc.adus[4].annotations) == 1
-    assert doc.adus[4].annotations[0] == doc.edus[4]
+    assert len(generated_document.adus) == 5
+    assert generated_document.metadata["adu_ids"] == ["a1", "a2", "a3", "a4", "a5"]
+    adus_dict = {
+        adu_id: adu
+        for adu_id, adu in zip(generated_document.metadata["adu_ids"], generated_document.adus)
+    }
+    assert generated_document.adus[0].label == "opp"
+    assert len(generated_document.adus[0].annotations) == 1
+    assert generated_document.adus[0].annotations[0] == generated_document.edus[0]
+    assert generated_document.adus[1].label == "opp"
+    assert len(generated_document.adus[1].annotations) == 1
+    assert generated_document.adus[1].annotations[0] == generated_document.edus[1]
+    assert generated_document.adus[2].label == "pro"
+    assert len(generated_document.adus[2].annotations) == 1
+    assert generated_document.adus[2].annotations[0] == generated_document.edus[2]
+    assert generated_document.adus[3].label == "pro"
+    assert len(generated_document.adus[3].annotations) == 1
+    assert generated_document.adus[3].annotations[0] == generated_document.edus[3]
+    assert generated_document.adus[4].label == "pro"
+    assert len(generated_document.adus[4].annotations) == 1
+    assert generated_document.adus[4].annotations[0] == generated_document.edus[4]
 
     # sources == heads
     # targets == tails
-    assert len(doc.relations) == 3
-    assert doc.metadata["rel_ids"] == ["c1", "c2", "c3"]
-    rels_dict = {rel_id: rel for rel_id, rel in zip(doc.metadata["rel_ids"], doc.relations)}
+    assert len(generated_document.relations) == 3
+    assert generated_document.metadata["rel_ids"] == ["c1", "c2", "c3"]
+    rels_dict = {
+        rel_id: rel
+        for rel_id, rel in zip(
+            generated_document.metadata["rel_ids"], generated_document.relations
+        )
+    }
 
     rel = rels_dict["c1"]
     assert rel.label == "reb"  # rebutting attack
@@ -226,84 +238,26 @@ def test_example_to_document(
     assert len(rel.tails) == 1
     assert rel.tails[0] == adus_dict["a1"]
 
-    assert doc.metadata["rel_seg_ids"] == {
+    assert generated_document.metadata["rel_seg_ids"] == {
         "e1": "c6",
         "e2": "c7",
         "e3": "c8",
         "e4": "c9",
         "e5": "c10",
     }
-    assert doc.metadata["rel_add_ids"] == {"a4": "c4"}
+    assert generated_document.metadata["rel_add_ids"] == {"a4": "c4"}
 
 
-@pytest.fixture(scope="module")
-def adu_type_str2int(hf_dataset):
-    ds = hf_dataset["train"]
-    return ds.features["adus"].feature["type"].str2int
-
-
-@pytest.fixture(scope="module")
-def edge_type_str2int(hf_dataset):
-    ds = hf_dataset["train"]
-    return ds.features["edges"].feature["type"].str2int
-
-
-@pytest.fixture(scope="module")
-def stance_str2int(hf_dataset):
-    ds = hf_dataset["train"]
-    return ds.features["stance"].str2int
-
-
-def test_example_to_document_and_back(
-    hf_example,
-    adu_type_int2str,
-    edge_type_int2str,
-    adu_type_str2int,
-    edge_type_str2int,
-    stance_int2str,
-    stance_str2int,
-):
-    doc = example_to_document(
-        hf_example,
-        adu_type_int2str=adu_type_int2str,
-        edge_type_int2str=edge_type_int2str,
-        stance_int2str=stance_int2str,
-    )
-    hf_example_back = document_to_example(
-        doc,
-        adu_type_str2int=adu_type_str2int,
-        edge_type_str2int=edge_type_str2int,
-        stance_str2int=stance_str2int,
-    )
+def test_example_to_document_and_back(hf_example, generated_document, generate_document_kwargs):
+    hf_example_back = document_to_example(generated_document, **generate_document_kwargs)
     assert hf_example == hf_example_back
 
 
-def test_example_to_document_and_back_all(
-    hf_dataset,
-    adu_type_int2str,
-    edge_type_int2str,
-    adu_type_str2int,
-    edge_type_str2int,
-    stance_int2str,
-    stance_str2int,
-):
+def test_example_to_document_and_back_all(hf_dataset, generate_document_kwargs):
     for ex in hf_dataset["train"]:
-        doc = example_to_document(
-            ex,
-            adu_type_int2str=adu_type_int2str,
-            edge_type_int2str=edge_type_int2str,
-            stance_int2str=stance_int2str,
-        )
-        ex_back = document_to_example(
-            doc,
-            adu_type_str2int=adu_type_str2int,
-            edge_type_str2int=edge_type_str2int,
-            stance_str2int=stance_str2int,
-        )
+        doc = example_to_document(ex, **generate_document_kwargs)
+        ex_back = document_to_example(doc, **generate_document_kwargs)
         assert ex == ex_back
-
-
-import datasets
 
 
 @pytest.fixture(scope="module")
@@ -324,6 +278,29 @@ def document(dataset) -> ArgMicroDocument:
     # semantically the same
     assert isinstance(doc, Document)
     return doc
+
+
+def test_compare_document_and_generated_document(document, generated_document, language):
+    if language == "en":
+        assert document.id == generated_document.id
+        assert document.topic_id == generated_document.topic_id
+        assert document.text == generated_document.text
+        assert document.edus == generated_document.edus
+        assert (
+            document.adus == generated_document.adus
+        )  # contents seem to be identical, but doesn't work
+        assert document.stance == generated_document.stance  # contents are different: 1 != 'pro'
+        assert (
+            document.relations == generated_document.relations
+        )  # contents seem to be identical, but doesn't work
+        assert (
+            document.metadata == generated_document.metadata
+        )  # contents are different; e.g., 'rel_add_ids': {'a4': 'c4'}' !=  'rel_add_ids': {'a2': None, 'a3': None, 'a4': 'c4', 'a5': None, 'a6': None}'
+    elif language == "de":
+        # we don't check because we only call the dataset in English
+        pass
+    else:
+        raise ValueError(f"Unknown language {language}")
 
 
 @pytest.fixture(scope="module")

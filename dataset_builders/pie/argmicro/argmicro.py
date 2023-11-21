@@ -21,13 +21,8 @@ def dl2ld(dict_of_lists):
     return [dict(zip(dict_of_lists, t)) for t in zip(*dict_of_lists.values())]
 
 
-def ld2dl(list_of_dicts, keys: Optional[List[str]] = None, as_list: bool = False):
-    if keys is None:
-        keys = list_of_dicts[0].keys()
-    if as_list:
-        return [[d[k] for d in list_of_dicts] for k in keys]
-    else:
-        return {k: [d[k] for d in list_of_dicts] for k in keys}
+def ld2dl(list_of_dicts, keys: Optional[List[str]] = None):
+    return {k: [d[k] for d in list_of_dicts] for k in keys}
 
 
 @dataclasses.dataclass(frozen=True)
@@ -54,11 +49,11 @@ class ArgMicroDocument(TextBasedDocument):
 
 def example_to_document(
     example: Dict[str, Any],
-    adu_type_int2str: Callable[[int], str],
-    edge_type_int2str: Callable[[int], str],
-    stance_int2str: Callable[[int], str],
+    adu_type_label: datasets.ClassLabel,
+    edge_type_label: datasets.ClassLabel,
+    stance_label: datasets.ClassLabel,
 ) -> ArgMicroDocument:
-    stance = stance_int2str(example["stance"])
+    stance = stance_label.int2str(example["stance"])
     document = ArgMicroDocument(
         id=example["id"],
         text=example["text"],
@@ -73,7 +68,7 @@ def example_to_document(
     adu_id2edus = defaultdict(list)
     edges_multi_source = defaultdict(dict)
     for edge in dl2ld(example["edges"]):
-        edge_type = edge_type_int2str(edge["type"])
+        edge_type = edge_type_label.int2str(edge["type"])
         if edge_type == "seg":
             adu_id2edus[edge["trg"]].append(edus_dict[edge["src"]])
         elif edge_type == "add":
@@ -88,7 +83,7 @@ def example_to_document(
             edges_multi_source[edge["id"]]["src"].append(edge["src"])
     adus_dict = {}
     for adu in dl2ld(example["adus"]):
-        adu_type = adu_type_int2str(adu["type"])
+        adu_type = adu_type_label.int2str(adu["type"])
         adu_edus = adu_id2edus[adu["id"]]
         adus_dict[adu["id"]] = LabeledAnnotationCollection(
             annotations=tuple(adu_edus), label=adu_type
@@ -120,27 +115,27 @@ def example_to_document(
     document.metadata["rel_seg_ids"] = {
         edge["src"]: edge["id"]
         for edge in dl2ld(example["edges"])
-        if edge_type_int2str(edge["type"]) == "seg"
+        if edge_type_label.int2str(edge["type"]) == "seg"
     }
     document.metadata["rel_add_ids"] = {
         edge["src"]: edge["id"]
         for edge in dl2ld(example["edges"])
-        if edge_type_int2str(edge["type"]) == "add"
+        if edge_type_label.int2str(edge["type"]) == "add"
     }
     return document
 
 
 def document_to_example(
     document: ArgMicroDocument,
-    adu_type_str2int: Callable[[str], int],
-    edge_type_str2int: Callable[[str], int],
-    stance_str2int: Callable[[str], int],
+    adu_type_label: datasets.ClassLabel,
+    edge_type_label: datasets.ClassLabel,
+    stance_label: datasets.ClassLabel,
 ) -> Dict[str, Any]:
     result = {
         "id": document.id,
         "text": document.text,
         "topic_id": document.topic_id or "UNDEFINED",
-        "stance": stance_str2int(document.stance or "UNDEFINED"),
+        "stance": stance_label.str2int(document.stance or "UNDEFINED"),
     }
 
     # construct EDUs
@@ -154,7 +149,7 @@ def document_to_example(
 
     # construct ADUs
     adus = {
-        adu: {"id": adu_id, "type": adu_type_str2int(adu.label)}
+        adu: {"id": adu_id, "type": adu_type_label.str2int(adu.label)}
         for adu_id, adu in zip(document.metadata["adu_ids"], document.adus)
     }
     result["adus"] = ld2dl(sorted(adus.values(), key=lambda x: x["id"]), keys=["id", "type"])
@@ -180,7 +175,7 @@ def document_to_example(
             "id": rel_id,
             "src": source_id,
             "trg": target_id,
-            "type": edge_type_str2int(rel.label),
+            "type": edge_type_label.str2int(rel.label),
         }
         edges.append(edge)
         # if it is an additional support, we need to change the source to the relation that connects the source
@@ -191,7 +186,7 @@ def document_to_example(
                 "id": edge_id,
                 "src": source_id,
                 "trg": rel_id,
-                "type": edge_type_str2int("add"),
+                "type": edge_type_label.str2int("add"),
             }
             edges.append(edge)
 
@@ -204,7 +199,7 @@ def document_to_example(
                 "id": edge_id,
                 "src": source_id,
                 "trg": target_id,
-                "type": edge_type_str2int("seg"),
+                "type": edge_type_label.str2int("seg"),
             }
             edges.append(edge)
 
@@ -274,15 +269,15 @@ class ArgMicro(GeneratorBasedBuilder):
 
     def _generate_document_kwargs(self, dataset):
         return {
-            "adu_type_int2str": dataset.features["adus"].feature["type"].int2str,
-            "edge_type_int2str": dataset.features["edges"].feature["type"].int2str,
-            "stance_int2str": dataset.features["stance"].int2str,
+            "adu_type_label": dataset.features["adus"].feature["type"],
+            "edge_type_label": dataset.features["edges"].feature["type"],
+            "stance_label": dataset.features["stance"],
         }
 
-    def _generate_document(self, example, adu_type_int2str, edge_type_int2str, stance_int2str):
+    def _generate_document(self, example, adu_type_label, edge_type_label, stance_label):
         return example_to_document(
             example,
-            adu_type_int2str=adu_type_int2str,
-            edge_type_int2str=edge_type_int2str,
-            stance_int2str=stance_int2str,
+            adu_type_label=adu_type_label,
+            edge_type_label=edge_type_label,
+            stance_label=stance_label,
         )
