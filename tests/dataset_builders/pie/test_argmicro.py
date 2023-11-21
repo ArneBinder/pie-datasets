@@ -143,10 +143,6 @@ def generated_document(hf_dataset, language, generate_document_kwargs):
     )
 
 
-def test_generated_document(generated_document):
-    assert isinstance(generated_document, ArgMicroDocument)
-
-
 def test_example_to_document(generated_document, language):
     assert isinstance(generated_document, ArgMicroDocument)
     assert generated_document is not None
@@ -282,17 +278,14 @@ def document(dataset) -> ArgMicroDocument:
 
 def test_compare_document_and_generated_document(document, generated_document, language):
     if language == "en":
+        document = document.as_type(type(generated_document))
         assert document.id == generated_document.id
         assert document.topic_id == generated_document.topic_id
         assert document.text == generated_document.text
         assert document.edus == generated_document.edus
-        assert (
-            document.adus == generated_document.adus
-        )  # contents seem to be identical, but doesn't work
+        assert document.adus == generated_document.adus
         assert document.stance == generated_document.stance  # contents are different: 1 != 'pro'
-        assert (
-            document.relations == generated_document.relations
-        )  # contents seem to be identical, but doesn't work
+        assert document.relations == generated_document.relations
         assert (
             document.metadata == generated_document.metadata
         )  # contents are different; e.g., 'rel_add_ids': {'a4': 'c4'}' !=  'rel_add_ids': {'a2': None, 'a3': None, 'a4': 'c4', 'a5': None, 'a6': None}'

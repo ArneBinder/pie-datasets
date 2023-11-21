@@ -10,7 +10,7 @@ The document type for this dataset is `ArgMicroDocument` which defines the follo
 - `id` (str)
 - `text` (str)
 - `topic_id` (str, optional)
-- `stance` (int, optional)
+- `stance` (str, optional)
 - `metadata` (dictionary, optional)
 
 and the following annotation layers:
