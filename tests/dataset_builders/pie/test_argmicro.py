@@ -281,22 +281,19 @@ def document(dataset) -> ArgMicroDocument:
 
 
 def test_compare_document_and_generated_document(document, generated_document, language):
+    # We cast the document to the type of the generated document to compare them.
+    # This is necessary because the document may come from a dataset loading script
+    # downloaded to a temporary directory and thus have a different type object, although it is
+    # semantically the same.
     casted_document = document.as_type(type(generated_document))
     if language == "en":
         assert casted_document.id == generated_document.id
         assert casted_document.topic_id == generated_document.topic_id
         assert casted_document.text == generated_document.text
         assert casted_document.edus == generated_document.edus
-        assert (
-            casted_document.adus == generated_document.adus
-        )  # contents seem to be identical, but doesn't work
-        assert (
-            casted_document.stance == generated_document.stance
-        )  # contents are different: 1 != 'pro'
-        assert (
-            casted_document.relations == generated_document.relations
-        )  # contents seem to be identical, but doesn't work
-
+        assert casted_document.adus == generated_document.adus
+        assert casted_document.stance == generated_document.stance
+        assert casted_document.relations == generated_document.relations
         # contents of metadata are different: there are additional keys with None values e.g.,
         # 'rel_add_ids': {'a4': 'c4'}' !=  'rel_add_ids': {'a2': None, 'a3': None, 'a4': 'c4', 'a5': None, 'a6': None}'
         # it looks like Huggingface datasets creates a kind of schema from the data and adds all keys it finds
