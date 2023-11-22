@@ -128,7 +128,7 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
 
         super().__init__(**kwargs)
 
-        self.document_converters = dict(self.DOCUMENT_CONVERTERS)
+        self._document_converters = dict(self.DOCUMENT_CONVERTERS)
         if document_converters is not None:
             for document_type_or_str, document_converter_or_str in document_converters.items():
                 document_type = resolve_target(document_type_or_str)
@@ -139,7 +139,7 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
                     else:
                         document_converter = document_converter_or_str
 
-                    self.document_converters[document_type] = document_converter
+                    self._document_converters[document_type] = document_converter
                 else:
                     raise TypeError(
                         f"The key '{document_type_or_str}' for one of the converters "
@@ -155,6 +155,10 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
     @property
     def document_type(self) -> Optional[Type[Document]]:
         return self.DOCUMENT_TYPES.get(self.config.name, self.DOCUMENT_TYPE)
+
+    @property
+    def document_converters(self) -> DocumentConvertersType:
+        return self._document_converters
 
     @abc.abstractmethod
     def _generate_document(self, example, **kwargs):
