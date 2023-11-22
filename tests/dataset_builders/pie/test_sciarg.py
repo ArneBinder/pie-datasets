@@ -9,6 +9,7 @@ from pytorch_ie.documents import (
 )
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
+from dataset_builders.pie.sciarg.sciarg import SciArg
 from pie_datasets import DatasetDict
 from pie_datasets.builders.brat import BratDocumentWithMergedSpans
 from pie_datasets.document.processing import tokenize_document
@@ -527,3 +528,20 @@ def test_tokenized_documents_with_entities_relations_and_partitions_all(
                 # we just ensure that we get at least one tokenized document
                 assert tokenized_docs is not None
                 assert len(tokenized_docs) > 0
+
+
+def test_document_converters(dataset_variant):
+    builder = SciArg(config_name=dataset_variant)
+    document_converters = builder.document_converters
+
+    if dataset_variant == "default":
+        assert document_converters == {}
+    elif dataset_variant == "merge_fragmented_spans":
+        assert len(document_converters) == 2
+        assert set(document_converters) == {
+            TextDocumentWithLabeledSpansAndBinaryRelations,
+            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+        }
+        assert all(callable(v) for k, v in document_converters.items())
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
