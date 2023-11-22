@@ -44,10 +44,7 @@ class SciArg(BratBuilder):
     @property
     def document_converters(self) -> DocumentConvertersType:
         if self.config.name == "default":
-            raise NotImplementedError(
-                'SciArg does not support document converters for the "default" dataset variant. '
-                'Consider using name="merge_fragmented_spans" instead.'
-            )
+            return {}
         elif self.config.name == "merge_fragmented_spans":
             return {
                 TextDocumentWithLabeledSpansAndBinaryRelations: Pipeline(
