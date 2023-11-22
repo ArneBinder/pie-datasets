@@ -1,5 +1,3 @@
-from __future__ import annotations
-
 from pytorch_ie.core import Document
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
