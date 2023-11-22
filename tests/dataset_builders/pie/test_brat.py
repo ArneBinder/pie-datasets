@@ -6,7 +6,7 @@ from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
 from pytorch_ie.core import Annotation
 from pytorch_ie.documents import TextBasedDocument
 
-from dataset_builders.pie.brat.brat import BratBuilder
+from dataset_builders.pie.brat.brat import Brat
 from pie_datasets.builders.brat import (
     BratAttribute,
     BratDocument,
@@ -20,7 +20,7 @@ datasets.disable_caching()
 
 DATASET_NAME = "brat"
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
-HF_DATASET_PATH = BratBuilder.BASE_DATASET_PATH
+HF_DATASET_PATH = Brat.BASE_DATASET_PATH
 FIXTURE_DATA_PATH = PIE_DS_FIXTURE_DATA_PATH / DATASET_NAME
 SPLIT_SIZES = {"train": 2}
 
@@ -133,7 +133,7 @@ def test_hf_example(hf_example, sample_idx):
 
 
 @pytest.fixture(
-    params=[config.name for config in BratBuilder.BUILDER_CONFIGS],  # scope="module"
+    params=[config.name for config in Brat.BUILDER_CONFIGS],  # scope="module"
 )
 def pie_dataset_variant(request):
     return request.param
@@ -143,7 +143,7 @@ def pie_dataset_variant(request):
 def generated_document(
     hf_example, hf_dataset, pie_dataset_variant
 ) -> Union[BratDocument, BratDocumentWithMergedSpans]:
-    builder = BratBuilder(name=pie_dataset_variant)
+    builder = Brat(name=pie_dataset_variant)
     kwargs = builder._generate_document_kwargs(hf_dataset["train"]) or {}
     document = builder._generate_document(example=hf_example, **kwargs)
     assert document is not None
