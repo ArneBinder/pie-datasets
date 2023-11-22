@@ -125,7 +125,7 @@ def test_construct_relation_with_new_args_wrong_type(document_with_nary_relation
     )
 
 
-def test_relation_argument_sorter_with_label_blacklist(document):
+def test_relation_argument_sorter_with_label_whitelist(document):
     # argument of both relations are not sorted
     document.binary_relations.append(
         BinaryRelation(
@@ -138,9 +138,9 @@ def test_relation_argument_sorter_with_label_blacklist(document):
         )
     )
 
-    # we do not want to sort the arguments of the "worksAt" relation
+    # we only want to sort the relations with the label "founded"
     arg_sorter = RelationArgumentSorter(
-        relation_layer="binary_relations", label_blacklist=["worksAt"], inplace=False
+        relation_layer="binary_relations", label_whitelist=["founded"], inplace=False
     )
     doc_sorted_args = arg_sorter(document)
 

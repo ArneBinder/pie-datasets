@@ -49,16 +49,16 @@ class RelationArgumentSorter:
 
     Args:
         relation_layer: the name of the relation layer
-        label_blacklist: if not None, the relations with the labels in the blacklist are not sorted
+        label_whitelist: if not None, only the relations with the label in the whitelist are sorted
         inplace: if True, the sorting is done in place, otherwise the document is copied and the sorting is done
             on the copy
     """
 
     def __init__(
-        self, relation_layer: str, label_blacklist: list[str] | None = None, inplace: bool = True
+        self, relation_layer: str, label_whitelist: list[str] | None = None, inplace: bool = True
     ):
         self.relation_layer = relation_layer
-        self.label_blacklist = label_blacklist
+        self.label_whitelist = label_whitelist
         self.inplace = inplace
 
     def __call__(self, doc: D) -> D:
@@ -79,8 +79,8 @@ class RelationArgumentSorter:
 
         rel_layer.clear()
         for args, rel in args2relations.items():
-            if self.label_blacklist is not None and rel.label in self.label_blacklist:
-                # just add the relations whose label is not in the label blacklist (if a blacklist is present)
+            if self.label_whitelist is not None and rel.label not in self.label_whitelist:
+                # just add the relations whose label is not in the label whitelist (if a whitelist is present)
                 rel_layer.append(rel)
             else:
                 args_sorted = tuple(sorted(args, key=lambda arg: (arg.start, arg.end)))
