@@ -1,8 +1,10 @@
-# PIE Dataset Card for "conll2003"
+# PIE Dataset Card for "sciarg"
 
 This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for the SciArg dataset.
 
 TODO: Since there is no respective HF dataset card for SciArg, we should all respective information here.
+
+TODO: Shortly reference the PIE-Brat dataset card.
 
 ## Data Schema
 
