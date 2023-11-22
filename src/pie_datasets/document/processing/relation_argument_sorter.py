@@ -43,6 +43,17 @@ def has_dependent_layers(document: D, layer: str) -> bool:
 
 
 class RelationArgumentSorter:
+    """Sorts the arguments of the relations in the given relation layer. The sorting is done by the
+    start and end positions of the arguments. The relations with the same sorted arguments are
+    merged into one relation.
+
+    Args:
+        relation_layer: the name of the relation layer
+        label_blacklist: if not None, the relations with the labels in the blacklist are not sorted
+        inplace: if True, the sorting is done in place, otherwise the document is copied and the sorting is done
+            on the copy
+    """
+
     def __init__(
         self, relation_layer: str, label_blacklist: list[str] | None = None, inplace: bool = True
     ):
