@@ -15,7 +15,7 @@ from dataset_builders.pie.scidtb_argmin.scidtb_argmin import (
     example_to_document,
 )
 from pie_datasets import DatasetDict
-from pie_datasets.document.conversion import tokenize_document
+from pie_datasets.document.processing import tokenize_document
 from pie_datasets.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
 from tests import FIXTURES_ROOT
 from tests.dataset_builders.common import HF_DS_FIXTURE_DATA_PATH, PIE_BASE_PATH

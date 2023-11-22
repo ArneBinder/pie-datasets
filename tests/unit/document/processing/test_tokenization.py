@@ -6,7 +6,7 @@ from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TokenBasedDocument
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
-from pie_datasets.document.conversion import (
+from pie_datasets.document.processing import (
     text_based_document_to_token_based,
     token_based_document_to_text_based,
     tokenize_document,

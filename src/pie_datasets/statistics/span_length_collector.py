@@ -8,7 +8,7 @@ from pytorch_ie.documents import TextBasedDocument, TokenBasedDocument
 from pytorch_ie.utils.hydra import resolve_optional_document_type
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
-from pie_datasets.document.conversion import tokenize_document
+from pie_datasets.document.processing import tokenize_document
 
 logger = logging.getLogger(__name__)
 

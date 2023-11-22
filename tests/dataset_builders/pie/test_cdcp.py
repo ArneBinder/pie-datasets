@@ -19,7 +19,7 @@ from dataset_builders.pie.cdcp.cdcp import (
     example_to_document,
 )
 from pie_datasets import DatasetDict
-from pie_datasets.document.conversion import tokenize_document
+from pie_datasets.document.processing import tokenize_document
 from pie_datasets.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
 from tests import FIXTURES_ROOT
 from tests.dataset_builders.common import PIE_BASE_PATH, _deep_compare
