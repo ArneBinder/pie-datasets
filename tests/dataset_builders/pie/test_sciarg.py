@@ -1,4 +1,3 @@
-from collections import Counter
 from typing import List
 
 import pytest
@@ -11,15 +10,13 @@ from pytorch_ie.documents import (
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from pie_datasets import DatasetDict
-from pie_datasets.document.conversion import tokenize_document
+from pie_datasets.builders.brat import BratDocumentWithMergedSpans
+from pie_datasets.document.processing import tokenize_document
 from pie_datasets.document.types import (
-    BratDocumentWithMergedSpans,
     TokenDocumentWithLabeledSpansAndBinaryRelations,
     TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
 from tests.dataset_builders.common import PIE_BASE_PATH
-
-# from tests.unit.dataset_builders.common import dataset_from_config
 
 disable_caching()
 
@@ -60,7 +57,6 @@ def dataset_variant():
 
 @pytest.fixture(scope="module")
 def dataset(dataset_variant) -> DatasetDict:
-    # yield from dataset_from_config(f"{DATASET_NAME}_base")
     return DatasetDict.load_dataset(str(PIE_DATASET_PATH), name=dataset_variant)
 
 
