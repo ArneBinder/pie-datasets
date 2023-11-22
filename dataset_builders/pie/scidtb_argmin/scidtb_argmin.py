@@ -12,7 +12,7 @@ from pytorch_ie.documents import (
 from pytorch_ie.utils.span import bio_tags_to_spans
 
 from pie_datasets import GeneratorBasedBuilder
-from pie_datasets.document.conversion import token_based_document_to_text_based
+from pie_datasets.document.processing import token_based_document_to_text_based
 
 log = logging.getLogger(__name__)
 

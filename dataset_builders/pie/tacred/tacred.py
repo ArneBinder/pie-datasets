@@ -10,7 +10,7 @@ from pytorch_ie.documents import (
 )
 
 from pie_datasets import GeneratorBasedBuilder
-from pie_datasets.document.conversion import token_based_document_to_text_based
+from pie_datasets.document.processing import token_based_document_to_text_based
 
 
 @dataclass(eq=True, frozen=True)
