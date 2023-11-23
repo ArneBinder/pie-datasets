@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pie-datasets"
-version = "0.3.3"
+version = "0.4.0"
 description = "Building scripts for PyTorch-IE Datasets"
 authors = ["Arne Binder <arne.binder@dfki.de>"]
 readme = "README.md"
