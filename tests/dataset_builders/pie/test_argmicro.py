@@ -103,8 +103,7 @@ def hf_example(hf_dataset):
 
 def test_hf_example(hf_example, hf_dataset, dataset_variant, generate_document_kwargs):
     fixture_path = HF_DS_FIXTURE_DATA_PATH / DATASET_NAME / f"{dataset_variant}.train.0.json"
-    # hf_example_expected = json.loads(fixture_path.read_text())
-    hf_example_expected = json.loads(open(fixture_path, encoding="utf-8").read())
+    hf_example_expected = json.load(open(fixture_path, encoding="utf-8"))
     assert hf_example == hf_example_expected
     assert generate_document_kwargs["stance_label"].int2str(hf_example["stance"]) == "pro"
     assert [
