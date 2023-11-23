@@ -30,27 +30,26 @@ HF_DATASET_PATH = ArgMicro.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 
 
-@pytest.fixture(scope="module", params=["en", "de"])
-def language(request):
+@pytest.fixture(scope="module", params=[config.name for config in ArgMicro.BUILDER_CONFIGS])
+def dataset_variant(request):
     return request.param
 
 
 @pytest.fixture(scope="module")
-def hf_dataset(language):
-    return load_dataset(str(HF_DATASET_PATH), name=language, data_dir=DATA_PATH)
+def hf_dataset(dataset_variant):
+    return load_dataset(str(HF_DATASET_PATH), name=dataset_variant, data_dir=DATA_PATH)
 
 
 @pytest.fixture(scope="module")
-def generate_document_kwargs(hf_dataset, language):
+def generate_document_kwargs(hf_dataset, dataset_variant):
     ds = hf_dataset["train"]
-    return ArgMicro(config_name=language)._generate_document_kwargs(ds)
+    return ArgMicro(config_name=dataset_variant)._generate_document_kwargs(ds)
 
 
-def test_hf_dataset(hf_dataset, language, generate_document_kwargs):
+def test_hf_dataset(hf_dataset, dataset_variant, generate_document_kwargs):
     assert hf_dataset is not None
     assert {name: len(ds) for name, ds in hf_dataset.items()} == SPLIT_SIZES
     ds = hf_dataset["train"]
-    # check
     topic_id_values = Counter([ex["topic_id"] for ex in ds])
     stance_values = Counter(
         [generate_document_kwargs["stance_label"].int2str(ex["stance"]) for ex in ds]
@@ -102,8 +101,8 @@ def hf_example(hf_dataset):
     return hf_dataset["train"][0]
 
 
-def test_hf_example(hf_example, hf_dataset, language, generate_document_kwargs):
-    fixture_path = HF_DS_FIXTURE_DATA_PATH / DATASET_NAME / f"{language}.train.0.json"
+def test_hf_example(hf_example, hf_dataset, dataset_variant, generate_document_kwargs):
+    fixture_path = HF_DS_FIXTURE_DATA_PATH / DATASET_NAME / f"{dataset_variant}.train.0.json"
     # hf_example_expected = json.loads(fixture_path.read_text())
     hf_example_expected = json.loads(open(fixture_path, encoding="utf-8").read())
     assert hf_example == hf_example_expected
@@ -132,10 +131,9 @@ def test_hf_example(hf_example, hf_dataset, language, generate_document_kwargs):
     ]
 
 
-# need to find bug
 @pytest.fixture(scope="module")
-def generated_document(hf_dataset, language, generate_document_kwargs):
-    return ArgMicro(config_name=language)._generate_document(
+def generated_document(hf_dataset, dataset_variant, generate_document_kwargs):
+    return ArgMicro(config_name=dataset_variant)._generate_document(
         hf_dataset["train"][0], **generate_document_kwargs
     )
 
@@ -144,7 +142,7 @@ def test_generated_document(generated_document):
     assert isinstance(generated_document, ArgMicroDocument)
 
 
-def test_example_to_document(generated_document, language):
+def test_example_to_document(generated_document, dataset_variant):
     assert isinstance(generated_document, ArgMicroDocument)
     assert generated_document is not None
     assert generated_document.id == "micro_b001"
@@ -156,7 +154,7 @@ def test_example_to_document(generated_document, language):
         edu_id: edu
         for edu_id, edu in zip(generated_document.metadata["edu_ids"], generated_document.edus)
     }
-    if language == "en":
+    if dataset_variant == "en":
         assert (
             str(generated_document.edus[0])
             == "Yes, it's annoying and cumbersome to separate your rubbish properly all the time."
@@ -174,11 +172,11 @@ def test_example_to_document(generated_document, language):
             str(generated_document.edus[4])
             == "We Berliners should take the chance and become pioneers in waste separation!"
         )
-    elif language == "de":
+    elif dataset_variant == "de":
         # we don't check this because spellcheck would complain
         pass
     else:
-        raise ValueError(f"Unknown language {language}")
+        raise ValueError(f"Unknown dataset variant {dataset_variant}")
 
     assert len(generated_document.adus) == 5
     assert generated_document.metadata["adu_ids"] == ["a1", "a2", "a3", "a4", "a5"]
@@ -277,13 +275,13 @@ def document(dataset) -> ArgMicroDocument:
     return doc
 
 
-def test_compare_document_and_generated_document(document, generated_document, language):
+def test_compare_document_and_generated_document(document, generated_document, dataset_variant):
     # We cast the document to the type of the generated document to compare them.
     # This is necessary because the document may come from a dataset loading script
     # downloaded to a temporary directory and thus have a different type object, although it is
     # semantically the same.
     casted_document = document.as_type(type(generated_document))
-    if language == "en":
+    if dataset_variant == "en":
         assert casted_document.id == generated_document.id
         assert casted_document.topic_id == generated_document.topic_id
         assert casted_document.text == generated_document.text
@@ -302,11 +300,11 @@ def test_compare_document_and_generated_document(document, generated_document, l
                 assert v_without_none == v_expected
             else:
                 assert v == v_expected
-    elif language == "de":
+    elif dataset_variant == "de":
         # we don't check because we only call the dataset in English
         pass
     else:
-        raise ValueError(f"Unknown language {language}")
+        raise ValueError(f"Unknown dataset_variant {dataset_variant}")
 
 
 @pytest.fixture(scope="module")
