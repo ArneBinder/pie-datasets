@@ -55,7 +55,15 @@ def document(dataset, dataset_variant) -> Union[BratDocument, BratDocumentWithMe
 
 
 def test_document(document, dataset_variant):
-    pass
+    assert document.text.startswith("Should students be taught to compete or to cooperate?")
+    if dataset_variant == "default":
+        # TODO
+        raise NotImplementedError()
+    elif dataset_variant == "merge_fragmented_spans":
+        # TODO
+        raise NotImplementedError()
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
 
 @pytest.fixture(scope="module")
