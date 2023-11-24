@@ -16,11 +16,10 @@ from pie_datasets.document.processing import (
     RegexPartitioner,
 )
 
-# TODO: This was manually downloaded from
-#  https://tudatalib.ulb.tu-darmstadt.de/bitstream/handle/tudatalib/2422/ArgumentAnnotatedEssays-2.0.zip
-#  and unzipped to "data/". We should not have this in a local folder because this will not work when used
-#  within other projects!
-URL = "data/ArgumentAnnotatedEssays-2.0/brat-project-final.zip"
+# TODO: use data from main branch when https://github.com/ArneBinder/pie-datasets/pull/66 is merged
+URL = "https://github.com/ArneBinder/pie-datasets/raw/add_aae2_data/data/datasets/ArgumentAnnotatedEssays-2.0/brat-project-final.zip"
+# TODO: use this!
+URL_SPLIT_IDS = "https://github.com/ArneBinder/pie-datasets/blob/add_aae2_data/data/datasets/ArgumentAnnotatedEssays-2.0/train-test-split.csv"
 SUBDIRECTORY_MAPPING = {"brat-project-final": "train"}
 
 
@@ -119,11 +118,9 @@ def get_common_pipeline_steps(conversion_method: str) -> dict:
     )
 
 
-class SciArgConfig(BratConfig):
-    """BuilderConfig for SciArg."""
-
+class ArgumentAnnotatedEssaysV2Config(BratConfig):
     def __init__(self, conversion_method: str, **kwargs):
-        """BuilderConfig for SciArg.
+        """BuilderConfig for ArgumentAnnotatedEssaysV2.
 
         Args:
             conversion_method: either "connect_first" or "connect_all", see convert_aae2_claim_attributions_to_relations
@@ -133,10 +130,10 @@ class SciArgConfig(BratConfig):
         self.conversion_method = conversion_method
 
 
-class SciArg(BratBuilder):
+class ArgumentAnnotatedEssaysV2(BratBuilder):
     BUILDER_CONFIGS = [
-        SciArgConfig(name="default", conversion_method="connect_first"),
-        SciArgConfig(
+        ArgumentAnnotatedEssaysV2Config(name="default", conversion_method="connect_first"),
+        ArgumentAnnotatedEssaysV2Config(
             name="merge_fragmented_spans",
             merge_fragmented_spans=True,
             conversion_method="connect_first",
