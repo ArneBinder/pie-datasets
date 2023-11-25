@@ -1,5 +1,7 @@
+import os
 from typing import Dict
 
+import pandas as pd
 from pytorch_ie.annotations import BinaryRelation
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
@@ -16,12 +18,20 @@ from pie_datasets.document.processing import (
     RegexPartitioner,
 )
 
+
+def get_split_paths(url_split_ids: str, subdirectory: str) -> Dict[str, str]:
+    df_splits = pd.read_csv(url_split_ids, sep=";")
+    splits2ids = df_splits.groupby(df_splits["SET"]).agg(list).to_dict()["ID"]
+    return {
+        split.lower(): [os.path.join(subdirectory, split_id) for split_id in split_ids]
+        for split, split_ids in splits2ids.items()
+    }
+
+
 # TODO: use data from main branch when https://github.com/ArneBinder/pie-datasets/pull/66 is merged
 URL = "https://github.com/ArneBinder/pie-datasets/raw/add_aae2_data/data/datasets/ArgumentAnnotatedEssays-2.0/brat-project-final.zip"
-# TODO: use this!
-URL_SPLIT_IDS = "https://github.com/ArneBinder/pie-datasets/blob/add_aae2_data/data/datasets/ArgumentAnnotatedEssays-2.0/train-test-split.csv"
-SPLIT_PATHS = {"train": "brat-project-final"}
-
+URL_SPLIT_IDS = "https://raw.githubusercontent.com/ArneBinder/pie-datasets/add_aae2_data/data/datasets/ArgumentAnnotatedEssays-2.0/train-test-split.csv"
+SPLIT_PATHS = get_split_paths(URL_SPLIT_IDS, subdirectory="brat-project-final")
 
 DEFAULT_ATTRIBUTIONS_TO_RELATIONS_DICT = {"For": "supports", "Against": "attacks"}
 

@@ -22,7 +22,7 @@ disable_caching()
 
 DATASET_NAME = "aae2"
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
-SPLIT_SIZES = {"train": 402}
+SPLIT_SIZES = {'test': 80, 'train': 322}
 
 
 @pytest.fixture(
