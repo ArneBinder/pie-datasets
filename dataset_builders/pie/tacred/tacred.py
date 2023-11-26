@@ -2,6 +2,7 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
 import datasets
+from pie_models.document.processing import token_based_document_to_text_based
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import (
@@ -10,7 +11,6 @@ from pytorch_ie.documents import (
 )
 
 from pie_datasets import GeneratorBasedBuilder
-from pie_datasets.document.processing import token_based_document_to_text_based
 
 
 @dataclass(eq=True, frozen=True)

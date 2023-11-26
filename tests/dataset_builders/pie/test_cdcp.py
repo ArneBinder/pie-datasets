@@ -3,6 +3,7 @@ from typing import List
 
 import pytest
 from datasets import disable_caching, load_dataset
+from pie_models.document.processing import tokenize_document
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, Document, annotation_field
 from pytorch_ie.documents import (
@@ -19,7 +20,6 @@ from dataset_builders.pie.cdcp.cdcp import (
     example_to_document,
 )
 from pie_datasets import DatasetDict
-from pie_datasets.document.processing import tokenize_document
 from pie_datasets.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
 from tests import FIXTURES_ROOT
 from tests.dataset_builders.common import PIE_BASE_PATH, _deep_compare
