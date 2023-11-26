@@ -1,6 +1,4 @@
-from pytorch_ie.documents import (
-    TextDocumentWithLabeledSpansAndBinaryRelations,
-)
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 from pie_datasets.builders import BratBuilder
 from pie_datasets.core.dataset import DocumentConvertersType
@@ -16,7 +14,6 @@ SPLIT_PATHS = {
 
 
 class AbstRCT(BratBuilder):
-
     BASE_DATASET_PATH = "DFKI-SLT/brat"
     BASE_DATASET_REVISION = "052163d34b4429d81003981bc10674cef54aa0b8"
 

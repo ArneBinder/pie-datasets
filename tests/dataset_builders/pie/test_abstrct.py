@@ -2,18 +2,14 @@ from typing import List, Optional, Union
 
 import pytest
 from datasets import disable_caching
-from pytorch_ie.documents import (
-    TextDocumentWithLabeledSpansAndBinaryRelations,
-)
+from pie_models.document.processing import tokenize_document
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.abstrct.abstrct import AbstRCT
 from pie_datasets import DatasetDict
 from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
-from pie_datasets.document.processing import tokenize_document
-from pie_datasets.document.types import (
-    TokenDocumentWithLabeledSpansAndBinaryRelations,
-)
+from pie_datasets.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 disable_caching()
@@ -21,18 +17,16 @@ disable_caching()
 DATASET_NAME = "abstrct"
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 SPLIT_SIZES = {
-    'glaucoma_test': 100,
-    'mixed_test': 100,
-    'neoplasm_dev': 50,
-    'neoplasm_test': 100,
-    'neoplasm_train': 350,
+    "glaucoma_test": 100,
+    "mixed_test": 100,
+    "neoplasm_dev": 50,
+    "neoplasm_test": 100,
+    "neoplasm_train": 350,
 }
 SPLIT = "neoplasm_train"
 
 
-@pytest.fixture(
-    scope="module", params=[config.name for config in AbstRCT.BUILDER_CONFIGS]
-)
+@pytest.fixture(scope="module", params=[config.name for config in AbstRCT.BUILDER_CONFIGS])
 def dataset_variant(request) -> str:
     return request.param
 
