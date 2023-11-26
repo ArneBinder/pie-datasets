@@ -28,9 +28,8 @@ def get_split_paths(url_split_ids: str, subdirectory: str) -> Dict[str, str]:
     }
 
 
-# TODO: use data from main branch when https://github.com/ArneBinder/pie-datasets/pull/66 is merged
-URL = "https://github.com/ArneBinder/pie-datasets/raw/add_aae2_data/data/datasets/ArgumentAnnotatedEssays-2.0/brat-project-final.zip"
-URL_SPLIT_IDS = "https://raw.githubusercontent.com/ArneBinder/pie-datasets/add_aae2_data/data/datasets/ArgumentAnnotatedEssays-2.0/train-test-split.csv"
+URL = "https://github.com/ArneBinder/pie-datasets/raw/83fb46f904b13f335b6da3cce2fc7004d802ce4e/data/datasets/ArgumentAnnotatedEssays-2.0/brat-project-final.zip"
+URL_SPLIT_IDS = "https://raw.githubusercontent.com/ArneBinder/pie-datasets/83fb46f904b13f335b6da3cce2fc7004d802ce4e/data/datasets/ArgumentAnnotatedEssays-2.0/train-test-split.csv"
 SPLIT_PATHS = get_split_paths(URL_SPLIT_IDS, subdirectory="brat-project-final")
 
 DEFAULT_ATTRIBUTIONS_TO_RELATIONS_DICT = {"For": "supports", "Against": "attacks"}
