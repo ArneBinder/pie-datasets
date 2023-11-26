@@ -2,6 +2,7 @@ import os
 from typing import Dict
 
 import pandas as pd
+from pie_models.document.processing import RegexPartitioner
 from pytorch_ie.annotations import BinaryRelation
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
@@ -11,12 +12,7 @@ from pytorch_ie.documents import (
 from pie_datasets.builders import BratBuilder
 from pie_datasets.builders.brat import BratConfig, BratDocumentWithMergedSpans
 from pie_datasets.core.dataset import DocumentConvertersType
-from pie_datasets.document.processing import (
-    Caster,
-    Converter,
-    Pipeline,
-    RegexPartitioner,
-)
+from pie_datasets.document.processing import Caster, Converter, Pipeline
 
 
 def get_split_paths(url_split_ids: str, subdirectory: str) -> Dict[str, str]:
