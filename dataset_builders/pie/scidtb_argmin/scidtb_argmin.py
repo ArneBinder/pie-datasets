@@ -1,10 +1,11 @@
 import dataclasses
 import logging
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Tuple
 
 import datasets
+from pie_models.document.processing import token_based_document_to_text_based
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
-from pytorch_ie.core import AnnotationList, Document, annotation_field
+from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TokenBasedDocument,
@@ -12,7 +13,6 @@ from pytorch_ie.documents import (
 from pytorch_ie.utils.span import bio_tags_to_spans
 
 from pie_datasets import GeneratorBasedBuilder
-from pie_datasets.document.processing import token_based_document_to_text_based
 
 log = logging.getLogger(__name__)
 
