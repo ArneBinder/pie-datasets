@@ -1,3 +1,8 @@
+from pie_models.document.processing import (
+    RegexPartitioner,
+    RelationArgumentSorter,
+    TextSpanTrimmer,
+)
 from pytorch_ie.core import Document
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
@@ -6,13 +11,7 @@ from pytorch_ie.documents import (
 
 from pie_datasets.builders import BratBuilder
 from pie_datasets.core.dataset import DocumentConvertersType
-from pie_datasets.document.processing import (
-    Caster,
-    Pipeline,
-    RegexPartitioner,
-    RelationArgumentSorter,
-    TextSpanTrimmer,
-)
+from pie_datasets.document.processing import Caster, Pipeline
 
 URL = "http://data.dws.informatik.uni-mannheim.de/sci-arg/compiled_corpus.zip"
 SPLIT_PATHS = {"train": "compiled_corpus"}

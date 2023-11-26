@@ -2,6 +2,7 @@ from typing import List, Optional
 
 import pytest
 from datasets import disable_caching, load_dataset
+from pie_models.document.processing import tokenize_document
 from pytorch_ie.core import Document
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
@@ -12,7 +13,6 @@ from transformers import AutoTokenizer, PreTrainedTokenizer
 from dataset_builders.pie.sciarg.sciarg import SciArg
 from pie_datasets import DatasetDict
 from pie_datasets.builders.brat import BratDocumentWithMergedSpans
-from pie_datasets.document.processing import tokenize_document
 from pie_datasets.document.types import (
     TokenDocumentWithLabeledSpansAndBinaryRelations,
     TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
