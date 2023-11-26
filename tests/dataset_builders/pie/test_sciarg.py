@@ -24,30 +24,6 @@ disable_caching()
 DATASET_NAME = "sciarg"
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 SPLIT_SIZES = {"train": 40}
-HF_DATASET_PATH = "DFKI-SLT/brat"
-HF_KWARGS = {
-    "url": "http://data.dws.informatik.uni-mannheim.de/sci-arg/compiled_corpus.zip",
-    "subdirectory_mapping": {"compiled_corpus": "train"},
-}
-
-
-@pytest.fixture(scope="module")
-def hf_dataset():
-    return load_dataset(str(HF_DATASET_PATH), **HF_KWARGS)
-
-
-def test_hf_dataset(hf_dataset):
-    assert hf_dataset is not None
-    assert {name: len(ds) for name, ds in hf_dataset.items()} == SPLIT_SIZES
-
-
-@pytest.fixture(scope="module")
-def hf_example(hf_dataset):
-    return hf_dataset["train"][0]
-
-
-def test_hf_example(hf_example):
-    assert hf_example is not None
 
 
 @pytest.fixture(scope="module", params=["default", "merge_fragmented_spans"])

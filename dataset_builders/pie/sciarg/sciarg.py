@@ -15,7 +15,7 @@ from pie_datasets.document.processing import (
 )
 
 URL = "http://data.dws.informatik.uni-mannheim.de/sci-arg/compiled_corpus.zip"
-SUBDIRECTORY_MAPPING = {"compiled_corpus": "train"}
+SPLIT_PATHS = {"train": "compiled_corpus"}
 
 
 def get_common_pipeline_steps(target_document_type: type[Document]) -> dict:
@@ -33,9 +33,12 @@ def get_common_pipeline_steps(target_document_type: type[Document]) -> dict:
 
 
 class SciArg(BratBuilder):
+    BASE_DATASET_PATH = "DFKI-SLT/brat"
+    BASE_DATASET_REVISION = "052163d34b4429d81003981bc10674cef54aa0b8"
+
     # we need to add None to the list of dataset variants to support the default dataset variant
     BASE_BUILDER_KWARGS_DICT = {
-        dataset_variant: {"url": URL, "subdirectory_mapping": SUBDIRECTORY_MAPPING}
+        dataset_variant: {"url": URL, "split_paths": SPLIT_PATHS}
         for dataset_variant in ["default", "merge_fragmented_spans", None]
     }
 
