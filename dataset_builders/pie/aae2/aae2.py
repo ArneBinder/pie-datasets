@@ -2,7 +2,7 @@ import os
 from typing import Dict
 
 import pandas as pd
-from pie_models.document.processing import RegexPartitioner
+from pie_modules.document.processing import RegexPartitioner
 from pytorch_ie.annotations import BinaryRelation
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
