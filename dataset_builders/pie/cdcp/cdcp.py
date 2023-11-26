@@ -3,7 +3,7 @@ import logging
 from typing import Any, Dict, List, Optional
 
 import datasets
-from pie_models.document.processing.text_span_trimmer import trim_text_spans
+from pie_modules.document.processing.text_span_trimmer import trim_text_spans
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import (

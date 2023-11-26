@@ -1027,14 +1027,14 @@ test = ["hypothesis (>=6.46.1)", "pytest (>=7.3.2)", "pytest-asyncio (>=0.17.0)"
 xml = ["lxml (>=4.8.0)"]
 
 [[package]]
-name = "pie-models"
-version = "0.7.6"
+name = "pie-modules"
+version = "0.8.0"
 description = "Model and Taskmodule implementations for PyTorch-IE"
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "pie_models-0.7.6-py3-none-any.whl", hash = "sha256:3f8245b6c6e07a1aa86aa2ff35fbd2a4b80637b3bb9d5a5cdb23362a649d1582"},
-    {file = "pie_models-0.7.6.tar.gz", hash = "sha256:6b7233a4ac7e640810595f702c2d4bf6422e12e4796f54371bd163fb828579bc"},
+    {file = "pie_modules-0.8.0-py3-none-any.whl", hash = "sha256:0b9cf500e98783b72475b7c30cc3050b7a23b848c480772d23537c19c7b374fa"},
+    {file = "pie_modules-0.8.0.tar.gz", hash = "sha256:b9c5f853ea3f8473a31268bf10b4c031f49216f43661666f3220d00bec333152"},
 ]
 
 [package.dependencies]
@@ -2077,4 +2077,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "e60362fb728c14102301c68b6c9735bd6fd50e30852c3b626dc427edd96b6639"
+content-hash = "4aa02150b3df55a4eedb1b1d95a0bbdd4cfb765b3467a8b30f21322df89bdeee"
