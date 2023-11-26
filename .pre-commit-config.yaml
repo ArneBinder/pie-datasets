@@ -85,7 +85,8 @@ repos:
         args:
           - --skip=logs/**
           # arbitral: this is a legal term and used in example data (cdcp dataset)
-          - --ignore-words-list=arbitral
+          # abstrct / AbstRCT: this is a dataset name
+          - --ignore-words-list=arbitral,abstrct,AbstRCT
 
   # python static type checking
   - repo: https://github.com/pre-commit/mirrors-mypy
