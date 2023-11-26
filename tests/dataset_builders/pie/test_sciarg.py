@@ -1,8 +1,8 @@
 from typing import List, Optional
 
 import pytest
-from datasets import disable_caching, load_dataset
-from pie_models.document.processing import tokenize_document
+from datasets import disable_caching
+from pie_modules.document.processing import tokenize_document
 from pytorch_ie.core import Document
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
