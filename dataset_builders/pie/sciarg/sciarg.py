@@ -1,4 +1,4 @@
-from pie_models.document.processing import (
+from pie_modules.document.processing import (
     RegexPartitioner,
     RelationArgumentSorter,
     TextSpanTrimmer,
