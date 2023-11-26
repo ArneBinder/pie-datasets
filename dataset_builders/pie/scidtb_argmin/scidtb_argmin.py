@@ -3,7 +3,7 @@ import logging
 from typing import Any, Dict, List, Tuple
 
 import datasets
-from pie_models.document.processing import token_based_document_to_text_based
+from pie_modules.document.processing import token_based_document_to_text_based
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import (
