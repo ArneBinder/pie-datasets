@@ -4,7 +4,7 @@ from typing import List
 
 import pytest
 from datasets import disable_caching, load_dataset
-from pie_models.document.processing import tokenize_document
+from pie_modules.document.processing import tokenize_document
 from pytorch_ie.core import Document
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 from transformers import AutoTokenizer, PreTrainedTokenizer
