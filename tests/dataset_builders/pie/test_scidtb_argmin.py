@@ -16,9 +16,12 @@ from dataset_builders.pie.scidtb_argmin.scidtb_argmin import (
     example_to_document,
 )
 from pie_datasets import DatasetDict
-from pie_datasets.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
 from tests import FIXTURES_ROOT
-from tests.dataset_builders.common import HF_DS_FIXTURE_DATA_PATH, PIE_BASE_PATH
+from tests.dataset_builders.common import (
+    HF_DS_FIXTURE_DATA_PATH,
+    PIE_BASE_PATH,
+    TestTokenDocumentWithLabeledSpansAndBinaryRelations,
+)
 
 disable_caching()
 
@@ -292,7 +295,7 @@ def tokenizer() -> PreTrainedTokenizer:
 @pytest.fixture(scope="module")
 def tokenized_documents_with_labeled_spans_and_binary_relations(
     dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer
-) -> List[TokenDocumentWithLabeledSpansAndBinaryRelations]:
+) -> List[TestTokenDocumentWithLabeledSpansAndBinaryRelations]:
     # get a document to check
     doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations["train"][0]
     # Note, that this is a list of documents, because the document may be split into chunks
@@ -301,7 +304,7 @@ def tokenized_documents_with_labeled_spans_and_binary_relations(
         doc,
         tokenizer=tokenizer,
         return_overflowing_tokens=True,
-        result_document_type=TokenDocumentWithLabeledSpansAndBinaryRelations,
+        result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
         verbose=True,
     )
     return tokenized_docs
@@ -373,7 +376,7 @@ def test_tokenized_documents_with_entities_and_relations_all(
                 doc,
                 tokenizer=tokenizer,
                 return_overflowing_tokens=True,
-                result_document_type=TokenDocumentWithLabeledSpansAndBinaryRelations,
+                result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
                 verbose=True,
             )
             # we just ensure that we get at least one tokenized document
