@@ -9,8 +9,10 @@ from transformers import AutoTokenizer, PreTrainedTokenizer
 from dataset_builders.pie.abstrct.abstrct import AbstRCT
 from pie_datasets import DatasetDict
 from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
-from pie_datasets.document.types import TokenDocumentWithLabeledSpansAndBinaryRelations
-from tests.dataset_builders.common import PIE_BASE_PATH
+from tests.dataset_builders.common import (
+    PIE_BASE_PATH,
+    TestTokenDocumentWithLabeledSpansAndBinaryRelations,
+)
 
 disable_caching()
 
@@ -205,7 +207,7 @@ def tokenizer() -> PreTrainedTokenizer:
 @pytest.fixture(scope="module")
 def tokenized_documents_with_labeled_spans_and_binary_relations(
     dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer
-) -> Optional[List[TokenDocumentWithLabeledSpansAndBinaryRelations]]:
+) -> Optional[List[TestTokenDocumentWithLabeledSpansAndBinaryRelations]]:
     if dataset_of_text_documents_with_labeled_spans_and_binary_relations is None:
         return None
 
@@ -217,7 +219,7 @@ def tokenized_documents_with_labeled_spans_and_binary_relations(
         doc,
         tokenizer=tokenizer,
         return_overflowing_tokens=True,
-        result_document_type=TokenDocumentWithLabeledSpansAndBinaryRelations,
+        result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
         strict_span_conversion=False,
         verbose=True,
     )
@@ -287,7 +289,7 @@ def test_tokenized_documents_with_entities_and_relations_all(
                     doc,
                     tokenizer=tokenizer,
                     return_overflowing_tokens=True,
-                    result_document_type=TokenDocumentWithLabeledSpansAndBinaryRelations,
+                    result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
                     strict_span_conversion=False,
                     verbose=True,
                 )
