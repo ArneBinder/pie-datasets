@@ -1,9 +1,14 @@
+import dataclasses
 import json
 import logging
 import os
 import re
 from pathlib import Path
 from typing import List, Optional
+
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan
+from pytorch_ie.core import AnnotationList, annotation_field
+from pytorch_ie.documents import TokenBasedDocument
 
 from tests import FIXTURES_ROOT
 
@@ -68,3 +73,13 @@ def _load_json(fn: str):
     with open(fn) as f:
         ex = json.load(f)
     return ex
+
+
+@dataclasses.dataclass
+class TestTokenDocumentWithLabeledSpans(TokenBasedDocument):
+    labeled_spans: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
+
+
+@dataclasses.dataclass
+class TestTokenDocumentWithLabeledSpansAndBinaryRelations(TestTokenDocumentWithLabeledSpans):
+    binary_relations: AnnotationList[BinaryRelation] = annotation_field(target="labeled_spans")
