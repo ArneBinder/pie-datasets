@@ -12,11 +12,11 @@ from transformers import AutoTokenizer, PreTrainedTokenizer
 from dataset_builders.pie.aae2.aae2 import ArgumentAnnotatedEssaysV2
 from pie_datasets import DatasetDict
 from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
-from pie_datasets.document.types import (
-    TokenDocumentWithLabeledSpansAndBinaryRelations,
-    TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+from tests.dataset_builders.common import (
+    PIE_BASE_PATH,
+    TestTokenDocumentWithLabeledSpansAndBinaryRelations,
+    TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
-from tests.dataset_builders.common import PIE_BASE_PATH
 
 disable_caching()
 
@@ -348,7 +348,7 @@ def tokenizer() -> PreTrainedTokenizer:
 @pytest.fixture(scope="module")
 def tokenized_documents_with_labeled_spans_and_binary_relations(
     dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer
-) -> Optional[List[TokenDocumentWithLabeledSpansAndBinaryRelations]]:
+) -> Optional[List[TestTokenDocumentWithLabeledSpansAndBinaryRelations]]:
     if dataset_of_text_documents_with_labeled_spans_and_binary_relations is None:
         return None
 
@@ -360,7 +360,7 @@ def tokenized_documents_with_labeled_spans_and_binary_relations(
         doc,
         tokenizer=tokenizer,
         return_overflowing_tokens=True,
-        result_document_type=TokenDocumentWithLabeledSpansAndBinaryRelations,
+        result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
         strict_span_conversion=False,
         verbose=True,
     )
@@ -430,7 +430,7 @@ def test_tokenized_documents_with_entities_and_relations_all(
                     doc,
                     tokenizer=tokenizer,
                     return_overflowing_tokens=True,
-                    result_document_type=TokenDocumentWithLabeledSpansAndBinaryRelations,
+                    result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
                     strict_span_conversion=False,
                     verbose=True,
                 )
@@ -442,7 +442,7 @@ def test_tokenized_documents_with_entities_and_relations_all(
 @pytest.fixture(scope="module")
 def tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions(
     dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions, tokenizer
-) -> List[TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions]:
+) -> List[TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions]:
     if (
         dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions
         is not None
@@ -457,7 +457,7 @@ def tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitio
             doc,
             tokenizer=tokenizer,
             return_overflowing_tokens=True,
-            result_document_type=TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+            result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
             strict_span_conversion=False,
             verbose=True,
         )
@@ -504,7 +504,7 @@ def test_tokenized_documents_with_entities_relations_and_partitions_all(
                     doc,
                     tokenizer=tokenizer,
                     return_overflowing_tokens=True,
-                    result_document_type=TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+                    result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
                     strict_span_conversion=False,
                     verbose=True,
                 )
