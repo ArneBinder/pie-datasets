@@ -348,21 +348,22 @@ pytest --cov --cov-report term-missing
 
 1. Create the release branch:
    `git switch --create release main`
-2. Increase the version:
+2. Increase the project version:
    `poetry version <PATCH|MINOR|MAJOR>`,
    e.g. `poetry version patch` for a patch release. If the release contains new features, or breaking changes,
    bump the minor version (this project has no main release yet). If the release contains only bugfixes, bump
    the patch version. See [Semantic Versioning](https://semver.org/) for more information.
-3. Commit the changes:
+3. Increase the maximum version in all dataset `requirements.txt` files, if not a patch release.
+4. Commit the changes:
    `git commit --message="release <NEW VERSION>" pyproject.toml`,
    e.g. `git commit --message="release 0.13.0" pyproject.toml`
-4. Push the changes to GitHub:
+5. Push the changes to GitHub:
    `git push origin release`
-5. Create a PR for that `release` branch on GitHub.
-6. Wait until checks passed successfully.
-7. Merge the PR into the main branch. This triggers the GitHub Action that creates all relevant release
+6. Create a PR for that `release` branch on GitHub.
+7. Wait until checks passed successfully.
+8. Merge the PR into the main branch. This triggers the GitHub Action that creates all relevant release
    artefacts and also uploads them to PyPI.
-8. Cleanup: Delete the `release` branch. This is important, because otherwise the next release will fail.
+9. Cleanup: Delete the `release` branch. This is important, because otherwise the next release will fail.
 
 [black]: https://github.com/psf/black
 [codecov]: https://app.codecov.io/gh/arnebinder/pie-datasets
