@@ -24,14 +24,17 @@ class ExtractiveAnswer(Span):
     """An answer to a question."""
 
     # this annotation has two target fields
-    TARGET_NAMES = ("context", "questions")
+    TARGET_NAMES = ("base", "questions")
 
     question: Question
+    # The score of the answer. This is not considered when comparing two answers (e.g. prediction with gold).
+    score: Optional[float] = dataclasses.field(default=None, compare=False)
 
     def __str__(self) -> str:
         if not self.is_attached:
             return ""
-        context = self.named_targets["context"]
+        # we assume that the first target is the text
+        context = self.named_targets["base"]
         return str(context[self.start : self.end])
 
 
@@ -41,12 +44,11 @@ class SquadV2Document(TextBasedDocument):
 
     title: Optional[str] = None
     questions: AnnotationList[Question] = annotation_field()
+    # Note: We define the target fields / layers of the answers layer in the following way. Any answer
+    # targets the text field and (one entry of) the questions layer, so named_targets needs to contain
+    # these *values*. See ExtractiveAnswer.TARGET_NAMES for the required *keys* for named_targets.
     answers: AnnotationList[ExtractiveAnswer] = annotation_field(
-        # The answers annotation layer depends on two other data fields / layers:
-        # The "text" data field (this is derived from TextBasedDocument) and the "questions" annotation layer.
-        # Any annotation layer with ExtractiveAnswer annotations expects the targets "context" and "questions".
-        # We provide the respective mapping as "named_targets".
-        named_targets={"context": "text", "questions": "questions"}
+        named_targets={"base": "text", "questions": "questions"}
     )
 
 
@@ -114,5 +116,5 @@ class SquadV2(GeneratorBasedBuilder):
 
     DEFAULT_CONFIG_NAME = "squad_v2"
 
-    def _generate_document(self, example):
+    def _generate_document(self, example, **kwargs):
         return example_to_document(example)
