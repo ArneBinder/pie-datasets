@@ -1,16 +1,6 @@
-import dataclasses
-from typing import List
-
 import pytest
 from datasets import disable_caching, load_dataset
-from pie_modules.document.processing import tokenize_document
-from pytorch_ie.annotations import LabeledSpan
-from pytorch_ie.core import AnnotationList, Document, annotation_field
-from pytorch_ie.documents import (
-    TextBasedDocument,
-    TextDocumentWithLabeledSpansAndBinaryRelations,
-)
-from transformers import AutoTokenizer, PreTrainedTokenizer
+from pytorch_ie.core import Document
 
 from dataset_builders.pie.squad_v2.squad_v2 import (
     SquadV2,
@@ -21,8 +11,6 @@ from pie_datasets import DatasetDict
 from tests import FIXTURES_ROOT
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
-    TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-    _deep_compare,
 )
 
 disable_caching()
