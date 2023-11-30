@@ -9,9 +9,7 @@ from dataset_builders.pie.squad_v2.squad_v2 import (
 )
 from pie_datasets import DatasetDict
 from tests import FIXTURES_ROOT
-from tests.dataset_builders.common import (
-    PIE_BASE_PATH,
-)
+from tests.dataset_builders.common import PIE_BASE_PATH
 
 disable_caching()
 
