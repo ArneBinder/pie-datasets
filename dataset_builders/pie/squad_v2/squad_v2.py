@@ -116,5 +116,10 @@ class SquadV2(GeneratorBasedBuilder):
 
     DEFAULT_CONFIG_NAME = "squad_v2"
 
+    # TODO: add when https://github.com/ArneBinder/pie-modules/pull/3 is merged
+    # DOCUMENT_CONVERTERS = {
+    #     ExtractiveQADocument: {},  # no conversion required, just cast to the correct type
+    # }
+
     def _generate_document(self, example, **kwargs):
         return example_to_document(example)
