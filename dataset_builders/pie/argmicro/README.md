@@ -21,7 +21,8 @@ The document type for this dataset is `ArgMicroDocument` which defines the follo
 
 and the following annotation layers:
 
-- `stance` (annotation type: `Label`, see [here](https://huggingface.co/datasets/DFKI-SLT/argmicro/blob/main/argmicro.py#L35))
+- `stance` (annotation type: `Label`)
+  - description: a document may contain one of these `stance` label: `pro`, `con`, `unclear`. or no label when it is undefined. (see reference [here](https://huggingface.co/datasets/DFKI-SLT/argmicro/blob/main/argmicro.py#L35))
 - `edus` (annotation type: `Span`, target: `text`)
 - `adus` (tuple, annotation type: `LabeledAnnotationCollection`, target: `edus`)
   - description: an `adus` may consist of several `edus`. This special annotation type allows mapping `adus` with those `Span`'s.
