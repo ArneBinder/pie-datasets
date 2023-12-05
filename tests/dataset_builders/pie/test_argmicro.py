@@ -265,6 +265,17 @@ def dataset() -> DatasetDict:
 def test_dataset(dataset):
     assert dataset is not None
     assert {name: len(ds) for name, ds in dataset.items()} == SPLIT_SIZES
+    for split, ds in dataset.items():
+        adu_label_counts = Counter()
+        rel_label_counts = Counter()
+        for doc in ds:
+            adu_label_counts.update([adu.label for adu in doc.adus])
+            rel_label_counts.update([rel.label for rel in doc.relations])
+        if split == "train":
+            assert dict(adu_label_counts) == {"opp": 125, "pro": 451}
+            assert dict(rel_label_counts) == {"reb": 108, "sup": 263, "und": 63, "exa": 9}
+        else:
+            raise ValueError(f"Unknown split {split}")
 
 
 @pytest.fixture(scope="module")
@@ -337,6 +348,24 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
     dataset_of_text_documents_with_labeled_spans_and_binary_relations,
 ):
     assert dataset_of_text_documents_with_labeled_spans_and_binary_relations is not None
+    for split, ds in dataset_of_text_documents_with_labeled_spans_and_binary_relations.items():
+        span_label_counts = Counter()
+        relation_label_counts = Counter()
+        for doc in ds:
+            span_label_counts.update([span.label for span in doc.labeled_spans])
+            relation_label_counts.update([rel.label for rel in doc.binary_relations])
+        if split == "train":
+            assert dict(span_label_counts) == {"opp": 125, "pro": 451}
+            assert dict(relation_label_counts) == {
+                "reb": 110,
+                "sup": 281,
+                "und": 65,
+                "joint": 44,
+                "exa": 9,
+            }
+        else:
+            raise ValueError(f"Unknown split {split}")
+
     # get a document to check
     converted_doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations["train"][0]
 
