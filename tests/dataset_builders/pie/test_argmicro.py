@@ -266,12 +266,18 @@ def test_dataset(dataset):
     assert dataset is not None
     assert {name: len(ds) for name, ds in dataset.items()} == SPLIT_SIZES
     for split, ds in dataset.items():
+        stance_label_counts = Counter()
         adu_label_counts = Counter()
         rel_label_counts = Counter()
         for doc in ds:
+            assert len(doc.stance) <= 1
+            stance_label_counts.update([stance.label for stance in doc.stance])
+            if len(doc.stance) == 0:
+                stance_label_counts.update(["UNDEFINED"])
             adu_label_counts.update([adu.label for adu in doc.adus])
             rel_label_counts.update([rel.label for rel in doc.relations])
         if split == "train":
+            assert dict(stance_label_counts) == {'pro': 46, 'con': 42, 'UNDEFINED': 23, 'unclear': 1}
             assert dict(adu_label_counts) == {"opp": 125, "pro": 451}
             assert dict(rel_label_counts) == {"reb": 108, "sup": 263, "und": 63, "exa": 9}
         else:
