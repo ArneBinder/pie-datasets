@@ -14,8 +14,8 @@ The dataset contains two `BuilderConfig`'s:
 
 The document type for this dataset is `ArgMicroDocument` which defines the following data fields:
 
-- `id` (str)
 - `text` (str)
+- `id` (str, optional)
 - `topic_id` (str, optional)
 - `metadata` (dictionary, optional)
 
