@@ -24,7 +24,7 @@ and the following annotation layers:
 - `stance` (annotation type: `Label`)
   - description: A document may contain one of these `stance` labels: `pro`, `con`, `unclear`, or no label when it is undefined (see [here](https://huggingface.co/datasets/DFKI-SLT/argmicro/blob/main/argmicro.py#L35) for reference).
 - `edus` (annotation type: `Span`, target: `text`)
-- `adus` (tuple, annotation type: `LabeledAnnotationCollection`, target: `edus`)
+- `adus` (annotation type: `LabeledAnnotationCollection`, target: `edus`)
   - description: each element of `adus` may consist of several entries from `edus`, so we require `LabeledAnnotationCollection` as annotation type. This is originally indicated by `seg` edges in the data.
   - `LabeledAnnotationCollection` has the following fields:
     - `annotations` (annotation type: `Span`, target: `text`)
