@@ -277,7 +277,12 @@ def test_dataset(dataset):
             adu_label_counts.update([adu.label for adu in doc.adus])
             rel_label_counts.update([rel.label for rel in doc.relations])
         if split == "train":
-            assert dict(stance_label_counts) == {'pro': 46, 'con': 42, 'UNDEFINED': 23, 'unclear': 1}
+            assert dict(stance_label_counts) == {
+                "pro": 46,
+                "con": 42,
+                "UNDEFINED": 23,
+                "unclear": 1,
+            }
             assert dict(adu_label_counts) == {"opp": 125, "pro": 451}
             assert dict(rel_label_counts) == {"reb": 108, "sup": 263, "und": 63, "exa": 9}
         else:
