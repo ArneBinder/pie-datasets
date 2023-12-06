@@ -15,15 +15,18 @@ from pie_datasets import DatasetDict
 from pie_datasets.builders.brat import BratDocumentWithMergedSpans
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
+    PIE_DS_FIXTURE_DATA_PATH,
     TestTokenDocumentWithLabeledSpansAndBinaryRelations,
     TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
 
 disable_caching()
 
+TEST_FULL_DATASET = False
+
 DATASET_NAME = "sciarg"
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
-SPLIT_SIZES = {"train": 40}
+SPLIT_SIZES = {"train": 40 if TEST_FULL_DATASET else 3}
 
 
 @pytest.fixture(scope="module", params=["default", "merge_fragmented_spans"])
@@ -33,7 +36,13 @@ def dataset_variant(request) -> str:
 
 @pytest.fixture(scope="module")
 def dataset(dataset_variant) -> DatasetDict:
-    return DatasetDict.load_dataset(str(PIE_DATASET_PATH), name=dataset_variant)
+    if TEST_FULL_DATASET:
+        base_dataset_kwargs = None
+    else:
+        base_dataset_kwargs = {"data_dir": str(PIE_DS_FIXTURE_DATA_PATH / "sciarg")}
+    return DatasetDict.load_dataset(
+        str(PIE_DATASET_PATH), name=dataset_variant, base_dataset_kwargs=base_dataset_kwargs
+    )
 
 
 def test_dataset(dataset):

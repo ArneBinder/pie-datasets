@@ -1,0 +1,787 @@
+T1	background_claim 1801 1851	Modeling in 3D is becoming much easier than before
+T2	background_claim 1853 1874	User-friendly systems
+T3	background_claim 1962 2036	have made the creation of 3D characters accessible to novices and children
+R1	parts_of_same Arg1:T2 Arg2:T3	
+R2	supports Arg1:T2 Arg2:T1	
+T4	data 1883 1888	Teddy
+T5	data 1918 1930	Cosmic Blobs
+T6	data 1933 1960	http://www.cosmicblobs.com/
+T7	data 1891 1911	Igarashi et al. 1999
+R3	supports Arg1:T4 Arg2:T2	
+R4	supports Arg1:T5 Arg2:T3	
+R5	supports Arg1:T7 Arg2:T2	
+R6	supports Arg1:T6 Arg2:T3	
+T8	background_claim 2038 2074	Bringing these static shapes to life
+T9	background_claim 2085 2102	is still not easy
+R7	parts_of_same Arg1:T8 Arg2:T9	
+R8	contradicts Arg1:T8 Arg2:T3	
+T10	background_claim 2150 2190	the user must rig the character manually
+T11	data 2104 2148	In a conventional skeletal animation package
+R9	supports Arg1:T11 Arg2:T10	
+R10	supports Arg1:T10 Arg2:T9	
+T12	background_claim 2192 2323	This requires placing the skeleton joints inside the character and specifying which parts of the surface are attached to which bone
+T13	own_claim 2325 2416	The tedium of this process makes simple character animation more difficult than it could be
+T14	own_claim 2418 2569	We envision a system that eliminates this tedium to make animation more accessible for children, educators, researchers, and other non-expert animators
+T15	data 2584 2701	a child should be able to model a unicorn, click the “Quadruped Gallop” button, and watch the unicorn start galloping
+R11	supports Arg1:T15 Arg2:T14	
+T16	own_claim 2734 2750	we need a method
+T17	own_claim 2775 2883	that takes a character, a skeleton, and a motion of that skeleton as input, and outputs the moving character
+R12	parts_of_same Arg1:T16 Arg2:T17	
+T18	data 2764 2772	Figure 1
+R13	supports Arg1:T18 Arg2:T17	
+T19	own_claim 2885 2919	The missing portion is the rigging
+T20	background_claim 2921 2969	motion transfer has been addressed in prior work
+T21	data 2972 2985	Gleicher 2001
+R14	supports Arg1:T21 Arg2:T20	
+R15	supports Arg1:T20 Arg2:T19	
+T22	own_claim 2988 3028	Our algorithm consists of two main steps
+T23	own_claim 3030 3048	skeleton embedding
+T24	own_claim 3053 3068	skin attachment
+R16	supports Arg1:T23 Arg2:T22	
+R17	supports Arg1:T24 Arg2:T22	
+T25	own_claim 4110 4286	our method can use a generic biped skeleton to rig an anatomically correct human model, an anthropomorphic robot, and even something that has very little resemblance to a human
+T26	own_claim 4469 4603	A key design challenge is constructing a penalty function that penalizes undesirable embeddings and generalizes well to new characters
+T27	own_claim 4615 4725	we designed a maximum-margin supervised learning method to combine a set of hand-constructed penalty functions
+T28	own_claim 4781 4867	we tested our algorithm on 16 characters that we did not see or use during development
+T29	own_claim 4869 4936	Our algorithm computed a good rig for all but 3 of these characters
+T30	data 4942 4969	each of the remaining cases
+T31	own_claim 4971 5017	one joint placement hint corrected the problem
+R18	supports Arg1:T30 Arg2:T31	
+T32	own_claim 5019 5078	We simplify the problem by making the following assumptions
+T33	data 5080 5141	The character mesh must be the boundary of a connected volume
+T34	data 5143 5233	The character must be given in approximately the same orientation and pose as the skeleton
+T35	data 5243 5309	the character must be proportioned roughly like the given skeleton
+R19	supports Arg1:T33 Arg2:T32	
+R20	supports Arg1:T34 Arg2:T32	
+R21	supports Arg1:T35 Arg2:T32	
+T36	own_claim 5311 5385	We introduce several new techniques to solve the automatic rigging problem
+T37	own_claim 5389 5534	A maximum-margin method for learning the weights of a linear combination of penalty functions based on examples, as an alternative to hand-tuning
+T38	data 5536 5547	Section 3.3
+R22	supports Arg1:T38 Arg2:T37	
+R23	supports Arg1:T37 Arg2:T36	
+T39	own_claim 5552 5666	An A ∗ -like heuristic to accelerate the search for an optimal skeleton embedding over an exponential search space
+T40	own_claim 5684 5811	Use of Laplace’s diffusion equation to generate weights for attaching mesh vertices to the skeleton using linear blend skinning
+T41	own_claim 5825 5881	This method could also be useful in existing 3D packages
+T42	data 5668 5679	Section 3.4
+T43	own_claim 5883 5903	Our prototype system
+T44	own_claim 5923 5967	rigs the given character using our algorithm
+R24	parts_of_same Arg1:T44 Arg2:T43	
+T45	own_claim 5969 6045	It then transfers a motion to the character using online motion retargetting
+T46	own_claim 6066 6188	to eliminate footskate by constraining the feet trajectories of the character to the feet trajectories of the given motion
+R25	parts_of_same Arg1:T45 Arg2:T46	
+T47	data 6048 6064	Choi and Ko 2000
+R26	supports Arg1:T47 Arg2:T45	
+T48	background_claim 6324 6366	Most prior research in character animation
+T49	background_claim 6386 6423	has focused on professional animators
+T50	background_claim 6425 6469	very little work is targeted at novice users
+R27	parts_of_same Arg1:T48 Arg2:T49	
+R28	semantically_same Arg1:T50 Arg2:T49	
+T51	background_claim 6471 6511	Recent exceptions include Motion Doodles
+T52	data 6514 6532	Thorne et al. 2004
+R29	supports Arg1:T52 Arg2:T51	
+T53	background_claim 6534 6556	as well as the work of
+T54	background_claim 6573 6594	on spatial keyframing
+R30	parts_of_same Arg1:T53 Arg2:T54	
+T55	data 6557 6571	Igarashi et al
+T56	data 6596 6601	2005b
+T57	data 6648 6653	2005a
+T58	background_claim 6607 6646	as-rigid-as-possible shape manipulation
+R31	parts_of_same Arg1:T58 Arg2:T53	
+R32	parts_of_same Arg1:T56 Arg2:T55	
+R33	parts_of_same Arg1:T57 Arg2:T55	
+R34	supports Arg1:T55 Arg2:T53	
+T59	background_claim 6656 6787	These approaches focus on simplifying animation control, rather than simplifying the definition of the articulation of the characte
+R35	supports Arg1:T58 Arg2:T59	
+T60	background_claim 7093 7178	their approach relies on very strong assumptions about how the character is presented
+T61	background_claim 7002 7087	The Motion Doodles system has the ability to infer the articulation of a 2D character
+R36	contradicts Arg1:T60 Arg2:T61	
+T62	background_claim 6805 6919	a spatial keyframing system expects an articulated character as input, and as-rigid-as-possible shape manipulation
+T63	background_claim 6939 7000	relies on the constraints to provide articulation information
+R37	parts_of_same Arg1:T63 Arg2:T62	
+R38	supports Arg1:T62 Arg2:T59	
+R39	supports Arg1:T61 Arg2:T59	
+T64	background_claim 7200 7291	Although most skeleton-based prior work on automatic rigging focused on skeleton extraction
+T65	own_claim 7310 7340	we advocate skeleton embedding
+T66	data 7297 7308	our problem
+R40	supports Arg1:T66 Arg2:T65	
+R41	contradicts Arg1:T65 Arg2:T64	
+T67	own_claim 7996 8052	skeleton embedding is much more suitable than extraction
+R42	semantically_same Arg1:T67 Arg2:T65	
+T68	background_claim 7342 7412	A few approaches to the skeleton extraction problem are representative
+T69	background_claim 7442 7535	extract a skeleton by simplifying the Voronoi skeleton with a small amount of user assistance
+T70	data 7414 7441	Teichmann and Teller [1998]
+R43	supports Arg1:T70 Arg2:T69	
+R44	supports Arg1:T69 Arg2:T68	
+T71	background_claim 7556 7601	use repulsive force fields to find a skeleton
+T72	data 7537 7554	Liu et al. [2003]
+R45	supports Arg1:T72 Arg2:T71	
+R46	supports Arg1:T71 Arg2:T68	
+T73	data 7619 7638	Katz and Tal [2003]
+T74	background_claim 7639 7730	describe a surface partitioning algorithm and suggest skeleton extraction as an application
+R47	supports Arg1:T73 Arg2:T74	
+R48	supports Arg1:T74 Arg2:T68	
+T75	data 7749 7760	Wade [2000]
+T76	background_claim 7732 7745	The technique
+T77	background_claim 7762 7788	is most similar to our own
+T78	background_claim 7799 7883	they approximate the medial surface by finding discontinuities in the distance field
+T79	background_claim 7889 7929	they use it to construct a skeleton tree
+R49	contradicts Arg1:T79 Arg2:T78	
+R50	supports Arg1:T78 Arg2:T77	
+R51	parts_of_same Arg1:T76 Arg2:T77	
+R52	supports Arg1:T76 Arg2:T68	
+T80	data 7935 7985	the purpose of automatically animating a character
+R53	supports Arg1:T80 Arg2:T67	
+T81	own_claim 8067 8121	the user may have motion data for a quadruped skeleton
+T82	data 8131 8164	a complicated quadruped character
+T83	own_claim 8166 8227	the extracted skeleton is likely to have a different topology
+R54	supports Arg1:T82 Arg2:T83	
+R55	contradicts Arg1:T81 Arg2:T83	
+R56	supports Arg1:T83 Arg2:T67	
+T84	background_claim 8229 8277	The anatomically appropriate skeleton generation
+T85	background_claim 8294 8395	ameliorates this problem by techniques such as identifying appendages and fitting appendage templates
+T86	data 8281 8292	Wade [2000]
+R57	supports Arg1:T86 Arg2:T84	
+T87	background_claim 8401 8462	the overall topology of the resulting skeleton may still vary
+R58	parts_of_same Arg1:T84 Arg2:T85	
+R59	contradicts Arg1:T87 Arg2:T85	
+T88	background_claim 8509 8538	ears may be mistaken for arms
+T89	data 8481 8506	the character in Figure 1
+R60	supports Arg1:T88 Arg2:T87	
+R61	supports Arg1:T89 Arg2:T88	
+T90	own_claim 8540 8680	Another advantage of embedding over extraction is that the given skeleton provides information about the expected structure of the character
+T91	own_claim 8688 8737	may be difficult to obtain from just the geometry
+R62	supports Arg1:T91 Arg2:T90	
+R63	supports Arg1:T87 Arg2:T67	
+R64	supports Arg1:T90 Arg2:T67	
+T92	own_claim 8751 8851	we could use an existing skeleton extraction algorithm and embed our skeleton into the extracted one
+T93	own_claim 8853 8892	the results would likely be undesirable
+R65	contradicts Arg1:T93 Arg2:T92	
+R66	supports Arg1:T90 Arg2:T93	
+T94	data 8936 8944	Figure 1
+T95	background_claim 8907 8932	the legs of the character
+T96	background_claim 8945 9008	would be too short if a skeleton extraction algorithm were used
+R67	parts_of_same Arg1:T95 Arg2:T96	
+R68	supports Arg1:T94 Arg2:T96	
+R69	supports Arg1:T95 Arg2:T93	
+T97	data 9112 9155	the model is fairly similar to the template
+T98	background_claim 9027 9097	Animating user-provided data by fitting a template has been successful
+R70	supports Arg1:T97 Arg2:T98	
+T99	background_claim 9157 9245	Most of the work has been focused on human models, making use of human anatomy specifics
+T100	data 9254 9274	Moccozet et al. 2004
+R71	supports Arg1:T100 Arg2:T99	
+T101	data 9281 9358	segmenting and animating simple 3D models of characters and inanimate objects
+T102	background_claim 9384 9432	fit voxel-based volumetric templates to the data
+R72	supports Arg1:T101 Arg2:T102	
+T103	data 9361 9383	Anderson et al. [2000]
+R73	supports Arg1:T103 Arg2:T102	
+T104	background_claim 9443 9481	Almost any system for mesh deformation
+T105	background_claim 9579 9624	can be adapted for skeleton-based deformation
+R74	parts_of_same Arg1:T104 Arg2:T105	
+T106	background_claim 9491 9504	surface based
+T107	background_claim 9545 9557	volume based
+T108	data 9506 9524	Lipman et al. 2005
+T109	data 9526 9540	Yu et al. 2004
+T110	data 9559 9575	Zhou et al. 2005
+R75	supports Arg1:T108 Arg2:T106	
+R76	supports Arg1:T109 Arg2:T106	
+R77	supports Arg1:T110 Arg2:T107	
+R78	supports Arg1:T106 Arg2:T104	
+R79	supports Arg1:T107 Arg2:T104	
+T111	background_claim 9654 9683	propose a spring-based method
+T112	data 9626 9653	Teichmann and Teller [1998]
+R80	supports Arg1:T112 Arg2:T111	
+T113	background_claim 9712 9793	these methods are unsuitable for real-time animation of even moderate size meshes
+T114	background_claim 9907 9934	linear blend skinning (LBS)
+T115	background_claim 9881 9905	its quality shortcomings
+R81	contradicts Arg1:T115 Arg2:T114	
+T116	background_claim 9806 9820	its simplicity
+T117	background_claim 9981 10029	remains the most popular method used in practice
+R82	parts_of_same Arg1:T117 Arg2:T114	
+T118	background_claim 9825 9835	efficiency
+T119	background_claim 9841 9866	simple GPU implementation
+R83	supports Arg1:T116 Arg2:T114	
+R84	supports Arg1:T118 Arg2:T114	
+R85	supports Arg1:T119 Arg2:T114	
+T120	background_claim 10031 10059	Most real-time skinning work
+T121	background_claim 10104 10204	has focused on improving on LBS by inferring the character articulation from multiple example meshes
+R86	parts_of_same Arg1:T121 Arg2:T120	
+T122	data 10067 10082	Kry et al. 2002
+T123	data 10084 10100	Wang et al. 2007
+R87	supports Arg1:T122 Arg2:T120	
+R88	supports Arg1:T123 Arg2:T120	
+T124	own_claim 10215 10261	such techniques are unsuitable for our problem
+R89	contradicts Arg1:T124 Arg2:T121	
+T125	own_claim 10307 10455	we must infer articulation by using the given skeleton as an encoding of the likely modes of deformation, not just as an animation control structure
+T126	data 10270 10296	we only have a single mesh
+R90	supports Arg1:T126 Arg2:T124	
+T127	background_claim 10475 10606	the problem of finding bone weights for LBS from a single mesh and a skeleton has not been sufficiently addressed in the literature
+T128	background_claim 10608 10661	Previous methods are either mesh resolution dependent
+T129	background_claim 10684 10737	or the weights do not vary smoothly along the surface
+R91	parts_of_same Arg1:T129 Arg2:T128	
+T130	data 10664 10681	Katz and Tal 2003
+T131	data 10739 10748	Wade 2000
+R92	supports Arg1:T131 Arg2:T129	
+R93	supports Arg1:T130 Arg2:T128	
+R94	supports Arg1:T128 Arg2:T127	
+T132	background_claim 10752 10794	causing artifacts on highresolution meshes
+R95	supports Arg1:T132 Arg2:T129	
+T133	background_claim 10797 10871	Some commercial packages use proprietary methods to assign default weights
+T134	data 10886 10966	Autodesk Maya 7 assigns weights based solely on the vertex proximity to the bone
+T135	background_claim 11003 11114	results in serious artifacts when the mesh intersects the Voronoi diagram faces between logically distant bones
+R96	supports Arg1:T134 Arg2:T135	
+R97	supports Arg1:T134 Arg2:T133	
+T136	own_claim 40676 40715	Other problems occur at difficult areas
+T137	own_claim 40766 40839	hand-tuned weights could be made superior to those found by our algorithm
+T138	data 40725 40729	hips
+T139	data 40734 40758	the shoulder/neck region
+R98	supports Arg1:T138 Arg2:T136	
+R99	supports Arg1:T139 Arg2:T136	
+R100	supports Arg1:T136 Arg2:T137	
+T140	background_claim 11176 11263	Skeleton embedding resizes and positions the given skeleton to fit inside the character
+T141	own_claim 11265 11314	This can be formulated as an optimization problem
+T142	data 11317 11480	compute the joint positions such that the resulting skeleton fits inside the character as nicely as possible and looks like the given skeleton as much as possible.
+T143	data 11486 11510	a skeleton with s joints
+T144	own_claim 11583 11653	this is a 3s-dimensional problem with a complicated objective function
+R101	supports Arg1:T143 Arg2:T144	
+R102	supports Arg1:T142 Arg2:T141	
+T145	own_claim 11655 11730	Solving such a problem directly using continuous optimization is infeasible
+T146	own_claim 11732 11741	Pinocchio
+T147	own_claim 11752 11894	discretizes the problem by constructing a graph whose vertices represent potential joint positions and whose edges are potential bone segments
+R103	parts_of_same Arg1:T146 Arg2:T147	
+R104	supports Arg1:T145 Arg2:T146	
+T148	own_claim 11924 11966	the graph must have few vertices and edges
+T149	own_claim 11976 12029	capture all potential bone paths within the character
+T150	own_claim 11896 11915	This is challenging
+R105	contradicts Arg1:T149 Arg2:T148	
+R106	supports Arg1:T148 Arg2:T150	
+R107	supports Arg1:T149 Arg2:T150	
+T151	own_claim 12188 12306	Pinocchio then finds the optimal embedding of the skeleton into this graph with respect to a discrete penalty function
+T152	own_claim 12796 12841	These attributes are specific to the skeleton
+T153	own_claim 12846 12934	are independent of the character shape and do not reduce the generality of the skeletons
+R108	contradicts Arg1:T153 Arg2:T152	
+T154	own_claim 13244 13316	Pinocchio rescales the character to fit inside an axis-aligned unit cube
+T155	data 13214 13242	Before any other computation
+T156	own_claim 13331 13394	all of the tolerances are relative to the size of the character
+R109	supports Arg1:T155 Arg2:T154	
+R110	supports Arg1:T154 Arg2:T156	
+T157	own_claim 13483 13582	Pinocchio computes a trilinearly interpolated adaptively sampled signed distance field on an octree
+T158	data 13585 13604	Frisken et al. 2000
+R111	supports Arg1:T158 Arg2:T157	
+T159	own_claim 13607 13707	It constructs a kd-tree to evaluate the exact signed distance to the surface from an arbitrary point
+T160	own_claim 13915 14000	τ = 0.003 provides a good compromise between accuracy and efficiency for our purposes
+T161	own_claim 14010 14087	only negative distances (i.e. from points inside the character) are important
+T162	own_claim 14089 14181	Pinocchio does not split cells that are guaranteed not to intersect the character’s interior
+R112	supports Arg1:T161 Arg2:T162	
+T163	own_claim 14210 14318	Pinocchio uses the adaptive distance field to compute a sample of points approximately on the medial surface
+T164	data 14321 14329	Figure 2
+R113	supports Arg1:T164 Arg2:T163	
+T165	own_claim 14333 14407	The medial surface is the set of C 1 discontinuities of the distance field
+T166	own_claim 14445 14500	the interpolated distance field is guaranteed to be C 1
+T167	data 14409 14443	Within a single cell of our octree
+R114	supports Arg1:T167 Arg2:T166	
+T168	own_claim 14506 14557	it is necessary to look at only the cell boundaries
+R115	supports Arg1:T166 Arg2:T168	
+T169	own_claim 14559 14568	Pinocchio
+T170	own_claim 14579 14634	traverses the octree and for each cell, looks at a grid
+T171	own_claim 14651 14685	of points on each face of the cell
+R116	parts_of_same Arg1:T171 Arg2:T170	
+R117	parts_of_same Arg1:T170 Arg2:T169	
+R118	supports Arg1:T168 Arg2:T169	
+T172	own_claim 14869 14898	We impose the 120 ◦ condition
+T173	data 14907 14961	we do not want the “noisy” parts of the medial surface
+T174	data 14962 15020	we want the points where skeleton joints are likely to lie
+R119	supports Arg1:T173 Arg2:T172	
+R120	supports Arg1:T174 Arg2:T172	
+T175	own_claim 15043 15127	Pinocchio filters out the sampled points that are too close to the character surface
+R121	supports Arg1:T173 Arg2:T175	
+R122	supports Arg1:T174 Arg2:T175	
+T176	background_claim 15147 15176	discusses a similar condition
+T177	data 15205 15209	2000
+T178	data 15180 15189	Chapter 4
+T179	data 15142 15146	Wade
+R123	supports Arg1:T179 Arg2:T176	
+R124	parts_of_same Arg1:T178 Arg2:T177	
+R125	parts_of_same Arg1:T179 Arg2:T178	
+T180	own_claim 15283 15325	Pinocchio packs spheres into the character
+T181	own_claim 15338 15405	it sorts the medial surface points by their distance to the surface
+T182	data 15507 15554	a point is outside all previously added spheres
+T183	own_claim 15556 15638	adds the sphere centered at that point whose radius is the distance to the surface
+R126	supports Arg1:T182 Arg2:T183	
+T184	own_claim 15465 15499	it processes these points in order
+T185	own_claim 15697 15744	no sphere contains the center of another sphere
+T186	data 15747 15755	Figure 3
+R127	supports Arg1:T186 Arg2:T185	
+T187	own_claim 15656 15691	the largest spheres are added first
+R128	supports Arg1:T183 Arg2:T180	
+R129	supports Arg1:T181 Arg2:T180	
+R130	supports Arg1:T184 Arg2:T180	
+T188	own_claim 15768 15832	the procedure described above takes O(nb) time in the worst case
+T189	own_claim 15915 15949	worst case behavior is rarely seen
+T190	own_claim 15958 16022	most points are processed while there is a small number of large
+T191	own_claim 16175 16182	spheres
+R131	parts_of_same Arg1:T191 Arg2:T190	
+R132	supports Arg1:T190 Arg2:T189	
+R133	contradicts Arg1:T188 Arg2:T189	
+T192	own_claim 16193 16267	this step typically takes less than 1% of the time of the entire algorithm
+T193	own_claim 16298 16404	The final discretization step constructs the edges of the graph by connecting some pairs of sphere centers
+T194	data 16406 16414	Figure 4
+R134	supports Arg1:T194 Arg2:T193	
+T195	own_claim 16417 16466	Pinocchio adds an edge between two sphere centers
+T196	data 16470 16491	the spheres intersect
+R135	supports Arg1:T196 Arg2:T195	
+T197	own_claim 16493 16562	We would also like to add edges between spheres that do not intersect
+T198	data 16566 16602	that edge is well inside the surface
+T199	data 16610 16635	that edge is “essential.”
+R136	supports Arg1:T198 Arg2:T197	
+R137	supports Arg1:T199 Arg2:T197	
+T200	own_claim 16649 16700	the neck and left shoulder spheres of the character
+T201	own_claim 16713 16725	are disjoint
+T202	own_claim 16731 16773	there should still be an edge between them
+R138	contradicts Arg1:T202 Arg2:T201	
+R139	parts_of_same Arg1:T201 Arg2:T200	
+R140	supports Arg1:T200 Arg2:T197	
+T203	data 16704 16712	Figure 3
+R141	supports Arg1:T203 Arg2:T200	
+T204	own_claim 12701 12769	We describe the attributes Pinocchio uses in a supplemental document
+T205	data 12770 12793	Baran and Popović 2007a
+R142	supports Arg1:T205 Arg2:T204	
+T206	own_claim 17021 17147	The latter condition is equivalent to the requirement that additional edges must be in the Gabriel graph of the sphere centers
+T207	data 17160 17188	Jaromczyk and Toussaint 1992
+R143	supports Arg1:T207 Arg2:T206	
+T208	own_claim 17248 17324	the Gabriel graph provides a good balance between sparsity and connectedness
+T209	own_claim 17198 17232	other conditions can be formulated
+R144	contradicts Arg1:T208 Arg2:T209	
+T210	own_claim 17773 17812	Pinocchio works with a reduced skeleton
+T211	own_claim 17823 17855	all bone chains have been merged
+R145	supports Arg1:T211 Arg2:T210	
+T212	data 17920 17928	Figure 5
+R146	supports Arg1:T212 Arg2:T211	
+T213	own_claim 17931 17951	The reduced skeleton
+T214	own_claim 17957 17974	has only r joints
+R147	parts_of_same Arg1:T214 Arg2:T213	
+R148	supports Arg1:T210 Arg2:T213	
+T215	own_claim 18063 18229	it can compute the intermediate joints by taking the shortest path between the endpoints and splitting it in accordance with the proportions of the unreduced skeleton
+T216	own_claim 17976 17986	This works
+R149	supports Arg1:T215 Arg2:T216	
+T217	data 18000 18060	Pinocchio knows where the endpoints of a bone chain are in V
+R150	supports Arg1:T217 Arg2:T215	
+T218	own_claim 18297 18380	without a reduced skeleton, the optimization problem would typically be intractable
+T219	data 18235 18263	the humanoid skeleton we use
+R151	supports Arg1:T219 Arg2:T218	
+T220	own_claim 18393 18689	the discrete skeleton embedding problem is to find the embedding of the reduced skeleton into G, represented by an rtuple v = (v 1 , . . . , v r ) of vertices in V , which minimizes a penalty function f (v) that is designed to penalize differences in the embedded skeleton from the given skeleton
+R152	supports Arg1:T218 Arg2:T220	
+T221	own_claim 18768 18859	The discrete penalty function has great impact on the generality and quality of the results
+T222	own_claim 18861 18964	A good embedding should have the proportions, bone orientations, and size similar to the given skeleton
+R153	supports Arg1:T222 Arg2:T221	
+T223	own_claim 18966 19023	The paths representing the bone chains should be disjoint
+T224	data 19028 19036	possible
+R154	supports Arg1:T224 Arg2:T223	
+R155	supports Arg1:T223 Arg2:T221	
+T225	own_claim 19100 19151	they should be close to the bottom of the character
+T226	data 19038 19085	Joints of the skeleton may be marked as “feet,”
+R156	supports Arg1:T226 Arg2:T225	
+R157	supports Arg1:T225 Arg2:T221	
+T227	own_claim 19153 19250	Designing a penalty function that satisfies all of these requirements simultaneously is difficult
+T228	own_claim 19260 19402	we found it easier to design penalties independently and then rely on learning a proper weighting for a global penalty that combines each term
+R158	contradicts Arg1:T228 Arg2:T227	
+T229	own_claim 19601 19931	They penalize short bones, improper orientation between joints, length differences in bones marked symmetric, bone chains sharing vertices, feet away from the bottom, zero-length bone chains, improper orientation of bones, degree-one joints not embedded at extreme vertices, and joints far along bone-chains but close in the graph
+T230	data 19933 19956	Baran and Popović 2007a
+R159	supports Arg1:T230 Arg2:T229	
+T231	background_claim 20618 20647	a much more complete tutorial
+T232	data 20599 20612	Burges [1998]
+R160	supports Arg1:T232 Arg2:T231	
+T233	own_claim 20735 20816	we could use a support vector machine to learn a maximum margin linear classifier
+T234	data 20652 20733	our goal were to automatically classify new embeddings into “good” and “bad” ones
+R161	supports Arg1:T234 Arg2:T233	
+T235	own_claim 21206 21361	we can think of the maximum margin Γ as the one that best distinguishes between the best “bad” embedding and the worst “good” embedding in the training set
+T236	data 21157 21204	the total penalty of an embedding v is Γ T b(v)
+R162	supports Arg1:T236 Arg2:T235	
+T237	own_claim 21385 21422	we do not need to classify embeddings
+T238	own_claim 21428 21529	rather find a Γ such that the embedding with the lowest penalty f (v) = Γ T b(v) is likely to be good
+T239	data 21366 21374	our case
+R163	supports Arg1:T237 Arg2:T238	
+R164	supports Arg1:T239 Arg2:T237	
+R165	contradicts Arg1:T237 Arg2:T235	
+T240	own_claim 21544 21631	we want Γ to distinguish between the best “bad” embedding and the best “good” embedding
+T241	data 21651 21659	Figure 6
+R166	supports Arg1:T241 Arg2:T240	
+T242	own_claim 21662 21664	We
+T243	own_claim 21675 21715	wish to maximize the optimization margin
+R167	parts_of_same Arg1:T243 Arg2:T242	
+R168	supports Arg1:T240 Arg2:T242	
+T244	data 21804 21852	we have different characters in our training set
+T245	own_claim 21866 21946	the embedding quality is not necessarily comparable between different characters
+T246	own_claim 21948 22022	we find the Γ that maximizes the minimum margin over all of the characters
+R169	supports Arg1:T244 Arg2:T246	
+R170	supports Arg1:T245 Arg2:T246	
+T247	own_claim 22024 22096	Our approach is similar to margin-based linear structured classification
+T248	data 22099 22117	Taskar et al. 2003
+R171	supports Arg1:T248 Arg2:T247	
+T249	own_claim 22353 22440	The key difference is that structured classification requires an explicit loss function
+T250	own_claim 22569 22698	our approach only makes use of the loss function on the training labels and allows for the possibility of multiple correct labels
+R172	contradicts Arg1:T250 Arg2:T249	
+T251	own_claim 22862 22928	multiple correct skeleton embeddings are necessary for our problem
+T252	data 22946 22998	the hand joint being embedded into different fingers
+R173	supports Arg1:T252 Arg2:T251	
+T253	own_claim 22700 22851	This possibility of multiple correct skeleton embeddings prevented us from formulating our margin maximization problem as a convex optimization problem
+R174	contradicts Arg1:T251 Arg2:T253	
+T254	own_claim 23338 23403	The problem of finding the optimal Γ does not appear to be convex
+T255	own_claim 23414 23454	an approximately optimal Γ is acceptable
+T256	own_claim 23460 23506	the search space dimension is sufficiently low
+T257	data 23508 23509	9
+R175	supports Arg1:T257 Arg2:T256	
+T258	own_claim 23528 23582	it is feasible to use a continuous optimization method
+R176	supports Arg1:T256 Arg2:T258	
+R177	contradicts Arg1:T255 Arg2:T254	
+R178	contradicts Arg1:T258 Arg2:T254	
+T259	own_claim 24424 24484	It is also possible that a positive margin Γ cannot be found
+T260	own_claim 24502 24619	the chosen basis functions are probably inadequate for finding good embeddings for all characters in the training set
+R179	supports Arg1:T259 Arg2:T260	
+T261	own_claim 24794 24890	The weights we learned resulted in good embeddings for all of the characters in our training set
+T262	own_claim 24892 24951	we could not accomplish this by manually tuning the weights
+T263	own_claim 24953 25068	Examining the optimization results and the extremal embeddings also helped us design better basis penalty functions
+T264	own_claim 25079 25133	this process of finding the weights is labor-intensive
+T265	own_claim 25135 25164	it only needs to be done once
+R180	contradicts Arg1:T265 Arg2:T264	
+T266	own_claim 25235 25321	the overall penalty function generalizes well to both new characters and new skeletons
+T267	data 25193 25233	the basis functions are carefully chosen
+T268	data 25179 25188	our tests
+R181	supports Arg1:T268 Arg2:T266	
+R182	supports Arg1:T267 Arg2:T266	
+T269	own_claim 25334 25378	a novice user will be able to use the system
+T270	own_claim 25384 25476	more advanced users will be able to design new skeletons without having to learn new weights
+R183	supports Arg1:T266 Arg2:T269	
+R184	supports Arg1:T266 Arg2:T270	
+T271	own_claim 25548 25635	Computing a discrete embedding that minimizes a general penalty function is intractable
+T272	data 25644 25683	there are exponentially many embeddings
+R185	supports Arg1:T272 Arg2:T271	
+T273	own_claim 25796 25843	it is possible to use a branch-and-bound method
+T274	data 25697 25768	it is easy to estimate a good lower bound on f from a partial embedding
+R186	supports Arg1:T274 Arg2:T273	
+R187	contradicts Arg1:T273 Arg2:T271	
+T275	own_claim 25845 25869	Pinocchio uses this idea
+T276	own_claim 25871 25961	it maintains a priority queue of partial embeddings ordered by their lower bound estimates
+R188	supports Arg1:T276 Arg2:T275	
+T277	own_claim 26125 26195	The first full embedding extracted is guaranteed to be the optimal one
+T278	own_claim 26197 26268	This is essentially the A* algorithm on the tree of possible embeddings
+T279	own_claim 26367 26425	it is rejected immediately and not inserted into the queue
+T280	data 26318 26365	a partial embedding has a very high lower bound
+R189	supports Arg1:T280 Arg2:T279	
+T281	own_claim 26436 26482	this algorithm is still worst-case exponential
+T282	own_claim 26484 26545	it is fast on most real problems with the skeletons we tested
+R190	contradicts Arg1:T282 Arg2:T281	
+T283	own_claim 26570 26609	an approximate graph matching algorithm
+T284	own_claim 26646 26720	which would work much faster and enable more complicated reduced skeletons
+R191	parts_of_same Arg1:T284 Arg2:T283	
+T285	data 26618 26642	Gold and Rangarajan 1996
+R192	supports Arg1:T285 Arg2:T283	
+T286	own_claim 26731 26807	computing the exact optimum simplified penalty function design and debugging
+R193	contradicts Arg1:T284 Arg2:T286	
+T287	own_claim 27065 27129	p R (i) (for 1 &lt; i ≤ r) is the index of the parent of joint i
+T288	data 26996 27053	we define the parent function p R on the reduced skeleton
+R194	supports Arg1:T288 Arg2:T287	
+T289	own_claim 27560 27663	f can be written as: r r f (v 1 , . . . , v r ) = X f i (v i , v p R (i) ) + X f D (v 1 , . . . , v i )
+T290	own_claim 27673 27857	A lower bound when the first k joints are embedded is then: k k X f i (v i , v p R (i) ) + X f D (v 1 , . . . , v i ) + i=2 i=2 + X min f i (v i , v p R (i) ) v i ∈V {i&gt;k|p R (i)≤k}
+T291	own_claim 27927 27974	the lower bound is close to the true value of f
+T292	data 27858 27896	If f D is small compared to the f i ’s
+R195	supports Arg1:T292 Arg2:T291	
+R196	supports Arg1:T289 Arg2:T290	
+T293	own_claim 28015 28120	the order in which joints are embedded is very important to the performance of the optimization algorithm
+T294	data 27988 28013	this lower bound estimate
+R197	supports Arg1:T291 Arg2:T293	
+R198	supports Arg1:T294 Arg2:T293	
+T295	own_claim 28122 28165	High degree joints should be embedded first
+T296	own_claim 28174 28239	they result in more terms in the rightmost sum of the lower bound
+T297	own_claim 28241 28279	leading to a more accurate lower bound
+R199	supports Arg1:T296 Arg2:T297	
+R200	supports Arg1:T297 Arg2:T295	
+T298	data 28294 28359	our biped skeleton has only two joints of degree greater than two
+T299	data 28364 28397	after Pinocchio has embedded them
+T300	own_claim 28399 28469	the lower bound estimate includes f i terms for all of the bone chains
+R201	supports Arg1:T298 Arg2:T300	
+R202	supports Arg1:T299 Arg2:T300	
+R203	supports Arg1:T300 Arg2:T297	
+T301	own_claim 28479 28515	there is no perfect penalty function
+T302	own_claim 28517 28581	discrete embedding will occasionally produce undesirable results
+T303	data 28587 28607	Model 13 in Figure 9
+R204	supports Arg1:T301 Arg2:T302	
+R205	supports Arg1:T303 Arg2:T302	
+T304	own_claim 28624 28730	it is possible for the user to provide manual hints in the form of constraints for reduced skeleton joints
+R206	supports Arg1:T302 Arg2:T304	
+T305	data 28745 28847	such a hint might be that the left hand of the skeleton should be embedded at a particular vertex in G
+R207	supports Arg1:T305 Arg2:T304	
+T306	own_claim 28881 28970	Embeddings that do not satisfy the constraints are simply not considered by the algorithm
+T307	own_claim 29322 29403	The resulting skeleton embedding should have the general shape we are looking for
+T308	own_claim 29420 29463	it will not fit nicely inside the character
+R208	contradicts Arg1:T308 Arg2:T307	
+T309	own_claim 29471 29522	smaller bones are likely to be incorrectly oriented
+T310	own_claim 29531 29600	they were not important enough to influence the discrete optimization
+R209	supports Arg1:T310 Arg2:T309	
+T311	own_claim 29602 29694	Embedding refinement corrects these problems by minimizing a new continuous penalty function
+T312	data 29697 29705	Figure 7
+R210	supports Arg1:T312 Arg2:T311	
+T313	data 29856 29897	we are dealing with an unreduced skeleton
+T314	data 29903 29968	discrete optimization has already found the correct general shape
+T315	own_claim 29970 30045	the penalty function can be much simpler than the discrete penalty function
+R211	supports Arg1:T314 Arg2:T315	
+R212	supports Arg1:T313 Arg2:T315	
+T316	own_claim 30496 30521	we choose the α’s by hand
+T317	own_claim 30530 30557	there are only four of them
+T318	data 30559 30582	Baran and Popović 2007a
+R213	supports Arg1:T318 Arg2:T317	
+R214	supports Arg1:T317 Arg2:T316	
+T319	own_claim 30585 30622	Any continuous optimization technique
+T320	own_claim 30642 30669	should produce good results
+R215	parts_of_same Arg1:T320 Arg2:T319	
+T321	data 30624 30640	Gill et al. 1989
+R216	supports Arg1:T321 Arg2:T319	
+T322	own_claim 31135 31203	Repeating the process 10 times is usually sufficient for convergence
+T323	own_claim 31692 31787	we could make use of one of the various mesh editing techniques for the actual mesh deformation
+T324	own_claim 31789 31858	we choose to focus on the standard linear blend skinning (LBS) method
+T325	background_claim 31870 31888	its widespread use
+R217	contradicts Arg1:T324 Arg2:T323	
+R218	supports Arg1:T325 Arg2:T324	
+T326	own_claim 32025 32099	LBS gives the position of the transformed vertex j as P i w j i T i (v j )
+T327	data 31893 31924	v j is the position of vertex j
+T328	data 31926 31968	T i is the transformation of the i th bone
+T329	data 31974 32023	w j i is the weight of the i th bone for vertex j
+R219	supports Arg1:T327 Arg2:T326	
+R220	supports Arg1:T328 Arg2:T326	
+R221	supports Arg1:T329 Arg2:T326	
+T330	own_claim 32101 32168	The attachment problem is finding bone weights w i for the vertices
+T331	own_claim 32288 32333	they should not depend on the mesh resolution
+T332	own_claim 32219 32272	There are several properties we desire of the weights
+T333	own_claim 32373 32424	the weights need to vary smoothly along the surface
+T334	own_claim 32463 32602	the width of a transition between two bones meeting at a joint should be roughly proportional to the distance from the joint to the surface
+T335	data 32435 32461	to avoid folding artifacts
+T336	data 32343 32371	for the results to look good
+R222	supports Arg1:T335 Arg2:T334	
+R223	supports Arg1:T336 Arg2:T333	
+R224	supports Arg1:T331 Arg2:T332	
+R225	supports Arg1:T333 Arg2:T332	
+R226	supports Arg1:T334 Arg2:T332	
+T337	own_claim 32613 32722	a scheme that assigns bone weights purely based on proximity to bones can be made to satisfy these properties
+T338	own_claim 32724 32797	such schemes will often fail because they ignore the character’s geometry
+T339	own_claim 32812 32859	part of the torso may become attached to an arm
+R227	supports Arg1:T339 Arg2:T338	
+R228	contradicts Arg1:T338 Arg2:T337	
+T340	own_claim 32870 32928	we use the analogy to heat equilibrium to find the weights
+R229	contradicts Arg1:T337 Arg2:T340	
+R230	supports Arg1:T338 Arg2:T340	
+T341	own_claim 33116 33224	we can take the equilibrium temperature at each vertex on the surface as the weight of bone i at that vertex
+T342	data 32938 33004	we treat the character volume as an insulated heat-conducting body
+T343	data 33009 33109	force the temperature of bone i to be 1 while keeping the temperature of all of the other bones at 0
+R231	supports Arg1:T342 Arg2:T341	
+R232	supports Arg1:T343 Arg2:T341	
+T344	data 33226 33234	Figure 8
+R233	supports Arg1:T344 Arg2:T341	
+T345	own_claim 33271 33369	Solving for heat equilibrium over a volume would require tessellating the volume and would be slow
+T346	own_claim 33398 33452	Pinocchio solves for equilibrium over the surface only
+T347	own_claim 33476 33526	it adds the heat transferred from the nearest bone
+T348	data 33458 33474	at some vertices
+R234	supports Arg1:T348 Arg2:T347	
+R235	contradicts Arg1:T347 Arg2:T346	
+R236	supports Arg1:T345 Arg2:T346	
+T349	own_claim 33530 33618	The equilibrium over the surface for bone i is given by ∂w = ∂t ∆w i + H(p i − w i ) = 0
+T350	own_claim 33626 33643	can be written as
+T351	own_claim 33909 33928	−∆w i + Hw i = Hp i
+R237	parts_of_same Arg1:T351 Arg2:T350	
+R238	supports Arg1:T349 Arg2:T350	
+T352	own_claim 33954 34028	∆ is the discrete surface Laplacian, calculated with the cotangent formula
+T353	data 34031 34048	Meyer et al. 2003
+R239	supports Arg1:T353 Arg2:T352	
+T354	own_claim 34051 34081	p i is a vector with p i j = 1
+T355	data 34085 34118	the nearest bone to vertex j is i
+R240	supports Arg1:T355 Arg2:T354	
+T356	own_claim 34123 34132	p i j = 0
+T357	data 34133 34142	otherwise
+R241	contradicts Arg1:T356 Arg2:T354	
+R242	supports Arg1:T357 Arg2:T356	
+T358	data 34259 34283	∆ has units of length −2
+T359	own_claim 34286 34295	so must H
+R243	supports Arg1:T358 Arg2:T359	
+T360	own_claim 34361 34391	Pinocchio uses H jj = c/d(j) 2
+T361	data 34395 34485	the shortest line segment from the vertex to the bone is contained in the character volume
+R244	supports Arg1:T361 Arg2:T360	
+T362	own_claim 34490 34498	H jj = 0
+T363	data 34502 34511	it is not
+R245	supports Arg1:T363 Arg2:T362	
+R246	contradicts Arg1:T362 Arg2:T360	
+T364	own_claim 34649 34760	this method gives weights with similar transitions to those computed by finding the equilibrium over the volume
+T365	data 34639 34647	c ≈ 0.22
+R247	supports Arg1:T365 Arg2:T364	
+T366	own_claim 34837 34866	the results look more natural
+T367	own_claim 34762 34782	Pinocchio uses c = 1
+R248	supports Arg1:T366 Arg2:T367	
+T368	own_claim 34912 34956	heat contributions from all of them are used
+T369	own_claim 34958 34984	p j is 1/k for all of them
+T370	own_claim 34990 35006	H jj = kc/d(j) 2
+T371	data 34873 34910	k bones are equidistant from vertex j
+R249	supports Arg1:T371 Arg2:T368	
+R250	supports Arg1:T371 Arg2:T369	
+R251	supports Arg1:T371 Arg2:T370	
+T372	own_claim 35144 35227	we can factor the system once and back-substitute to find the weights for each bone
+T373	own_claim 35022 35047	is a sparse linear system
+T374	own_claim 35053 35106	the left hand side matrix −∆ + H does not depend on i
+T375	data 35009 35021	Equation (1)
+R252	supports Arg1:T375 Arg2:T373	
+R253	supports Arg1:T375 Arg2:T374	
+R254	supports Arg1:T373 Arg2:T372	
+R255	supports Arg1:T374 Arg2:T372	
+T376	background_claim 35250 35343	show how to use a sparse Cholesky solver to compute the factorization for this kind of system
+T377	data 35229 35249	Botsch et al. [2005]
+R256	supports Arg1:T377 Arg2:T376	
+T378	own_claim 35345 35369	Pinocchio uses the TAUCS
+T379	own_claim 35385 35413	library for this computation
+R257	parts_of_same Arg1:T379 Arg2:T378	
+T380	data 35371 35382	Toledo 2003
+R258	supports Arg1:T380 Arg2:T378	
+T381	own_claim 35430 35470	the weights w i sum to 1 for each vertex
+T382	own_claim 35494 35525	we get (−∆ + H) P i w i = H · 1
+T383	own_claim 35533 35551	yields P i w i = 1
+R259	supports Arg1:T382 Arg2:T383	
+T384	data 35475 35492	we sum (1) over i
+R260	supports Arg1:T384 Arg2:T382	
+R261	supports Arg1:T383 Arg2:T381	
+T385	own_claim 35553 35699	It is possible to speed up this method slightly by finding vertices that are unambiguously attached to a single bone and forcing their weight to 1
+T386	own_claim 35701 35745	An earlier variant of our algorithm did this
+T387	own_claim 35751 35781	the improvement was negligible
+T388	own_claim 35787 35823	this introduced occasional artifacts
+R262	supports Arg1:T387 Arg2:T386	
+R263	supports Arg1:T388 Arg2:T386	
+T389	own_claim 36767 36826	The skeleton was correctly embedded into 13 of these models
+T390	data 36691 36699	Figure 9
+R264	supports Arg1:T390 Arg2:T389	
+T391	own_claim 36867 36935	a hint for a single joint was sufficient to produce a good embedding
+T392	data 36846 36865	Models 7, 10 and 13
+R265	supports Arg1:T392 Arg2:T391	
+T393	own_claim 36937 37014	These tests demonstrate the range of proportions that our method can tolerate
+T394	own_claim 37016 37049	we have a well-proportioned human
+T395	data 37051 37064	Models 1–4, 8
+T396	own_claim 37067 37091	large arms and tiny legs
+T397	own_claim 37130 37155	large legs and small arms
+T398	own_claim 37168 37197	the small arms cause problems
+T399	data 37164 37166	13
+R266	supports Arg1:T399 Arg2:T398	
+T400	data 37157 37159	15
+R267	supports Arg1:T400 Arg2:T397	
+T401	data 37093 37094	6
+R268	supports Arg1:T401 Arg2:T396	
+T402	own_claim 37103 37123	this causes problems
+T403	data 37099 37101	10
+R269	supports Arg1:T395 Arg2:T394	
+R270	supports Arg1:T394 Arg2:T393	
+R271	supports Arg1:T396 Arg2:T393	
+R272	supports Arg1:T397 Arg2:T393	
+R273	contradicts Arg1:T402 Arg2:T396	
+R274	contradicts Arg1:T398 Arg2:T397	
+T404	own_claim 37232 37351	skeletons were almost always correctly embedded into well-proportioned characters whose pose matched the given skeleton
+T405	data 37204 37230	other characters we tested
+R275	supports Arg1:T405 Arg2:T404	
+T406	own_claim 37353 37456	Pinocchio was even able to transfer a biped walk onto a human hand, a cat on its hind legs, and a donut
+T407	own_claim 37521 37596	The thinnest limb into which we may hope to embed a bone has a radius of 2τ
+T408	own_claim 37599 37646	Characters with extremely thin limbs often fail
+T409	own_claim 37659 37695	the graph we extract is disconnected
+R276	supports Arg1:T409 Arg2:T408	
+T410	own_claim 37697 37707	Reducing τ
+T411	own_claim 37719 37736	hurts performance
+R277	parts_of_same Arg1:T411 Arg2:T410	
+R278	contradicts Arg1:T410 Arg2:T407	
+T412	own_claim 37740 37755	Degree 2 joints
+T413	own_claim 37781 37827	are often positioned incorrectly within a limb
+R279	parts_of_same Arg1:T413 Arg2:T412	
+T414	data 37764 37769	knees
+T415	data 37774 37780	elbows
+R280	supports Arg1:T414 Arg2:T412	
+R281	supports Arg1:T415 Arg2:T412	
+T416	own_claim 38008 38059	most of our tests were done with the biped skeleton
+T417	own_claim 38061 38115	we have also used other skeletons for other characters
+R282	contradicts Arg1:T416 Arg2:T417	
+T418	data 38118 38127	Figure 10
+R283	supports Arg1:T418 Arg2:T417	
+T419	own_claim 38273 38282	Our video
+T420	own_claim 38310 38373	demonstrates the quality of the animation produced by Pinocchio
+T421	data 38284 38307	Baran and Popović 2007b
+R284	parts_of_same Arg1:T420 Arg2:T419	
+R285	supports Arg1:T421 Arg2:T419	
+T422	own_claim 40323 40468	The quality problems of our attachment are a combination of the deficiencies of our automated weights generation as well as those inherent in LBS
+T423	own_claim 40470 40586	A common class of problems is caused by Pinocchio being oblivious to the material out of which the character is made
+T424	own_claim 40588 40674	the animation of both a dress and a knight’s armor has an unrealistic, rubbery quality
+R286	supports Arg1:T424 Arg2:T423	
+R287	supports Arg1:T423 Arg2:T422	
+T425	own_claim 41089 41111	only one core was used
+T426	own_claim 41057 41085	Pinocchio is single-threaded
+R288	supports Arg1:T426 Arg2:T425	
+T427	background_claim 41166 41252	someone wishing to create real-time animation is likely to keep the triangle count low
+T428	own_claim 41113 41157	We did not run timing tests on denser models
+R289	supports Arg1:T427 Arg2:T428	
+T429	own_claim 41341 41423	subsequent discretization and embedding steps do not depend on the given mesh size
+T430	data 41303 41339	the distance field has been computed
+T431	data 41275 41296	volume-based approach
+R290	supports Arg1:T431 Arg2:T429	
+R291	supports Arg1:T430 Arg2:T429	
+T432	own_claim 41453 41510	the running time is dominated by the discretization stage
+T433	own_claim 41516 41565	that is dominated by computing the distance field
+T434	data 41433 41451	majority of models
+R292	supports Arg1:T434 Arg2:T432	
+T435	own_claim 41567 41635	Embedding refinement takes about 1.2 seconds for all of these models
+T436	own_claim 41641 41706	the discrete optimization consumes the rest of the embedding time
+T437	own_claim 41785 41892	We have presented the first method for automatically rigging an unfamiliar character for skeletal animation
+T438	own_claim 42112 42203	it allows a user to go from a static mesh to an animated character quickly and effortlessly
+T439	own_claim 42224 42291	using this method, Pinocchio can animate a wide range of characters
+T440	own_claim 42314 42336	some of our techniques
+T441	own_claim 42452 42483	can be useful in other contexts
+R293	parts_of_same Arg1:T441 Arg2:T440	
+T442	data 42346 42365	finding LBS weights
+T443	data 42370 42450	using examples to learn the weights of a linear combination of penalty functions
+R294	supports Arg1:T442 Arg2:T440	
+R295	supports Arg1:T443 Arg2:T440	
+T444	own_claim 42485 42557	We have several ideas for improving Pinocchio that we have not yet tried
+T445	own_claim 42559 42632	Discretization could be improved by packing ellipsoids instead of spheres
+R296	supports Arg1:T445 Arg2:T444	
+T446	own_claim 42643 42665	this is more difficult
+T447	own_claim 42678 42723	it would greatly reduce the size of the graph
+T448	own_claim 42725 42783	resulting in faster and higher quality discrete embeddings
+R297	supports Arg1:T447 Arg2:T448	
+R298	contradicts Arg1:T447 Arg2:T446	
+R299	semantically_same Arg1:T448 Arg2:T445	
+T449	own_claim 42785 42847	Animation quality can be improved with a better skinning model
+T450	data 42850 42871	Kavan and Zára ˇ 2005
+R300	supports Arg1:T450 Arg2:T449	
+R301	supports Arg1:T449 Arg2:T444	
+T451	own_claim 42883 42918	possibly at the cost of performance
+R302	supports Arg1:T451 Arg2:T449	
+T452	own_claim 42921 42961	One approach would be to use a technique
+T453	data 42964 42980	Wang et al. 2007
+R303	supports Arg1:T453 Arg2:T452	
+T454	own_claim 42983 43113	that corrects LBS errors by using example meshes, which we could synthesize using slower, but more accurate deformation techniques
+R304	parts_of_same Arg1:T454 Arg2:T452	
+R305	supports Arg1:T452 Arg2:T444	
+T455	own_claim 43115 43263	A more involved approach would be automatically building a tetrahedral mesh around the embedded skeleton and applying the dynamic deformation method
+T456	data 43268 43288	Capell et al. [2002]
+R306	supports Arg1:T456 Arg2:T455	
+R307	supports Arg1:T455 Arg2:T444	
+T457	own_claim 43290 43376	Combining retargetting with joint limits should eliminate some artifacts in the motion
+T458	own_claim 43378 43503	A better retargetting scheme could be used to make animations more physically plausible and prevent global self-intersections
+R308	supports Arg1:T458 Arg2:T457	
+T459	own_claim 43514 43611	it would be nice to eliminate the assumption that the character must have a well-defined interior
+R309	supports Arg1:T457 Arg2:T444	
+R310	supports Arg1:T459 Arg2:T444	
+T460	own_claim 43654 43794	an interesting problem is dealing with hand animation to give animated characters the ability to grasp objects, type, or speak sign language
+T461	own_claim 43796 43848	The variety of types of hands makes this challenging
+T462	data 43868 43877	Models 13
+R311	supports Arg1:T462 Arg2:T461	
+T463	data 43879 43880	5
+T464	data 43882 43884	14
+T465	data 43890 43904	11 in Figure 9
+R312	supports Arg1:T463 Arg2:T461	
+R313	supports Arg1:T464 Arg2:T461	
+R314	supports Arg1:T465 Arg2:T461	
+T466	own_claim 43908 43984	Automatically rigging characters for facial animation is even more difficult
+T467	own_claim 43990 44056	a solution requiring a small amount of user assistance may succeed
+R315	contradicts Arg1:T467 Arg2:T466	
+T468	own_claim 44124 44188	this would allow users to begin interacting with their creations
+T469	own_claim 44058 44101	Combined with a system for motion synthesis
+T470	data 44103 44121	Arikan et al. 2003
+R316	supports Arg1:T470 Arg2:T469	
+R317	parts_of_same Arg1:T468 Arg2:T469	

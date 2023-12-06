@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<Document xmlns:gate="http://www.gate.ac.uk" name="A02_S02_A_Real-time_Deformation_of_Articulated_Models_CITATION_PURPOSE_M_v1.xml">
+
+
+  
+    9a62959e0e528de8c2462c1ec3ec886cc7c78f4db602ee297f4f7897c473786c
+    3ww9
+    http://dx.doi.org/10.1145/1053427.1053429
+    Page 7 was found to have more than 100 embedded images.Image rendering was limited to the first 20, in reverse order of size.
+  
+  
+    
+      
+        <Title>Spherical Blend Skinning: A Real-time Deformation of Articulated Models</Title>
+      
+      
+        
+          Ladislav Kavan ∗ Ji rı Zára ˇ Czech Technical University in Prague
+          ∗
+        
+      
+      ∗ e-mail: kavanl1@fel.cvut.cz
+      <Abstract>Skin deformation based on an underlying skeleton is a common method to animate believable organic models. The most widely used skeletal animation algorithm, linear blend skinning, is also known as skeleton subspace deformation, vertex blending, or enveloping. It runs in real-time even on a low-end hardware but it is also notorious for its failures, such as the collapsing-joints artifacts. We present a new algorithm which removes these shortcomings while maintaining almost the same time and memory complexity as the linear blend skinning. Unlike other approaches, our method works with exactly the same input data as the popular linear version. This minimizes the cost of upgrade from linear to spherical blend skinning in many existing applications: the data structures and models need no change at all. The paper discusses also theoretical properties of rotation interpolation, essential to spherical blend skinning.</Abstract>
+	<H2>CR Categories: </H2>CR Categories: I.3.7 [Computer Graphics]: Three-Dimensional Graphics and Realism—Animation <H2>Keywords: </H2>skinning, deformation, skeletal animation		  
+    
+    
+      
+        <H1>1 Introduction</H1>
+      
+      Real-time animation of deformable objects is always a compromise between visual fidelity and computation complexity. Other aspects are quite important as well, for example the amount of artists work necessary to design the model. Therefore, there exist many algorithms for modeling deformable objects in the literature. They differ by the intended area of application and generality of allowed models. We focus on the real-time animation systems in this paper. Its most popular representative, known generally as the skeletal animation, is based on simple but versatile structure. It consists of joints, given by their position and orientation. The segments connecting the joints are conveniently interpreted as bones. The skeleton is, formally speaking, a tree whose nodes are identified with the joints and edges with the bones. The only displayed element is a skin, a 3D polygonal mesh, usually equipped with normal and texture data. Although the terminology is adopted from the virtual humanoid modeling, the skeletal animation is not limited to character animation – it can be applied to a wide range of soft objects, including imaginary (cartoon) creatures, plants, furniture, etc. This is an apparent advantage over complex systems which rely on explicit anatomy. The skeleton simplifies the animation task considerably: instead of animating each vertex individually, it is sufficient to manipulate the skeleton, and the skin deforms automatically. The skeletal animation in general does not specify how exactly the skeleton posture should be propagated to the skin. However, there is an established standard used in majority of real-time 3D applications. It comes by many names, all relating to the same algorithm: linear blend skinning (LBS), skeleton subspace deformation, vertex blending, enveloping, or simply skinning. Basically, this algorithm blends between rigidly transformed vertices using vertex weights, which denote the amount of influence of individual joints. Although LBS is very fast and advantageous to graphics hardware, it suffers from inherent artifacts, known as ”collapsing joints”, ”twisting elbow problem” or a ”candy-wrapper artifact”. In general, the mesh deformed by LBS loses volume as the joint rotation increases. The cause of this phenomena is explained in section 3, together with the LBS algorithm itself. The structure of the paper is as follows: in the next section, we summarize the previous work concerning real-time skin deformation and sketch our solution. In section 3, we analyze the problems of the LBS algorithm. Our approach to resolve these problems is presented in section 4. In section 5, we compare the results and discuss possible enhancements.
+      
+        <H1>2 Related Work</H1>
+      
+      An early contribution concerning the animation of deformable objects is [Magnenat-Thalmann et al. 1988], which considers the movement of a human hand. First 3D characters used in numerous computer games were animated by simple, often unpublished algorithms. Later on, the basic principles of LBS were described by the game development community [Lander 1998; Lander 1999]. The artifacts of LBS were discovered soon 
+[Weber 2000]. An improvement based on addition of auxiliary joints has been also proposed in 
+[Weber 2000]. Although this reduces the artifacts, the skin to joints relationship must be re-designed after joint addition. The number and location of the additional joints remains questionable. Another problem is how the movement of the original skeleton should be propagated into the augmented one. More formal articles consider skin deformation as an interpolation problem, such as 
+[Lewis et al. 2000]. They use radial basis functions to interpolate between example skins with different shapes. Similar method is presented in 
+[Sloan et al. 2001] and [Kry et al. 2002]. The latter de-correlates the deformation displacements using principal component analysis, which reduces the memory requirements considerably. The advantage of example based methods is that they capture the designed shape, including effects like muscle bulging. The drawback is the necessity of acquiring the example skins. An interesting generalization of LBS is called multi-weight enveloping 
+[Wang and Phillips 2002]. It introduces more parameters and therefore greater flexibility to the deformation algorithm. Instead of one weight per influence (joint) as in LBS, the multiweight enveloping uses twelve. These numerous parameters are derived from examples using the least squares optimization. The disadvantage is obvious: while the LBS models can be weighted manually by artists 
+[Steed 2002]
+, this is questionable with multiweight enveloping. Tools that help animators to design the vertex weights are described in 
+[Mohr et al. 2003]. This article is interesting also from the theoretical point of view, because it describes how to explore the space of all possible LBS deformations. Another deformation algorithm 
+[Bloomenthal 2002] uses a complex auxiliary structure – a medial. An idea similar to spherical blend skinning (SBS) is bones blending proposed by [Kavan and Zára ˇ 2003]. However, bones blending is limited to vertices attached to only two joints. In addition, it requires hand-tuning of special parameters. Another algorithm removes the LBS artifacts by adding additional joints, and computes the vertex weights automatically using examples [Mohr and Gleicher 2003]. 
+A recent skin deformation algorithm presented in 
+[Magnenat-Thalmann et al. 2004] seems to give results competitive to SBS, although it is based on a different mathematical fundament 
+[Alexa 2002]. 
+However, this method is considerably slower than LBS and therefore 
+[Magnenat-Thalmann et al. 2004] recommends to use rather the standard LBS if the joint rotations are small. To conclude, there are many methods correcting the problems of LBS, but none of them is superior to LBS in all aspects. As a result, the linear blend skinning is still widely used in many applications, in spite of the artifacts.
+      
+        <H2>2.1 Our Contribution</H2>
+        We observed that the artifacts of LBS are caused by the straightforward, linear interpolation of vertex positions. Intuitively, a linear blending is not suitable to capture deformations induced by skeleton, because their nature is rather spherical. Our basic idea is to change the interpolation domain: we interpolate transformations itself instead of transformed vertex positions. Because we consider transformations consisting of a translation and rotation, we suggest to use a quaternion representation. The transition to non-linear interpolation domain is not elementary. In order to achieve our goal, we cope with two main problems: determination of the center of rotation, and interpolation of multiple quaternions. The first problem follows from the fact that the choice of the center of rotation influences the result of interpolation considerably. We show how to compute a convenient center of rotation in real-time. 
+The second problem is simple in the case of two quaternions 
+[Shoemake 1985], but gets considerably harder for more than two rotations 
+[Buss and Fillmore 2001; Park et al. 2002; Alexa 2002]. Because the previous methods are not efficient enough for our purpose, we use a simple linear quaternion averaging. We justify both theoretically and experimentally that this solution is appropriate for our task (and probably for many others). Resolving those problems, we obtain a skin animation algorithm that deforms the mesh in much more plausible way then LBS. Because we change only the interpolation domain and not the input data, our program works with exactly the same models as LBS. The proposed algorithm improves a deformed shape even of models that have been designed and carefully tuned for LBS. Considering the high speed and low memory demands of SBS, it provides an attractive alternative to classic LBS.
+      
+      
+        <H2>2.2 Conventions</H2>
+        Let us denote matrices by capital letters, while vectors and quaternions by bold. Vectors are considered column vectors, therefore a multiplication of vector v by matrix M is written as Mv. We do not introduce a different notation for the R 3 vectors and their homogeneous R 4 counterparts with last coordinate equal to 1. The same convention is used for matrices. We denote the dot product of two vectors v 1 , v 2 as (v 1 , v 2 ) and the norm v 1 as a shortcut for (v 1 , v 1 ).
+      
+      
+        <H1>3 Linear Blend Skinning</H1>
+        The input to LBS consists of a polygonal mesh representing the digital skin, a skeleton, and vertex weights for every vertex of the skin. The polygonal mesh and the skeleton are designed in a reference position, e.g. virtual characters are often posed in the da Vinci posture 
+[Steed 2002]. Let us label the joints by integer numbers, assigning zero to the root. Each joint in the reference posture is associated with a homogeneous matrix, describing its position and orientation in the world coordinate system. For j-th joint, we denote this matrix by A j , like ”absolute” (or reference) position. This matrix is computed by multiplying all the transformations of individual joints in the chain from root to joint j. To compute the shape of the deformed skin, we need yet another set of matrices, describing the position and orientation of joints in the actual, animated posture. We call them F j , standing for the ”final” placement of joint j. Matrices F j are computed in a similar way as the absolute matrices, but including the actual rotation of each joint in the chain (we do not consider translating and scaling joints). The most simple skin deformation algorithm computes v = F j A −1 j v where v is a vertex in the reference skin associated with joint j and v is its position in the deformed mesh. The interpretation is following: the first matrix A −1 j transforms v to the position with joint j’s coordinate system aligned to the world coordinate system. The following transformation F j returns the vertex to its current position induced by the animated skeleton. Because these transformations usually occur together, we define the ”complete” matrix C j = F j A −1 j . Some older computer games animated characters in this way, even though it does not produce nice, smooth deformations. The linear blend skinning allows assignment of one vertex to multiple bones. Assume that vertex v is attached to joints j 1 , . . . , j n with weights w 1 , . . . , w n . The weights are coefficients of a convex combination, i.e. non-negative and ∑ n i=1 w i = 1. The weight w i represents the amount of influence of joint j i . The vertex position in the mesh deformed by LBS is then computed as
+        
+          1
+          n v = ∑ w i C j i v i=1
+        
+        that is to say, making a convex combination of individual vertex transformations. For example if n = 2 then vertex v lies on the line segment connecting C j 1 v and C j 2 v. The actual position on the segment is given by weight w 1 (or w 2 , because w 1 +w 2 = 1). As explained in the next section, the SBS works on a circular arc instead of segment, see Figure 1 . If the joint rotations are large, the LBS produces non-natural deformations. In the extremal case of rotation by 180 degrees, the skin can collapse to a single point. It is the notorious ”candy-wrapper” artifact, which is demonstrated in Figure 2 . The right shoulder of the model is twisted by 180 degrees, while the left shoulder is left in the reference pose. To understand why this undesirable effect occurs, it is sufficient to re-arrange the equation (1)
+        mesh bone joint j 1 j 2 vertex v C j 2 v C j 1 v LBS workspace SBS workspace
+        
+          Figure 1: The set of possible results of LBS is a line segment, while SBS gives a circular arc.
+        
+        
+          2
+          n v = ∑ w i C j i v i=1
+        
+        This formula is less efficient, because it blends matrices instead of vectors, but gives us a valuable insight. It is well known that the component-wise interpolation of matrices produces odd results: it does not preserve the orthogonality of the rotational part of the matrix. In some situations, it does not preserve even the rank of the interpolated matrices. This is exactly what happens in the ”candywrapper” problem: the single point the skin collapses to is a result of transformation by a singular matrix. A similar defect is visible also in the proximity of the singular configuration. Although the matrix is regular, it involves a non-uniform scaling and skewing, which is responsible for the loss of volume of the deformed skin even for small rotations.
+      
+      
+        <H1>4 Spherical Blend Skinning</H1>
+        Instead of trying to correct the bad results of LBS, we propose to change the interpolation method in (2). We focus on the interpolation of rotations – the linear interpolation of the translation part of C j i matrices is all right. An established interpolation of two rotations is spherical linear interpolation (SLERP) 
+[Shoemake 1985]. Its key of success is the use of quaternions to represent rotations. Unfortunately, it is not possible to simply replace matrices C j i in (2) with corresponding pairs quaternion-translation. One of the problems is that the linear interpolation of quaternions is not equivalent to SLERP. However, this is not the most serious difficulty, and we address it in section 4.1. The more important problem is to compute a convenient center of the interpolated rotations. We show that this is really an important problem on an example of human arm. Consider that the arm geometry is influenced by two joints j 1 and j 2 , such that j 1 is a parent of j 2 , as in Figure 1 . The transformation of the whole mesh by C j 1 is illustrated in the top row of Figure 3 and the transformation of the same geometry by C j 2 in the bottom row (note that the results are identical in both columns of these rows). The rows in the middle show the progress of interpolation between C j 1 to C j 2 . The only difference between the two columns in Figure 3 is in the choice of the center of rotation. In the left column, the rotation center r c is set to the translation part of matrix A j 2 (the position of joint j 2 in the reference posture). Note that C j 1 r c = C j 2 r c , therefore also the transformed rotation center is constant during the interpolation. In the right column of the figure, the rotation center r c is set to the translation part of A j 1 . Because C j 1 r c = C j 2 r c , the transformed rotation center is linearly interpolated from C j 1 r c to C j 2 r c . By comparison with the starting mesh (drawn gray in each frame), it is obvious that the center of rotation choice in the left column is much more advantageous. In this case, the interpolation of every single point is a circular arc (as in Figure 1), whereas a disturbing drift is inherent to any other choice of rotation center (such as r c ). Unfortunately, the condition of zero translation cannot be always satisfied, typically for more than two influencing joints. But even if the vertex is attached to only two joints k and l that are not neighbours of each other, some translation may be inevitable. For example consider that there is no relative rotation between C k and C l , but there is a relative translation induced by the joints in the chain between k and l. Clearly no choice of the center of rotation can avoid this translation, because the rotation is identity. Anyway, it is possible to define the rotation center as the point whose transformations by associated matrices are as close as possible. This minimizes the drift and works even if the vertex is assigned to n joints j 1 , . . . , j n . We find the center of rotation r c as the
+        
+          Figure 2: Up – an extreme shoulder twist deformed by LBS, down – the same posture deformed by SBS
+        
+        C j 1 C j 1 C j 1 r c C j 1 r c
+        C j 2 C j 2 C j 2 r c C j 2 r c
+        
+          Figure 3: The correct center of rotation is chosen in the left column, while the sub-optimal in the right column. In the middle rows, notice the difference of the elbow position with respect to the original skin.
+        
+        least-squares solution of the system of n 2 linear vector equations C a r c = C b r c , a &lt; b, a, b ∈ { j 1 , . . . , j n } Each homogeneous matrix C i has structure C i = C 0 i rot T C 1 tr i
+        where C i rot is a 3 × 3 orthogonal matrix and C tr i is a translation vector. This enables us to re-write the linear system to C a rot r c + C tr a = C b rot r c + C tr b (C a rot −C b rot )r c = C tr b − C tr a If we stack all these equations to one matrix D and the right-hand sides to vector e, we can write the whole system as Dr c = e where D is a 3 n 2 × 3 matrix, r c is a 3-dimensional unknown vector and e is 3 2 n -dimensional vector. In general, we cannot make any assumptions about the rank of matrix D, which can vary from 0 to 3 (consider for example n = 2 and C j 1 = C j 2 ). We search the optimal solution r c in the least-squares sense. If there are multiple solutions giving the minimal Dr c − e , the r c with the minimal norm is chosen. This can be done in a robust way using the singular value decomposition (SVD), followed by computation of pseudo-inverse matrix. To perform these computations, we use the LAPACK software 
+[Anderson et al. 1999]. Even though LAPACK routines are efficient, computation of the center of rotation per each vertex would not result in a real-time algorithm. Fortunately, the center of rotation depends only on the transformations of the joints j 1 , . . . , j n and not the vertex itself. Therefore, if we encounter another vertex assigned to the same set of joints j 1 , . . . , j n , we can re-use the center of rotation computed formerly (cached). Moreover, if there is only one, or two neighboring joints that influence the vertex, we can determine the center of rotation precisely (as indicated in the beginning of this section) and omit the SVD computation at all. It turns out that the number of different non-trivial joint sets, and therefore the number of running the SVD, is surprisingly small for common models – about several tens. This enables the real-time performance.
+      
+      
+        <H2>4.1 Interpolation of Multiple Rotations</H2>
+        As mentioned in the introduction, the interpolation of multiple rotations has already received some attention [Buss and Fillmore 2001; Park et al. 2002] as well as interpolation of multiple general transformations [Alexa 2002]. Unfortunately, all these methods are substantially slower then the simple linear interpolation used in LBS. Since our goal is an algorithm with comparable time complexity as LBS, we propose an approximate but fast linear quaternion blending. For the case of two rotations, we compare our method with the established SLERP. Recall that a rotation around axis a (unit length vector) with angle 2 α corresponds to quaternion q = cos α + a sin α . However, this correspondence is not unique, because both quaternions q and −q represent the same rotation. The SLERP of two unit quaternions p, q assumes that their dot product (p, q) ≥ 0. If the dot product (p, q) &lt; 0, we use −p instead of p, which is possible because both p and −p represent the same rotation. The SLERP of p, q with interpolation parameter t ∈ 0, 1 is given by the following formula, see for example 
+[Eberly 2001].
+        
+          3
+          sin((1 − t) θ )p + sin(t θ )q s(t; p, q) = sin θ
+        
+        where θ is the angle inclined by quaternions p, q, i.e. cos θ = (p, q). The linear interpolation of quaternions (QLERP) is computed as
+        
+          4
+          (1 − t)p + tq l(t; p, q) = (1 − t)p + tq
+        
+        The difference to SLERP is obvious: QLERP interpolates along the shortest segment, and then projects to arc, which does not result in the uniform interpolation of the arc. In spite of this, we claim that QLERP is sufficient for our task. In order to justify this statement, we face an interesting question by itself: how big can be the difference between QLERP and SLERP for the same input rotations? For t = 0, both QLERP and SLERP return of course p. For t &gt; 0, we can imagine that both QLERP and SLERP work by concatenating p with some rotation (multiplying p with some quaternion). For SLERP, we denote this quaternion as r s (t). It can be expressed as p ∗ s(t; p, q), because pr s (t) = pp ∗ s(t; p, q) = s(t; p, q) The rotation r s (t) can be written out as
+        
+          5
+          r s (t) = p ∗ s(t; p, q) = sin((1 − t) θ sin )1 + θ sin(t θ )p q
+        
+        The quaternion 1 represents the identity (zero angle rotation). From the definition of quaternion multiplication it can be seen that the real part of p ∗ q equals (p, q) = cos θ . Since p ∗ q is a unit quaternion, we can express it as p ∗ q = cos θ + u sin θ for some axis of rotation u. If we substitute this into equation (5), we obtain sin((1 − t) θ ) + sin(t θ ) cos θ r s (t) = sin θ + u sin(t θ ) which means that the direction of the axis u is independent on t. Let us examine the rotation r l (t) following p in QLERP: r l (t) = p ∗ l(t; p, q) = (1 (1 − − t)1 t)p + + tp tq ∗ q = (1 − t + t cos θ ) t sin θ = + u (1 − t)p + tq (1 − t)p + tq which shows that the axis of rotation has the same direction. We can conclude with an important property: the SLERP can be written as pr s (t) and QLERP as pr l (t), where the rotations r s (t) and r l (t) have the same axis. Moreover, this axis is constant, i.e. independent on the interpolation parameter t. It follows that the only difference between QLERP and SLERP is in the angle of rotations r s (t) and r l (t). Note that both r s (t) and r l (t) have a form of linear combination of quaternions 1 and p ∗ q. It means that the results of both r s (t) and r l (t) always end up in certain 2D subspace of R 4 . We can restrict our attention to this subspace (the linear hull of 1 and p ∗ q). Since SLERP assumes cos θ = (p, q) ≥ 0, the angle θ cannot exceed π /2. To obtain an upper bound of the maximal difference in the angle, we consider the extremal case with θ = π /2, depicted in Figure 4 . The angle α (t) on the picture can be computed by atan, and β (t) by simple linear interpolation of the right angle, which yields the difference function t π d(t) = α (t) − β (t) = atan − t 1 − t 2 It remains to find the extremes of d(t) on the interval 0, 1 . The elementary mathematical analysis discovers the global extremes in points 1/2 ± (1/ π − 1/4). The absolute value of d(t) in these points is approximately 0.071 radians (4.07 degrees). As mentioned in the introduction of this section the angle of rotation is twice the angle inclined by quaternions. To conclude: both SLERP and QLERP interpolate by multiplying the first quaternion with a rotation with the same, fixed axis. The difference between SLERP and QLERP is only in the angle of this rotation, and is strictly less then 0.143 radians (8.15 degrees) for any interpolation parameter t ∈ 0, 1 . This is an upper bound; practical results are much smaller and could hardly cause an observable defect in the deformed skin. The big advantage of QLERP is that it can be easily generalized to interpolate multiple rotations – it suffices to make a convex combination and re-normalization of multiple quaternions.
+        1 SLERP QLERP t a (t) b (t) 1-t 1
+        
+          Figure 4: The difference between QLERP angle α (t) and SLERP β (t)
+        
+      
+      
+        <H2>4.2 Algorithm Overview</H2>
+        Now we have prepared all the ingredients to describe how the SBS algorithm works. The task is to transform a vertex v influenced by joints j 1 , . . . , j n with convex weights W = (w 1 , . . . , w n ) to its position v in the animated skin. In order to obtain an appealing deformation, it is necessary to respect the computed center of rotation r c . To achieve this, we extend the QLERP scheme to homogeneous matrices C j i . We denote the interpolation of matrices C j i with weights W as
+        
+          6
+          Q m q(W ;C j 1 , . . . ,C j n ) = 0 T 1
+        
+        and compute Q and m as follows. First, the rotation submatrices C rot j i are converted to quaternions q j i . One of them, for example q j 1 , is chosen as pivot. If (q j 1 , q j i ) &lt; 0 for any i = 2, . . . , n, we replace q j i with −q j i (by analogy to SLERP). Then the QLERP computes s = w 1 q j 1 + . . . + w n q j n , which is subsequently normalized to s n = s/ s . Finally, s n is converted to the rotation matrix Q. The translation part is just linearly interpolated, m = ∑ n i=1 w i C tr j i . In order to change the center of rotation from the origin to r c , we define a homogeneous matrix
+        T = 0 I T r 1 c (7)
+        where I is a 3 × 3 identity matrix. Then the interpolation of homogeneous matrices with respect to the center of rotation r c can be written as
+        
+          8
+          T q(W ; T −1 C j 1 T, . . . , T −1 C j n T )T −1
+        
+        Note that the shift of the center of rotation does not influence the interpolated rotation – it manifests only in the translation part. The desired transformation of vertex v is v = T q(W ; T −1 C j 1 T, . . . , T −1 C j n T )T −1 v
+        
+          9
+          n = Q(v − r c ) + ∑ w i C j i r c i=1
+        
+        A detailed derivation of this formula can be found in appendix A. The latter addend represents the translation induced by the new center of rotation. The equation (9) has to be evaluated once per each vertex, and therefore should be as efficient as possible. The basic optimization is to pre-compute the quaternions q j i , because they do not depend on the actual vertex – only on the joint’s transformation, similarly as the rotation centers r c . Nonetheless, QLERP has to be executed for each vertex, since weights w 1 , . . . , w n can vary. In order to challenge the speed of LBS, we apply a following trick. The vertex v can be represented by a quaternion with zero real part. In this representation, its rotation by quaternion q can be expressed as q vq ∗ , which is a quaternion with zero real part as well 
+[Eberly 2001]. Although this expression is not efficient for computation (because of slow quaternion multiplication), it enables us to write out the rotation of v by quaternion s n as s n vs n ∗ = s 1 2 svs ∗ = (s, 1 s) svs ∗ This suggests to convert already the quaternion s to matrix Q and normalize subsequently by dividing (s, s). Therefore, we can compute the Q matrix from (9) as Q = (s,s) Q and save the sqrt operation. Some attention must be paid because standard routines for quaternion to matrix conversion assume a unit-length quaternion. The conversion of an arbitrary length q = w + xi + y j + zk leads to the following matrix: ⎛ ⎞ x 2 + w 2 − y 2 − z 2 2xy − 2wz 2xz + 2wy ⎝ 2xy + 2wz y 2 + w 2 − x 2 − z 2 2yz − 2wx ⎠ 2xz − 2wy 2yz + 2wx z 2 + w 2 − x 2 − y 2 Vertex normal v n is transformed in a similar way as vertex position, but ignoring the translation v n = Qv n Using the formula (9) we can verify our previous intuitive thinking. First, if we substitute r c in place of v, no rotation occurs, which means that r c is indeed a center of rotation. Second, if n = 2 and C j 1 r c = C j 2 r c (as in the beginning of section 4), the translation part becomes w 1 C j 1 r c + w 2 C j 2 r c = (w 1 + w 2 )C j 1 r c = C j 1 r c which is independent of interpolation parameters (weights), i.e. the translation during interpolation is constant indeed. Third, the equation (9) is nothing but a generalization of LBS to an arbitrary method of rotation interpolation. The choice of QLERP is not important for (9), the matrix Q can be replaced by matrix resulting from any other interpolation scheme, such as 
+[Buss and Fillmore 2001]. If we substitute Q = ∑ w i C rot j i , i.e. a simple linear combination of rotation matrices, we obtain v = Q(v − r c ) + ∑ w i C j i r c = ∑ w i C rot j i v − ∑ w i C rot j i r c + ∑ w i C rot j i r c + ∑ w i C tr j i = ∑ w i C rot j i v + ∑ w i C tr j i = ∑ w i C j i v which is exactly the LBS equation (1). This also shows that LBS is a special case, which is independent of the center of rotation. The whole algorithm can be summarized in the following steps:
+        
+          Figure 5: 3D models used for testing
+        
+        
+          
+            
+              
+                
+                  
+                   Hand
+                   Woman
+                   Creature
+                
+              
+              
+                
+                   vertices
+                   2402
+                   3356
+                   6802
+                
+                
+                   triangles
+                   4800
+                   5205
+                   13590
+                
+                
+                   joints
+                   23
+                   78
+                   56
+                
+              
+            
+          
+          Hand Woman Creature vertices 2402 3356 6802 triangles 4800 5205 13590 joints 23 78 56
+          Table 1: Complexities of example models
+        
+        • compute matrices C i for all joints and convert their rotation parts to quaternions q i • for each vertex v influenced by joints j 1 , . . . , j n – compute (or re-use a cached) center of rotation r c according to section 4 – blend quaternions q j 1 , . . . q j n using QLERP and convert the result to matrix Q – compute the position of vertex v in the deformed skin using the equation (9)
+      
+      
+        <H1>5 Results and Comparison</H1>
+        We tested the SBS algorithm on three models, see Figure 5 and Table 1. We compare the shape of the deformed skin on the model of woman, because human eye is most sensitive to the deformations of human body. Figure 6 presents results of LBS and SBS executed on the same posture of the model. Another example has been presented already in Figure 2 . For small deformations, both algorithms produce similar results, as in the second row of Figure 6 (although a small loss of volume is noticeable even there). It is remarkable that the results of SBS are better even though the models have been optimised to work with the LBS algorithm. The performance of both algorithms is compared in Table 2 . The measured value is an average time in milliseconds necessary to deform one model on a 2.5GHz Athlon PC (rendering time not included). In the last row of the table the number of different nontrivial joint sets is reported (trivial joint set consists of only one joint
+        
+          Figure 6:
+        
+        Comparison of deformations by LBS (left) and SBS
+        (right)
+        or two neighboring joints). Put in another way, it is exactly the number of singular-value decompositions performed by the SBS algorithm. This number participates considerably on the difference between times for LBS and SBS. Theoretically, the number of different non-trivial joint sets could be very high. Fortunately, this number is surprisingly small in practice, because the joint influences tend to be local (e.g. it is unlikely to find vertices influenced by both left and right wrist). The additional memory needed for SBS is dominated by caching the computed centers of rotation. However, this amount of memory is negligible, considering the number of different non-trivial joint sets. In order to test the accuracy of QLERP, we experimented with spherical weighted averages presented in 
+[Buss and Fillmore 2001]. The algorithm proposed in 
+[Buss and Fillmore 2001] behaves like SLERP for the case of two rotations (in contrast to QLERP, which only approximates SLERP results). On the one hand, the difference in the deformed skin was barely observable, according to the results from section 4.1. On the other hand, the increase in the execution time was quite substantial. For the woman model, the time increased from original 4.54ms to 22.74ms. This only confirmed our choice of QLERP.
+        
+          
+            
+              
+                
+                  
+                   Hand
+                   Woman
+                   Creature
+                
+              
+              
+                
+                   LBS time
+                   3.28
+                   3.59
+                   9.0
+                
+                
+                   SBS time
+                   4.43
+                   4.54
+                   11.37
+                
+                
+                   SVD executions
+                   38
+                   37
+                   56
+                
+              
+            
+          
+          Hand Woman Creature LBS time 3.28 3.59 9.0 SBS time 4.43 4.54 11.37 SVD executions 38 37 56
+          Table 2: First two rows: run-time of LBS and SBS algorithms in milliseconds; last row: number of SVD executions
+        
+      
+      
+        <H2>5.1 Conclusion and Future Work</H2>
+        The proposed skin deformation system is by no means perfect; it cannot compete with complex, layered models. However, the SBS algorithm offers reasonable price for elimination of the notorious LBS artifacts. The time and memory complexity of both algorithms is comparable. The overhead of replacing an existing LBS implementation by SBS is minimal, because the input data, as well as the internal data structures, are the same. In contrast to other methods, the SBS does not need any additional information, such as the example skins. The presented algorithm opens many questions and suggests several directions of future work. First of all, we worked only with vertex weights optimised for LBS. These weights are designed to suppress the LBS artifacts, even though they cannot remove them. It would be interesting to find out how much can be the SBS results improved by a set of weights especially designed for SBS. In order to accomplish this, a tool to explore the space of SBS deformations would help considerably. This tool has been presented for LBS in 
+[Mohr et al. 2003], but the situation of SBS is somewhat more complex, because our interpolation method is non-linear. Similarly, it would be possible to estimate the SBS vertex weights from examples, as was done for LBS in [Mohr and Gleicher 2003]. This could also cover additional effects like muscle bulging.
+      
+      
+        <H1>6 Acknowledgments</H1>
+        This work has been partly supported by the Ministry of Education, Youth and Sports of the Czech Republic under research program No.Y04/98:212300014 (Research in the area of information technologies and communications). We thank to Samuel Buss for providing the algorithm for spherical weighted averages [Buss and Fillmore 2001] and to LAPACK developers for their software. We would also like to thank to Jaroslav Seman cı k and the anonymous reviewers for valuable comments and to Adam J. Sporka for help with the accompanying video.
+      
+      
+        <H1>A Interpolation of Rotations with an Arbitrary Center</H1>
+        In this appendix we derive the formula (9), which describes the interpolation of rotations with respect to r c – a custom center of rotation. Let us denote by K the coordinate system with origin in r c and identical basis vectors as the world coordinate system. Then
+        the matrix T (7) can be interpreted as a transformation from K to the world coordinate system. By analogy, the inverse matrix T −1 = 0 I T −r 1 c
+        represents the transformation from the world coordinate system to K. It follows that T −1 C j i T is the transformation C j i expressed with respect to K. By interpolating these matrices with QLERP q(W ; T −1 C j 1 T, . . . , T −1 C j n T ) we obtain a matrix working also on vectors in K coordinates. We can express this matrix with respect to the world coordinate system easily T q(W ; T −1 C j 1 T, . . . , T −1 C j n T )T −1 which is exactly the formula (8). Recall that the matrix C j i has structure C j i = C 0 rot j T i C 1 tr j i
+        which enables us to write out T −1 C j i T = C 0 rot j T i C j i r c 1 − r c
+        as can be simply verified. Please note that the change of the coordinate system did not influence the rotation part C rot j i at all. Therefore the result of QLERP will be, according to equation (6)
+        q(W ; T −1 C j 1 T, . . . , T −1 C j n T ) = 0 Q T −r c + ∑ i=1 n 1 w i C j i r c
+        where Q stands for the interpolation of pure rotations, computed as indicated in section 4.2. Using T −1 v = v − r c and T x = x + r c , we see that v = T q(W ; T −1 C j 1 T, . . . , T −1 C j n T )T −1 v = T 0 Q T −r c + ∑ i=1 n 1 w i C j i r c v − 1 r c n = Q(v − r c ) + ∑ w i C j i r c i=1
+        is true for any vector v. This is exactly the equation (9).
+      
+      
+        <H1>References</H1>
+        
+          A LEXA , M. 2002. Linear combination of transformations. In SIGGRAPH ’02: Proceedings of the 29th annual conference on Computer graphics and interactive techniques, ACM Press, 380–387.
+          A NDERSON , E., B AI , Z., B ISCHOF , C., B LACKFORD , S., D EM MEL , J., D ONGARRA , J., D U C ROZ , J., G REENBAUM , A., H AMMARLING , S., M C K ENNEY , A., AND S ORENSEN , D. 1999. LAPACK Users’ Guide, third ed. Society for Industrial and Applied Mathematics, Philadelphia, PA.
+          B LOOMENTHAL , J. 2002. Medial-based vertex deformation. In Proceedings of the 2002 ACM SIGGRAPH/Eurographics symposium on Computer animation, ACM Press, 147–151.
+          B USS , S. R., AND F ILLMORE , J. P. 2001. Spherical averages and applications to spherical splines and interpolation. ACM Trans. Graph. 20, 2, 95–126.
+          E BERLY , D. 2001. 3D game engine design: a practical approach to real-time computer graphics. Morgan Kaufmann Publishers Inc.
+          K AVAN , L., AND Z ˇ ARA  ́ , J. 2003. Real-time skin deformation with bones blending. In WSCG Short Papers Proceedings.
+          K RY , P. G., J AMES , D. L., AND P AI , D. K. 2002. Eigenskin: real time large deformation character skinning in hardware. In Proceedings of the 2002 ACM SIGGRAPH/Eurographics symposium on Computer animation, ACM Press, 153–159.
+          L ANDER , J. 1998. Skin them bones: Game programming for the web generation. Game Developer Magazine (May), 11–16.
+          L ANDER , J. 1999. Over my dead, polygonal body. Game Developer Magazine (October), 17–22.
+          L EWIS , J. P., C ORDNER , M., AND F ONG , N. 2000. Pose space deformation: a unified approach to shape interpolation and skeleton-driven deformation. In Proceedings of the 27th annual conference on Computer graphics and interactive techniques, ACM Press/Addison-Wesley Publishing Co., 165–172.
+          M AGNENAT -T HALMANN , N., L APERRI È RE , R., AND T HAL MANN , D. 1988. Joint-dependent local deformations for hand animation and object grasping. In Proceedings on Graphics interface ’88, Canadian Information Processing Society, 26–33.
+          M AGNENAT -T HALMANN , N., C ORDIER , F., S EO , H., AND P A PAGIANAKIS , G. 2004. Modeling of bodies and clothes for virtual environments. In CW ’04: Proceedings of the 2004 International Conference on Cyberworlds (CW’04), IEEE Computer Society, 201–208.
+          M OHR , A., AND G LEICHER , M. 2003. Building efficient, accurate character skins from examples. ACM Trans. Graph. 22, 3, 562– 568.
+          M OHR , A., T OKHEIM , L., AND G LEICHER , M. 2003. Direct manipulation of interactive character skins. In Proceedings of the 2003 symposium on Interactive 3D graphics, ACM Press, 27–30.
+          P ARK , S. I., S HIN , H. J., AND S HIN , S. Y. 2002. On-line locomotion generation based on motion blending. In Proceedings of the 2002 ACM SIGGRAPH/Eurographics symposium on Computer animation, ACM Press, 105–111.
+          S HOEMAKE , K. 1985. Animating rotation with quaternion curves. In Proceedings of the 12th annual conference on Computer graphics and interactive techniques, ACM Press, 245–254.
+          S LOAN , P.-P. J., R OSE , III, C. F., AND C OHEN , M. F. 2001. Shape by example. In Proceedings of the 2001 symposium on Interactive 3D graphics, ACM Press, 135–143.
+          S TEED , P. 2002. Animating Real-Time Game Characters with CDROM. Charles River Media, Inc.
+          W ANG , X. C., AND P HILLIPS , C. 2002. Multi-weight enveloping: least-squares approximation techniques for skin animation. In Proceedings of the 2002 ACM SIGGRAPH/Eurographics symposium on Computer animation, ACM Press, 129–138.
+          W EBER , J. 2000. Run-time skin deformation. In Proceedings of Game Developers Conference.
+        
+      
+    
+  
+
+</Document>
