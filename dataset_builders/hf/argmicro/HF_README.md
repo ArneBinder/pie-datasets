@@ -69,8 +69,48 @@ German, with English translation (by a professional translator).
 | ---------------------------------------------------------- | ----------------------------: |
 | No. of instances                                           |                           112 |
 | No. of sentences/instance (on average)                     |                           5.1 |
-| ADUs Types<br/>- `pro`<br/>- `opp`                         |              <br/>451<br/>125 |
-| Edge Types<br/>- `sup`<br/>- `exa`<br/>- `reb`<br/>- `und` | <br/>263<br/>9<br/>108<br/>63 |
+
+
+### Data Labels
+
+| Stance      | Count | Percentage |
+|-------------|------:|-----------:|
+| `pro`       |    46 |     41.1 % |
+| `con`       |    42 |     37.5 % |
+| `unclear`   |     1 |      0.9 % |
+| `UNDEFINED` |    23 |     20.5 % |
+
+#TODO
+  - `pro`: 
+  - `con`: 
+  - `unclear`:
+  - `UNDEFINED`:
+
+| ADUs  | Count | Percentage |
+|-------| ----: | ---------: |
+| `Pro` |   451 |     78.3 % |
+| `Opp` |   125 |     21.7 % |
+
+  - `pro`: proponent, who presents and defends his claims
+  - `opp`: oppponent, who critically questions the proponent in a regimented fashion (P&S, 2015, p.5)
+
+| Relations      | Count | Percentage |
+|----------------|------:|-----------:|
+| support: `sup` |   281 |     55.2 % |
+| support: `exa` |     9 |      1.8 % |
+| attack: `und`  |    65 |     12.8 % |
+| attack: `reb`  |   110 |     21.6 % |
+| other: `joint` |    44 |      8.6 % |
+
+  - `sup`: support (ADU->ADU)
+  - `exa`: support by example (ADU->ADU)
+  - `add`: additional source, for combined/convergent arguments with multiple premises, i.e., linked support, convergent support, serial support (ADU->ADU)
+  - `reb`: rebutting attack (ADU->ADU)
+    - definition: "targeting another node and thereby challenging its acceptability"
+  - `und`: undercutting attack (ADU->Edge)
+    - definition: "targeting an edge and thereby challenging the acceptability of the inference from the source to the target node"
+      ([P&S, 2016](https://github.com/peldszus/arg-microtexts/blob/master/corpus/arggraph.dtd), [P&S, EN annotation guideline](https://www.ling.uni-potsdam.de/~stede/Papers/ArgGuidelinesEnglish.pdf))
+  - `joint`: combines text segments if one does not express a complete proposition on its own, or if the author divides a clause/sentence into parts, using punctuation
 
 See other corpus statistics in Peldszus ([2016](https://peldszus.github.io/files/eca2015-preprint.pdf)), Section 5.
 
