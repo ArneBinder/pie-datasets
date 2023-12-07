@@ -137,7 +137,7 @@ class ArgumentAnnotatedEssaysV2Config(BratConfig):
 
 class ArgumentAnnotatedEssaysV2(BratBuilder):
     BASE_DATASET_PATH = "DFKI-SLT/brat"
-    BASE_DATASET_REVISION = "052163d34b4429d81003981bc10674cef54aa0b8"
+    BASE_DATASET_REVISION = "844de61e8a00dc6a93fc29dc185f6e617131fbf1"
 
     # we need to add None to the list of dataset variants to support the default dataset variant
     BASE_BUILDER_KWARGS_DICT = {
