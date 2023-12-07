@@ -297,7 +297,9 @@ class BratBuilder(GeneratorBasedBuilder):
     ]
 
     BASE_DATASET_PATH = "DFKI-SLT/brat"
-    BASE_DATASET_REVISION = "70446e79e089d5e5cd5f3426061991a2fcfbf529"
+    BASE_DATASET_REVISION = (
+        None  # it is highly recommended to set this to a commit hash in any derived builder
+    )
 
     def _generate_document(self, example, **kwargs):
         return example_to_document(
