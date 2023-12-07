@@ -1,7 +1,7 @@
 from typing import List, Optional
 
+import datasets
 import pytest
-from datasets import disable_caching
 from pie_modules.document.processing import tokenize_document
 from pytorch_ie.core import Document
 from pytorch_ie.documents import (
@@ -20,18 +20,34 @@ from tests.dataset_builders.common import (
     TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
 
-disable_caching()
+datasets.disable_caching()
 
 TEST_FULL_DATASET = False
 
 DATASET_NAME = "sciarg"
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
+DATA_DIR = PIE_DS_FIXTURE_DATA_PATH / DATASET_NAME
 SPLIT_SIZES = {"train": 40 if TEST_FULL_DATASET else 3}
 
 
 @pytest.fixture(scope="module", params=["default", "merge_fragmented_spans"])
 def dataset_variant(request) -> str:
     return request.param
+
+
+@pytest.fixture(scope="module")
+def hf_dataset(dataset_variant) -> datasets.DatasetDict:
+    kwargs = dict(SciArg.BASE_BUILDER_KWARGS_DICT[dataset_variant])
+    if not TEST_FULL_DATASET:
+        kwargs["data_dir"] = str(DATA_DIR)
+    result = datasets.load_dataset(SciArg.BASE_DATASET_PATH, name=dataset_variant, **kwargs)
+    return result
+
+
+def test_hf_dataset(hf_dataset):
+    assert hf_dataset is not None
+    split_sizes = {name: len(ds) for name, ds in hf_dataset.items()}
+    assert split_sizes == SPLIT_SIZES
 
 
 @pytest.fixture(scope="module")
