@@ -56,15 +56,10 @@ def document(dataset, dataset_variant) -> Union[BratDocument, BratDocumentWithMe
 
 
 def test_document(document, dataset_variant):
-    assert document.text.startswith("Should students be taught to compete or to cooperate?")
-    if dataset_variant == "default":
-        # TODO
-        raise NotImplementedError()
-    elif dataset_variant == "merge_fragmented_spans":
-        # TODO
-        raise NotImplementedError()
-    else:
-        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+    assert document is not None
+    assert document.text.startswith(
+        " A combination of mitoxantrone plus prednisone is preferable to prednisone alone"
+    )
 
 
 @pytest.fixture(scope="module")
@@ -96,107 +91,100 @@ def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
 def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
     dataset_of_text_documents_with_labeled_spans_and_binary_relations,
 ):
-    if dataset_of_text_documents_with_labeled_spans_and_binary_relations is not None:
-        # Check that the conversion is correct and the data makes sense
-        # get a document to check
-        doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations[SPLIT][0]
-        assert isinstance(doc, TextDocumentWithLabeledSpansAndBinaryRelations)
-        # check the entities
-        assert len(doc.labeled_spans) == 183
-        # sort the entities by their start position and convert them to tuples
-        # check the first ten entities after sorted
-        sorted_entity_tuples = [
-            (str(ent), ent.label)
-            for ent in sorted(doc.labeled_spans, key=lambda ent: ent.start)[:10]
-        ]
-        # Checking the first ten entities
-        assert sorted_entity_tuples[0] == (
-            "complicated 3D character models are widely used in fields of entertainment, virtual reality, medicine etc",
-            "background_claim",
-        )
-        assert sorted_entity_tuples[1] == (
-            "The range of breathtaking realistic 3D models is only limited by the creativity of artists and resolution "
-            "of devices",
-            "background_claim",
-        )
-        assert sorted_entity_tuples[2] == (
-            "Driving 3D models in a natural and believable manner is not trivial",
-            "background_claim",
-        )
-        assert sorted_entity_tuples[3] == ("the model is very detailed", "data")
-        assert sorted_entity_tuples[4] == (
-            "playback of animation becomes quite heavy and time consuming",
-            "data",
-        )
-        assert sorted_entity_tuples[5] == ("a frame goes wrong", "data")
-        assert sorted_entity_tuples[6] == (
-            "a production cannot afford major revisions",
-            "background_claim",
-        )
-        assert sorted_entity_tuples[7] == ("resculpting models", "data")
-        assert sorted_entity_tuples[8] == ("re-rigging skeletons", "data")
-        assert sorted_entity_tuples[9] == (
-            "providing a flexible and efficient solution to animation remains an open problem",
-            "own_claim",
-        )
+    assert dataset_of_text_documents_with_labeled_spans_and_binary_relations is not None
+    # get a document to check
+    converted_doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations[
+        "neoplasm_train"
+    ][0]
+    # check that the conversion is correct and the data makes sense
+    assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndBinaryRelations)
 
-        # check the relations
-        assert len(doc.binary_relations) == 116
-        # check the first ten relations
-        relation_tuples = [
-            (str(rel.head), rel.label, str(rel.tail)) for rel in doc.binary_relations[:10]
-        ]
-        assert relation_tuples[0] == (
-            "a production cannot afford major revisions",
-            "supports",
-            "providing a flexible and efficient solution to animation remains an open problem",
-        )
-        assert relation_tuples[1] == (
-            "its ease of implementation",
-            "supports",
-            "SSD is widely used in games, virtual reality and other realtime applications",
-        )
-        assert relation_tuples[2] == (
-            "low cost of computing",
-            "supports",
-            "SSD is widely used in games, virtual reality and other realtime applications",
-        )
-        assert relation_tuples[3] == (
-            "editing in the rest pose will influence most other poses",
-            "supports",
-            "This approach is not commonly applied",
-        )
-        assert relation_tuples[4] == (
-            "This approach is not commonly applied",
-            "contradicts",
-            "artists will edit the geometry of characters in the rest pose to fine-tune animations",
-        )
-        assert relation_tuples[5] == (
-            "the animator specifies the PSD examples after the SSD has been performed",
-            "contradicts",
-            "the examples are best interpolated in the rest pose, before the SSD has been applied",
-        )
-        assert relation_tuples[6] == (
-            "PSD may be used as a compensation to the underlying SSD",
-            "contradicts",
-            "the examples are best interpolated in the rest pose, before the SSD has been applied",
-        )
-        assert relation_tuples[7] == (
-            "the examples are best interpolated in the rest pose, before the SSD has been applied",
-            "supports",
-            "the action of the SSD and any other deformations must be “inverted” in order to push the example "
-            "compensation before these operations",
-        )
-        assert relation_tuples[8] == (
-            "this inverse strategy has a better performance than the same framework without it",
-            "semantically_same",
-            "this approach will improve the quality of deformation",
-        )
-        assert relation_tuples[9] == (
-            "the high cost of computing",
-            "supports",
-            "they are seldom applied to interactive applications",
-        )
+    # check the entities
+    assert len(converted_doc.labeled_spans) == 7
+    entity_tuples = [(str(ent), ent.label) for ent in converted_doc.labeled_spans]
+    assert entity_tuples[0] == (
+        "A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain in men "
+        "with metastatic, hormone-resistant, prostate cancer.",
+        "MajorClaim",
+    )
+    assert entity_tuples[1] == (
+        "At 6 weeks, both groups showed improvement in several HQL domains,",
+        "Premise",
+    )
+    assert entity_tuples[2] == (
+        "only physical functioning and pain were better in the mitoxantrone-plus-prednisone group than in the "
+        "prednisone-alone group.",
+        "Premise",
+    )
+    assert entity_tuples[3] == (
+        "After 6 weeks, patients taking prednisone showed no improvement in HQL scores, whereas those taking "
+        "mitoxantrone plus prednisone showed significant improvements in global quality of life (P =.009), "
+        "four functioning domains, and nine symptoms (.001 < P <. 01),",
+        "Premise",
+    )
+    assert entity_tuples[4] == (
+        "the improvement (> 10 units on a scale of 0 to100) lasted longer than in the prednisone-alone group "
+        "(.004 < P <.05).",
+        "Premise",
+    )
+    assert entity_tuples[5] == (
+        "The addition of mitoxantrone to prednisone after failure of prednisone alone was associated with "
+        "improvements in pain, pain impact, pain relief, insomnia, and global quality of life (.001 < P <.003).",
+        "Premise",
+    )
+    assert entity_tuples[6] == (
+        "Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement "
+        "in several HQL domains and symptoms than treatment with prednisone alone.",
+        "Claim",
+    )
+
+    # check the relations
+    assert len(converted_doc.binary_relations) == 6
+    relation_tuples = [
+        (str(rel.head), rel.label, str(rel.tail)) for rel in converted_doc.binary_relations
+    ]
+    assert relation_tuples[0] == (
+        "Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement "
+        "in several HQL domains and symptoms than treatment with prednisone alone.",
+        "Support",
+        "A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain "
+        "in men with metastatic, hormone-resistant, prostate cancer.",
+    )
+    assert relation_tuples[1] == (
+        "At 6 weeks, both groups showed improvement in several HQL domains,",
+        "Support",
+        "Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement "
+        "in several HQL domains and symptoms than treatment with prednisone alone.",
+    )
+    assert relation_tuples[2] == (
+        "only physical functioning and pain were better in the mitoxantrone-plus-prednisone group than in the "
+        "prednisone-alone group.",
+        "Support",
+        "Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement "
+        "in several HQL domains and symptoms than treatment with prednisone alone.",
+    )
+    assert relation_tuples[3] == (
+        "the improvement (> 10 units on a scale of 0 to100) lasted longer than in the prednisone-alone group "
+        "(.004 < P <.05).",
+        "Support",
+        "Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement in "
+        "several HQL domains and symptoms than treatment with prednisone alone.",
+    )
+    assert relation_tuples[4] == (
+        "After 6 weeks, patients taking prednisone showed no improvement in HQL scores, whereas those taking "
+        "mitoxantrone plus prednisone showed significant improvements in global quality of life (P =.009), four "
+        "functioning domains, and nine symptoms (.001 < P <. 01),",
+        "Support",
+        "Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement "
+        "in several HQL domains and symptoms than treatment with prednisone alone.",
+    )
+    assert relation_tuples[5] == (
+        "The addition of mitoxantrone to prednisone after failure of prednisone alone was associated with improvements "
+        "in pain, pain impact, pain relief, insomnia, and global quality of life (.001 < P <.003).",
+        "Support",
+        "A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain in "
+        "men with metastatic, hormone-resistant, prostate cancer.",
+    )
 
 
 @pytest.fixture(scope="module")
@@ -229,49 +217,66 @@ def tokenized_documents_with_labeled_spans_and_binary_relations(
 def test_tokenized_documents_with_labeled_spans_and_binary_relations(
     tokenized_documents_with_labeled_spans_and_binary_relations,
 ):
-    if tokenized_documents_with_labeled_spans_and_binary_relations is not None:
-        docs = tokenized_documents_with_labeled_spans_and_binary_relations
-        # check that the tokenization was fine
-        assert len(docs) == 1
-        doc = docs[0]
-        assert len(doc.labeled_spans) == 183
-        assert len(doc.tokens) == 7689
-        # Check the first ten tokens
-        assert doc.tokens[:10] == ("[CLS]", "<", "?", "xml", "version", "=", '"', "1", ".", "0")
-        # Check the first ten tokenized entities after sorted by their start position
-        sorted_entities = sorted(doc.labeled_spans, key=lambda ent: ent.start)
-        assert (
-            str(sorted_entities[0])
-            == "('complicated', '3d', 'character', 'models', 'are', 'widely', 'used', 'in', 'fields', 'of', "
-            "'entertainment', ',', 'virtual', 'reality', ',', 'medicine', 'etc')"
-        )
-        assert (
-            str(sorted_entities[1])
-            == "('the', 'range', 'of', 'breath', '##taking', 'realistic', '3d', 'models', 'is', 'only', 'limited', "
-            "'by', 'the', 'creativity', 'of', 'artists', 'and', 'resolution', 'of', 'devices')"
-        )
-        assert (
-            str(sorted_entities[2])
-            == "('driving', '3d', 'models', 'in', 'a', 'natural', 'and', 'bel', '##ie', '##vable', 'manner', 'is', "
-            "'not', 'trivial')"
-        )
-        assert str(sorted_entities[3]) == "('the', 'model', 'is', 'very', 'detailed')"
-        assert (
-            str(sorted_entities[4])
-            == "('playback', 'of', 'animation', 'becomes', 'quite', 'heavy', 'and', 'time', 'consuming')"
-        )
-        assert str(sorted_entities[5]) == "('a', 'frame', 'goes', 'wrong')"
-        assert (
-            str(sorted_entities[6])
-            == "('a', 'production', 'cannot', 'afford', 'major', 'revisions')"
-        )
-        assert str(sorted_entities[7]) == "('res', '##cu', '##lp', '##ting', 'models')"
-        assert str(sorted_entities[8]) == "('re', '-', 'rig', '##ging', 'skeletons')"
-        assert (
-            str(sorted_entities[9])
-            == "('providing', 'a', 'flexible', 'and', 'efficient', 'solution', 'to', 'animation', 'remains', 'an', "
-            "'open', 'problem')"
-        )
+    docs: List[
+        TestTokenDocumentWithLabeledSpansAndBinaryRelations
+    ] = tokenized_documents_with_labeled_spans_and_binary_relations
+    # check that the tokenization was fine
+    assert len(docs) == 1
+    doc = docs[0]
+    assert len(doc.tokens) == 465
+    assert len(doc.labeled_spans) == 7
+    ent = doc.labeled_spans[0]
+    assert (
+        str(ent)
+        == "('a', 'combination', 'of', 'mit', '##ox', '##ant', '##rone', 'plus', 'pre', '##d', '##nis', '##one', 'is', "
+        "'prefer', '##able', 'to', 'pre', '##d', '##nis', '##one', 'alone', 'for', 'reduction', 'of', 'pain', 'in', "
+        "'men', 'with', 'meta', '##static', ',', 'hormone', '-', 'resistant', ',', 'prostate', 'cancer', '.')"
+    )
+    ent = doc.labeled_spans[1]
+    assert (
+        str(ent)
+        == "('at', '6', 'weeks', ',', 'both', 'groups', 'showed', 'improvement', 'in', 'several', 'hq', '##l', "
+        "'domains', ',')"
+    )
+    ent = doc.labeled_spans[2]
+    assert (
+        str(ent)
+        == "('only', 'physical', 'functioning', 'and', 'pain', 'were', 'better', 'in', 'the', 'mit', '##ox', '##ant', "
+        "'##rone', '-', 'plus', '-', 'pre', '##d', '##nis', '##one', 'group', 'than', 'in', 'the', 'pre', '##d', "
+        "'##nis', '##one', '-', 'alone', 'group', '.')"
+    )
+    ent = doc.labeled_spans[3]
+    assert (
+        str(ent)
+        == "('after', '6', 'weeks', ',', 'patients', 'taking', 'pre', '##d', '##nis', '##one', 'showed', 'no', "
+        "'improvement', 'in', 'hq', '##l', 'scores', ',', 'whereas', 'those', 'taking', 'mit', '##ox', '##ant', "
+        "'##rone', 'plus', 'pre', '##d', '##nis', '##one', 'showed', 'significant', 'improvements', 'in', 'global', "
+        "'quality', 'of', 'life', '(', 'p', '=', '.', '00', '##9', ')', ',', 'four', 'functioning', 'domains', ',', "
+        "'and', 'nine', 'symptoms', '(', '.', '001', '<', 'p', '<', '.', '01', ')', ',')"
+    )
+    ent = doc.labeled_spans[4]
+    assert (
+        str(ent)
+        == "('the', 'improvement', '(', '>', '10', 'units', 'on', 'a', 'scale', 'of', '0', 'to', '##100', ')', "
+        "'lasted', 'longer', 'than', 'in', 'the', 'pre', '##d', '##nis', '##one', '-', 'alone', 'group', '(', '.', "
+        "'00', '##4', '<', 'p', '<', '.', '05', ')', '.')"
+    )
+    ent = doc.labeled_spans[5]
+    assert (
+        str(ent)
+        == "('the', 'addition', 'of', 'mit', '##ox', '##ant', '##rone', 'to', 'pre', '##d', '##nis', '##one', "
+        "'after', 'failure', 'of', 'pre', '##d', '##nis', '##one', 'alone', 'was', 'associated', 'with', "
+        "'improvements', 'in', 'pain', ',', 'pain', 'impact', ',', 'pain', 'relief', ',', 'ins', '##om', '##nia', "
+        "',', 'and', 'global', 'quality', 'of', 'life', '(', '.', '001', '<', 'p', '<', '.', '00', '##3', ')', '.')"
+    )
+    ent = doc.labeled_spans[6]
+    assert (
+        str(ent)
+        == "('treatment', 'with', 'mit', '##ox', '##ant', '##rone', 'plus', 'pre', '##d', '##nis', '##one', 'was', "
+        "'associated', 'with', 'greater', 'and', 'longer', '-', 'lasting', 'improvement', 'in', 'several', "
+        "'hq', '##l', 'domains', 'and', 'symptoms', 'than', 'treatment', 'with', 'pre', '##d', '##nis', '##one', "
+        "'alone', '.')"
+    )
 
 
 def test_tokenized_documents_with_entities_and_relations_all(
