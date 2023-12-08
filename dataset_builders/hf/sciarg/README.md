@@ -95,8 +95,6 @@ For detailed statistics on the corpus, see Lauscher et al. ([2018](<(https://acl
 
 #### Relations
 
-#TODO: recheck numbers
-
 | Relations                  | Count | Percentage |
 | -------------------------- | ----: | ---------: |
 | support: `support`         |  5791 |     74.0 % |
