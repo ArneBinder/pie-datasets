@@ -170,7 +170,7 @@ of the different rhetorical aspects of scientific language (which we dub *scitor
 
 ### Discussion of Biases
 
-"\[N\]ot all claims are supported and secondly, claims can be supported by other claims. There are many more supports than contradicts relations."
+"...not all claims are supported and secondly, claims can be supported by other claims. There are many more supports than contradicts relations."
 
 "While the background claims and own claims are on average of similar length (85 and 87 characters, respectively), they are much longer than data components (average of 25 characters)."
 
