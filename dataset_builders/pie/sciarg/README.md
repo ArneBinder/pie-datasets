@@ -1,8 +1,8 @@
 # PIE Dataset Card for "sciarg"
 
-This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for the SciArg dataset from [BRAT Huggingface dataset loading script](https://huggingface.co/datasets/DFKI-SLT/brat).
+This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for the SciArg dataset ([paper](https://aclanthology.org/W18-5206/) and [data repository](https://github.com/anlausch/sciarg_resource_analysis)). Since the SciArg dataset is published in the [BRAT standoff format](https://brat.nlplab.org/standoff.html), this dataset builder is based on the [PyTorch-IE brat dataset loading script](https://huggingface.co/datasets/pie/brat).
 
-Therefore, the current `sciarg` dataset follows the data structure described in [PIE-Brat dataset card](https://huggingface.co/datasets/pie/brat).
+Therefore, the `sciarg` dataset as described here follows the data structure from the [PIE brat dataset card](https://huggingface.co/datasets/pie/brat).
 
 ### Dataset Summary
 
@@ -22,11 +22,27 @@ The language in the dataset is English (scientific academic publications on comp
 
 ### Dataset Variants
 
-See [PIE-Brat Dataset Variants](https://huggingface.co/datasets/pie/brat/blob/main/README.md#dataset-variants).
+See [PIE-Brat Dataset Variants](https://huggingface.co/datasets/pie/brat#dataset-variants).
 
 ### Data Schema
 
-See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat/blob/main/README.md#data-schema).
+See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema).
+
+### Usage
+
+```python
+from pie_datasets import load_dataset, builders
+
+# load default version
+datasets = load_dataset("pie/sciarg")
+doc = datasets["train"][0]
+assert isinstance(doc, builders.brat.BratDocument)
+
+# load version with merged span fragments
+dataset_merged_spans = load_dataset("pie/sciarg", name="merge_fragmented_spans")
+doc_merged_spans = dataset_merged_spans["train"][0]
+assert isinstance(doc_merged_spans, builders.brat.BratDocumentWithMergedSpans)
+```
 
 ### Document Converters
 
@@ -100,10 +116,9 @@ For detailed statistics on the corpus, see Lauscher et al. ([2018](<(https://acl
 There are currently discrepancies in label counts between
 
 - previous report in [Lauscher et al., 2018](https://aclanthology.org/W18-5206/), p. 43),
-- previous report in [pie-document-level](https://github.com/ArneBinder/pie-document-level) ([here](https://github.com/ArneBinder/pie-document-level/blob/main/argumentation-mining/documentation/corpora/sciarg.md?plain=1#L178-L182); labels counted in `TextDocumentWithLabeledSpanAndBinaryRelations`), and
 - current report above here (labels counted in `BratDocument`'s);
 
-possibly caused by the difference in label assignment during the document extraction and/or conversion processes.
+possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) presents the numbers of the real argumentative components, whereas here discontinuous components are still split (marked with the `parts_of_same` helper relation) and, thus, count per fragment.
 
 ## Dataset Creation
 
