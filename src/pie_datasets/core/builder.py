@@ -167,6 +167,14 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
     def _generate_document_kwargs(self, dataset):
         return None
 
+    def _generate_example(self, document: Document, **kwargs) -> Dict[str, Any]:
+        raise NotImplementedError
+
+    def _generate_example_kwargs(
+        self, dataset: Union[Dataset, IterableDataset]
+    ) -> Optional[Dict[str, Any]]:
+        return None  # pragma: no cover
+
     @overload  # type: ignore
     def _convert_dataset_single(self, dataset: datasets.IterableDataset) -> IterableDataset:
         ...
