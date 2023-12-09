@@ -173,7 +173,7 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
     def _generate_example_kwargs(
         self, dataset: Union[Dataset, IterableDataset]
     ) -> Optional[Dict[str, Any]]:
-        return None
+        return None  # pragma: no cover
 
     @overload  # type: ignore
     def _convert_dataset_single(self, dataset: datasets.IterableDataset) -> IterableDataset:
