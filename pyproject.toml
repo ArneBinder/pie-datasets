@@ -30,7 +30,7 @@ datasets = "^2.14"
 pyarrow = "^13"
 
 [tool.poetry.group.dev.dependencies]
-pie-modules = "^0.8"
+pie-modules = "^0.8.2"
 torch = {version = "^2.1.0+cpu", source = "pytorch"}
 pytest = "^7.4.2"
 pytest-cov = "^4.1.0"

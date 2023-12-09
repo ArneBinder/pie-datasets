@@ -1,5 +1,6 @@
 import pytest
 from datasets import disable_caching, load_dataset
+from pie_modules.documents import ExtractiveQADocument
 from pytorch_ie.core import Document
 
 from dataset_builders.pie.squad_v2.squad_v2 import (
@@ -166,3 +167,18 @@ def document(dataset, split) -> DOCUMENT_TYPE:
 
 def test_compare_document_and_generated_document(document, generated_document):
     assert document == generated_document
+
+
+@pytest.fixture(scope="module")
+def dataset_with_extractive_qa_documents(dataset) -> DatasetDict:
+    return dataset.to_document_type(ExtractiveQADocument)
+
+
+def test_dataset_with_extractive_qa_documents(
+    dataset_with_extractive_qa_documents, document, split
+):
+    assert dataset_with_extractive_qa_documents is not None
+    doc = dataset_with_extractive_qa_documents[split][0]
+    assert isinstance(doc, ExtractiveQADocument)
+    doc_casted = document.as_type(ExtractiveQADocument)
+    assert doc == doc_casted

@@ -1028,13 +1028,13 @@ xml = ["lxml (>=4.8.0)"]
 
 [[package]]
 name = "pie-modules"
-version = "0.8.0"
+version = "0.8.2"
 description = "Model and Taskmodule implementations for PyTorch-IE"
 optional = false
 python-versions = ">=3.9,<4.0"
 files = [
-    {file = "pie_modules-0.8.0-py3-none-any.whl", hash = "sha256:0b9cf500e98783b72475b7c30cc3050b7a23b848c480772d23537c19c7b374fa"},
-    {file = "pie_modules-0.8.0.tar.gz", hash = "sha256:b9c5f853ea3f8473a31268bf10b4c031f49216f43661666f3220d00bec333152"},
+    {file = "pie_modules-0.8.2-py3-none-any.whl", hash = "sha256:12e1cfdb73bbff390b92915f00315345d74779e629f92f6dac74dd90f87aa49a"},
+    {file = "pie_modules-0.8.2.tar.gz", hash = "sha256:34ad8de67b74cdebbb257e38eca83d09f5008f1d5c035a71372640234c6595bb"},
 ]
 
 [package.dependencies]
@@ -2077,4 +2077,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "93b59bbf5a490dfc89bd167023de4f4d0dad0798ffc171aeb1d8ab954f3b3b2c"
+content-hash = "0758cf80bb83748c8040f763262c921d65108f475a6d3d03383d212c2f24860f"
