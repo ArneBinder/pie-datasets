@@ -66,43 +66,59 @@ Dataset annotated with brat format is processed using this script. Annotations c
 
 ### Data Fields
 
-- `context`: the html content of data file as `string`
-- `file_name`: a `string` name of file
-- `spans`: an annotated sequence of segmented context string, a `list` of `dictionary`
-  - `id`: the instance id of the span, a `string` feature
-  - `type`: the label of the span
-  - `locations`: the indices indicating the span's location, a `list` of `dictionary`
-    - `start`: the index indicating the inclusive start of the span, a `list` of `int`
-    - `end`: the index indicating the exclusive end of the span, a `list` of `int`
-  - `text`: the text of the span, a `string` feature
-- `relations`: a sequence of relations between spans
-  - `id`: the instance id of the relation, a `string` feature
-  - `type`: the label of the relation
-  - `arguments`: the spans related to the relation, a `list` of `dictionary`
-    - `type`: the type of spans, a `list` of `string`
-    - `target`: the id of the spans, a `list` of `string`
+- `context` (`str`): the textual content of the data file
+- `file_name` (`str`): the name of the data / annotation file without extension
+- `spans` (`dict`): span annotations of the `context` string
+  - `id` (`str`): the id of the span, starts with `T`
+  - `type` (`str`): the label of the span
+  - `locations` (`list`): the indices indicating the span's locations (multiple because of fragments), consisting of `dict`s with
+    - `start` (`list` of `int`): the indices indicating the inclusive character start positions of the span fragments
+    - `end` (`list` of `int`): the indices indicating the exclusive character end positions of the span fragments
+  - `text` (`list` of `str`): the texts of the span fragments
+- `relations`: a sequence of relations between elements of `spans`
+  - `id` (`str`): the id of the relation, starts with `R`
+  - `type` (`str`): the label of the relation
+  - `arguments` (`list` of `dict`): the spans related to the relation, consisting of `dict`s with
+    - `type` (`list` of `str`): the argument roles of the spans in the relation, either `Arg1` or `Arg2`
+    - `target` (`list` of `str`): the spans which are the arguments of the relation
 - `equivalence_relations`: contains `type` and `target` (more information needed)
 - `events`: contains `id`, `type`, `trigger`, and `arguments` (more information needed)
-- `attributions`: the detailed types and properties of annotations
-  - `id`: the instance id of the attribution
-  - `type`: the type of the attribution
-  - `target`: the id of the related annotation
-  - `value`: the attribution's value or mark
-- `normalizations`: the unique identification of the real-world entities referred to by specific text expressions
-  - `id`: the instance id of the normalized entity
-  - `type`: the type of the normalized entity
-  - `target`: the id of the related annotation
-  - `resource_id`: the associated resource to the normalized entity
-  - `entity_id`: the instance id of normalized entity
-- `notes`: a freeform text, added to the annotation
-  - `id`: the instance id of the note
-  - `type`: the type of note
-  - `target`: the id of the related annotation
-  - `note`: the text body of the note
+- `attributions` (`dict`): attribute annotations of any other annotation
+  - `id` (`str`): the instance id of the attribution
+  - `type` (`str`): the type of the attribution
+  - `target` (`str`): the id of the annotation to which the attribution is for
+  - `value` (`str`): the attribution's value or mark
+- `normalizations` (`dict`): the unique identification of the real-world entities referred to by specific text expressions
+  - `id` (`str`): the instance id of the normalized entity
+  - `type`(`str`): the type of the normalized entity
+  - `target` (`str`): the id of the annotation to which the normalized entity is for
+  - `resource_id` (`str`): the associated resource to the normalized entity
+  - `entity_id` (`str`): the instance id of normalized entity
+- `notes` (`dict`): a freeform text, added to the annotation
+  - `id` (`str`): the instance id of the note
+  - `type` (`str`): the type of note
+  - `target` (`str`): the id of the related annotation
+  - `note` (`str`): the text body of the note
 
 ### Usage
 
-brat script can be used by calling `load_dataset()` method and passing `kwargs` (arguments to the [BuilderConfig](https://huggingface.co/docs/datasets/v2.2.1/en/package_reference/builder_classes#datasets.BuilderConfig)) which should include at least `url` of the dataset prepared using brat. We provide an example of [SciArg](https://aclanthology.org/W18-5206.pdf) dataset below,
+The `brat` dataset script can be used by calling `load_dataset()` method and passing any arguments that are accepted by the `BratConfig` (which is a special [BuilderConfig](https://huggingface.co/docs/datasets/v2.2.1/en/package_reference/builder_classes#datasets.BuilderConfig)). It requires at least the `url` argument. The full list of arguments is as follows:
+
+- `url` (`str`): the url of the dataset which should point to either a zip file or a directory containing the Brat data (`*.txt`) and annotation (`*.ann`) files
+
+- `description` (`str`, optional): the description of the dataset
+
+- `citation` (`str`, optional): the citation of the dataset
+
+- `homepage` (`str`, optional): the homepage of the dataset
+
+- `split_paths` (`dict`, optional): a mapping of (arbitrary) split names to subdirectories or lists of files (without extension), e.g. `{"train": "path/to/train_directory", "test": "path/to/test_director"}` or `{"train": ["path/to/train_file1", "path/to/train_file2"]}`. In both cases (subdirectory paths or file paths), the paths are relative to the url. If `split_paths` is not provided, the dataset will be loaded from the root directory and all direct subfolders will be considered as splits.
+
+- `file_name_blacklist` (`list`, optional): a list of file names (without extension) that should be ignored, e.g. `["A28"]`. This is useful if the dataset contains files that are not valid brat files.
+
+Important: Using the `data_dir` parameter of the `load_dataset()` method overrides the `url` parameter of the `BratConfig`.
+
+We provide an example of [SciArg](https://aclanthology.org/W18-5206.pdf) dataset below:
 
 ```python
 from datasets import load_dataset
@@ -124,6 +140,9 @@ kwargs = {
   }""",
 "homepage": "https://github.com/anlausch/ArguminSci",
 "url": "http://data.dws.informatik.uni-mannheim.de/sci-arg/compiled_corpus.zip",
+"split_paths": {
+  "train": "compiled_corpus",
+},
 "file_name_blacklist": ['A28'],
 }
 
