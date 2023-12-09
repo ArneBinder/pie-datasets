@@ -225,4 +225,4 @@ This research was partly funded by the German Research Foundation (DFG), grant n
 
 ### Contributions
 
-Thanks to [@github-username](https://github.com/%3Cgithub-username%3E) for adding this dataset.
+Thanks to [@ArneBinder](https://github.com/ArneBinder) and [@idalr](https://github.com/idalr) for adding this dataset.
