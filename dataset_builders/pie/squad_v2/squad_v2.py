@@ -85,3 +85,6 @@ class SquadV2(GeneratorBasedBuilder):
 
     def _generate_document(self, example, **kwargs):
         return example_to_document(example)
+
+    def _generate_example(self, document, **kwargs):
+        return document_to_example(document)

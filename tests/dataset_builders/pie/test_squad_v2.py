@@ -3,11 +3,7 @@ from datasets import disable_caching, load_dataset
 from pie_modules.documents import ExtractiveQADocument
 from pytorch_ie.core import Document
 
-from dataset_builders.pie.squad_v2.squad_v2 import (
-    SquadV2,
-    document_to_example,
-    example_to_document,
-)
+from dataset_builders.pie.squad_v2.squad_v2 import SquadV2
 from pie_datasets import DatasetDict
 from tests.dataset_builders.common import PIE_BASE_PATH
 
@@ -87,6 +83,11 @@ def generate_document_kwargs(hf_dataset, split) -> dict:
 
 
 @pytest.fixture(scope="module")
+def generate_example_kwargs(hf_dataset, split) -> dict:
+    return BUILDER_CLASS()._generate_example_kwargs(hf_dataset[split]) or {}
+
+
+@pytest.fixture(scope="module")
 def generated_document(hf_example, generate_document_kwargs) -> DOCUMENT_TYPE:
     return BUILDER_CLASS()._generate_document(hf_example, **generate_document_kwargs)
 
@@ -127,7 +128,7 @@ def test_generated_document(generated_document, split):
 
 @pytest.fixture(scope="module")
 def hf_example_back(generated_document, generate_document_kwargs):
-    return document_to_example(generated_document, **generate_document_kwargs)
+    return BUILDER_CLASS()._generate_example(generated_document, **generate_document_kwargs)
 
 
 def test_example_to_document_and_back(hf_example, hf_example_back):
@@ -135,10 +136,13 @@ def test_example_to_document_and_back(hf_example, hf_example_back):
 
 
 @pytest.mark.slow
-def test_example_to_document_and_back_all(hf_dataset, generate_document_kwargs, split):
+def test_example_to_document_and_back_all(
+    hf_dataset, generate_document_kwargs, generate_example_kwargs, split
+):
+    builder = BUILDER_CLASS()
     for hf_ex in hf_dataset[split]:
-        doc = example_to_document(hf_ex, **generate_document_kwargs)
-        hf_ex_back = document_to_example(doc, **generate_document_kwargs)
+        doc = builder._generate_example(hf_ex, **generate_document_kwargs)
+        hf_ex_back = builder._generate_example(doc, **generate_example_kwargs)
         assert hf_ex_back == hf_ex
 
 
