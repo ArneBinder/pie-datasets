@@ -9,7 +9,6 @@ from dataset_builders.pie.squad_v2.squad_v2 import (
     example_to_document,
 )
 from pie_datasets import DatasetDict
-from tests import FIXTURES_ROOT
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 disable_caching()
@@ -20,7 +19,6 @@ DOCUMENT_TYPE = SquadV2.DOCUMENT_TYPE
 SPLIT_SIZES = {"train": 130319, "validation": 11873}
 HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
-DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "squad_v2.zip"
 
 
 @pytest.fixture(scope="module", params=list(SPLIT_SIZES))
@@ -30,7 +28,7 @@ def split(request):
 
 @pytest.fixture(scope="module")
 def hf_dataset():
-    return load_dataset(str(HF_DATASET_PATH), data_dir=DATA_PATH)
+    return load_dataset(str(HF_DATASET_PATH))
 
 
 def test_hf_dataset(hf_dataset):
