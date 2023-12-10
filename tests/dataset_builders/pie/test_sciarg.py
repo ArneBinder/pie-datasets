@@ -25,22 +25,23 @@ datasets.disable_caching()
 TEST_FULL_DATASET = False
 
 DATASET_NAME = "sciarg"
+BUILDER_CLASS = SciArg
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 DATA_DIR = PIE_DS_FIXTURE_DATA_PATH / DATASET_NAME
 SPLIT_SIZES = {"train": 40 if TEST_FULL_DATASET else 3}
 
 
-@pytest.fixture(scope="module", params=["default", "merge_fragmented_spans"])
+@pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
 def dataset_variant(request) -> str:
     return request.param
 
 
 @pytest.fixture(scope="module")
 def hf_dataset(dataset_variant) -> datasets.DatasetDict:
-    kwargs = dict(SciArg.BASE_BUILDER_KWARGS_DICT[dataset_variant])
+    kwargs = dict(BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[dataset_variant])
     if not TEST_FULL_DATASET:
         kwargs["data_dir"] = str(DATA_DIR)
-    result = datasets.load_dataset(SciArg.BASE_DATASET_PATH, name=dataset_variant, **kwargs)
+    result = datasets.load_dataset(BUILDER_CLASS.BASE_DATASET_PATH, name=dataset_variant, **kwargs)
     return result
 
 
@@ -51,11 +52,23 @@ def test_hf_dataset(hf_dataset):
 
 
 @pytest.fixture(scope="module")
+def builder(dataset_variant) -> SciArg:
+    return SciArg(config_name=dataset_variant)
+
+
+def test_builder(builder, dataset_variant):
+    assert builder is not None
+    assert builder.config_id == dataset_variant
+    assert builder.dataset_name == DATASET_NAME
+    assert builder.document_type == BratDocumentWithMergedSpans
+
+
+@pytest.fixture(scope="module")
 def dataset(dataset_variant) -> DatasetDict:
     if TEST_FULL_DATASET:
         base_dataset_kwargs = None
     else:
-        base_dataset_kwargs = {"data_dir": str(PIE_DS_FIXTURE_DATA_PATH / "sciarg")}
+        base_dataset_kwargs = {"data_dir": str(PIE_DS_FIXTURE_DATA_PATH / DATASET_NAME)}
     return DatasetDict.load_dataset(
         str(PIE_DATASET_PATH), name=dataset_variant, base_dataset_kwargs=base_dataset_kwargs
     )
@@ -88,20 +101,7 @@ def test_document(document):
 def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
     dataset, dataset_variant
 ) -> Optional[DatasetDict]:
-    if dataset_variant == "default":
-        with pytest.raises(ValueError) as excinfo:
-            dataset.to_document_type(TextDocumentWithLabeledSpansAndBinaryRelations)
-        assert (
-            str(excinfo.value)
-            == "No valid key (either subclass or superclass) was found for the document type "
-            "'<class 'pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations'>' in the "
-            "document_converters of the dataset. Available keys: set(). Consider adding a respective "
-            "converter to the dataset with dataset.register_document_converter(my_converter_method) "
-            "where my_converter_method should accept <class 'pie_datasets.builders.brat.BratDocument'> "
-            "as input and return '<class 'pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations'>'."
-        )
-        converted_dataset = None
-    elif dataset_variant == "merge_fragmented_spans":
+    if dataset_variant == "default" or dataset_variant is None:
         converted_dataset = dataset.to_document_type(
             TextDocumentWithLabeledSpansAndBinaryRelations
         )
@@ -220,23 +220,7 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
 def dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions(
     dataset, dataset_variant
 ) -> Optional[DatasetDict]:
-    if dataset_variant == "default":
-        with pytest.raises(ValueError) as excinfo:
-            dataset.to_document_type(
-                TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
-            )
-        assert (
-            str(excinfo.value)
-            == "No valid key (either subclass or superclass) was found for the document type "
-            "'<class 'pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions'>' "
-            "in the document_converters of the dataset. Available keys: set(). Consider adding a respective "
-            "converter to the dataset with dataset.register_document_converter(my_converter_method) where "
-            "my_converter_method should accept <class 'pie_datasets.builders.brat.BratDocument'> as input and "
-            "return '<class 'pytorch_ie.documents."
-            "TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions'>'."
-        )
-        converted_dataset = None
-    elif dataset_variant == "merge_fragmented_spans":
+    if dataset_variant == "default" or dataset_variant is None:
         converted_dataset = dataset.to_document_type(
             TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
         )
@@ -532,12 +516,10 @@ def test_tokenized_documents_with_entities_relations_and_partitions_all(
 
 
 def test_document_converters(dataset_variant):
-    builder = SciArg(config_name=dataset_variant)
+    builder = BUILDER_CLASS(config_name=dataset_variant)
     document_converters = builder.document_converters
 
     if dataset_variant == "default":
-        assert document_converters == {}
-    elif dataset_variant == "merge_fragmented_spans":
         assert len(document_converters) == 2
         assert set(document_converters) == {
             TextDocumentWithLabeledSpansAndBinaryRelations,

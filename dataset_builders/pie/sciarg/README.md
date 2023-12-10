@@ -22,7 +22,13 @@ The language in the dataset is English (scientific academic publications on comp
 
 ### Dataset Variants
 
-See [PIE-Brat Dataset Variants](https://huggingface.co/datasets/pie/brat#dataset-variants).
+The `sciarg` dataset comes in a single version (`default`) with `BratDocumentWithMergedSpans` as document type. Note,
+that this in contrast to the base `brat` dataset, where the document type for the `default` variant is `BratDocument`.
+The reason is that the SciArg dataset was published with spans that are just fragmented by whitespace which seems
+to be because of the annotation tool used. In the `sciarg` dataset, we merge these fragments, so that the document type
+can be `BratDocumentWithMergedSpans` (this is easier to handle for most of the task modules). However, fragmented
+spans are conceptually also available in SciArg, but they are marked with the `parts_of_same` relation which are kept
+as they are in the `sciarg` (`default`) dataset.
 
 ### Data Schema
 
