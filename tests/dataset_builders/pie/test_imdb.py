@@ -2,9 +2,8 @@ import pytest
 from datasets import disable_caching, load_dataset
 from pytorch_ie.core import Document
 
-from dataset_builders.pie.imdb.imdb import Imdb, document_to_example
+from dataset_builders.pie.imdb.imdb import Imdb
 from pie_datasets import DatasetDict
-from tests import FIXTURES_ROOT
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 disable_caching()
@@ -15,7 +14,6 @@ DOCUMENT_TYPE = BUILDER_CLASS.DOCUMENT_TYPE
 SPLIT_SIZES = {"test": 25000, "train": 25000, "unsupervised": 50000}
 HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
-DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "squad_v2.zip"
 
 
 @pytest.fixture(scope="module", params=list(BUILDER_CLASS.DOCUMENT_CONVERTERS))
@@ -30,7 +28,7 @@ def split(request):
 
 @pytest.fixture(scope="module")
 def hf_dataset():
-    return load_dataset(str(HF_DATASET_PATH), data_dir=DATA_PATH)
+    return load_dataset(str(HF_DATASET_PATH))
 
 
 def test_hf_dataset(hf_dataset):
@@ -70,6 +68,11 @@ def generate_document_kwargs(hf_dataset, split) -> dict:
 
 
 @pytest.fixture(scope="module")
+def generate_example_kwargs(hf_dataset, split) -> dict:
+    return BUILDER_CLASS()._generate_example_kwargs(hf_dataset[split]) or {}
+
+
+@pytest.fixture(scope="module")
 def generated_document(hf_example, generate_document_kwargs) -> DOCUMENT_TYPE:
     return BUILDER_CLASS()._generate_document(hf_example, **generate_document_kwargs)
 
@@ -97,8 +100,10 @@ def test_generated_document(generated_document, split):
 
 
 @pytest.fixture(scope="module")
-def hf_example_back(generated_document, generate_document_kwargs):
-    return document_to_example(document=generated_document, **generate_document_kwargs)
+def hf_example_back(generated_document, generate_example_kwargs):
+    return BUILDER_CLASS()._generate_example(
+        document=generated_document, **generate_example_kwargs
+    )
 
 
 def test_example_to_document_and_back(hf_example, hf_example_back):
@@ -106,10 +111,12 @@ def test_example_to_document_and_back(hf_example, hf_example_back):
 
 
 @pytest.mark.slow
-def test_example_to_document_and_back_all(hf_dataset, generate_document_kwargs, split):
+def test_example_to_document_and_back_all(
+    hf_dataset, generate_document_kwargs, generate_example_kwargs, split
+):
     for hf_ex in hf_dataset[split]:
         doc = BUILDER_CLASS()._generate_document(example=hf_ex, **generate_document_kwargs)
-        hf_ex_back = document_to_example(document=doc, **generate_document_kwargs)
+        hf_ex_back = BUILDER_CLASS()._generate_example(document=doc, **generate_example_kwargs)
         assert hf_ex_back == hf_ex
 
 
