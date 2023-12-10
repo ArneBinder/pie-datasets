@@ -60,3 +60,9 @@ class Imdb(GeneratorBasedBuilder):
 
     def _generate_document(self, example, **kwargs) -> ImdbDocument:
         return example_to_document(example, **kwargs)
+
+    def _generate_example_kwargs(self, dataset) -> Dict[str, Any]:
+        return {"labels": dataset.features["label"]}
+
+    def _generate_example(self, document: ImdbDocument, **kwargs) -> Dict[str, Any]:
+        return document_to_example(document, **kwargs)
