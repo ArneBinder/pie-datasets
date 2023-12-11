@@ -363,7 +363,6 @@ def tokenized_documents_with_labeled_spans_and_binary_relations(
         tokenizer=tokenizer,
         return_overflowing_tokens=True,
         result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-        strict_span_conversion=False,
         verbose=True,
     )
     return tokenized_docs
@@ -433,7 +432,6 @@ def test_tokenized_documents_with_entities_and_relations_all(
                     tokenizer=tokenizer,
                     return_overflowing_tokens=True,
                     result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-                    strict_span_conversion=False,
                     verbose=True,
                 )
                 # we just ensure that we get at least one tokenized document
@@ -458,6 +456,7 @@ def tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitio
         tokenized_docs = tokenize_document(
             doc,
             tokenizer=tokenizer,
+            partition_layer="labeled_partitions",
             return_overflowing_tokens=True,
             result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
             strict_span_conversion=False,
@@ -474,16 +473,76 @@ def test_tokenized_documents_with_labeled_spans_binary_relations_and_labeled_par
         docs_with_partitions = (
             tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions
         )
-        docs_without_partitions = tokenized_documents_with_labeled_spans_and_binary_relations
 
         # check that the tokenization was fine
-        assert len(docs_with_partitions) == 1
+        assert len(docs_with_partitions) == 10
         doc_with_partitions = docs_with_partitions[0]
-        doc_without_partitions = docs_without_partitions[0]
-        assert len(doc_with_partitions.labeled_partitions) == 10
-        assert doc_with_partitions.labeled_spans == doc_without_partitions.labeled_spans
-        assert doc_with_partitions.binary_relations == doc_without_partitions.binary_relations
-        assert doc_with_partitions.tokens == doc_without_partitions.tokens
+        assert len(doc_with_partitions.labeled_partitions) == 1
+        assert len(doc_with_partitions.labeled_spans) == 0
+        assert len(doc_with_partitions.binary_relations) == 0
+        assert doc_with_partitions.tokens == (
+            "[CLS]",
+            "<",
+            "title",
+            ">",
+            "a",
+            "powell",
+            "optimization",
+            "approach",
+            "for",
+            "example",
+            "-",
+            "based",
+            "skin",
+            "##ning",
+            "in",
+            "a",
+            "production",
+            "animation",
+            "environment",
+            "<",
+            "/",
+            "title",
+            ">",
+            "xiao",
+            "xi",
+            "##an",
+            "∗",
+            "john",
+            "p",
+            ".",
+            "lewis",
+            "nan",
+            "##yang",
+            "technological",
+            "university",
+            "graphic",
+            "primitive",
+            "##s",
+            "sea",
+            "##h",
+            "hoc",
+            "##k",
+            "soon",
+            "nick",
+            "##son",
+            "f",
+            "##ong",
+            "nan",
+            "##yang",
+            "technological",
+            "university",
+            "eggs",
+            "##tory",
+            "##cp",
+            "tian",
+            "feng",
+            "nan",
+            "##yang",
+            "technological",
+            "university",
+            "[SEP]",
+        )
 
 
 def test_tokenized_documents_with_entities_relations_and_partitions_all(
@@ -505,6 +564,7 @@ def test_tokenized_documents_with_entities_relations_and_partitions_all(
                 tokenized_docs = tokenize_document(
                     doc,
                     tokenizer=tokenizer,
+                    partition_layer="labeled_partitions",
                     return_overflowing_tokens=True,
                     result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
                     strict_span_conversion=False,
@@ -513,6 +573,9 @@ def test_tokenized_documents_with_entities_relations_and_partitions_all(
                 # we just ensure that we get at least one tokenized document
                 assert tokenized_docs is not None
                 assert len(tokenized_docs) > 0
+                for tokenized_doc in tokenized_docs:
+                    assert tokenized_doc.labeled_partitions is not None
+                    assert len(tokenized_doc.labeled_partitions) == 1
 
 
 def test_document_converters(dataset_variant):
