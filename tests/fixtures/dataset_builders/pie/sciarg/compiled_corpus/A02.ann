@@ -1,0 +1,481 @@
+T1	background_claim 1917 2032	Real-time animation of deformable objects is always a compromise between visual fidelity and computation complexity
+T2	background_claim 2034 2075	Other aspects are quite important as well
+T3	data 2089 2145	the amount of artists work necessary to design the model
+R1	supports Arg1:T3 Arg2:T2	
+T4	background_claim 2158 2235	there exist many algorithms for modeling deformable objects in the literature
+R2	supports Arg1:T2 Arg2:T4	
+R3	supports Arg1:T1 Arg2:T4	
+T5	background_claim 2237 2317	They differ by the intended area of application and generality of allowed models
+T6	background_claim 2378 2496	Its most popular representative, known generally as the skeletal animation, is based on simple but versatile structure
+T7	data 2498 2519	It consists of joints
+T8	background_claim 2562 2634	The segments connecting the joints are conveniently interpreted as bones
+T9	background_claim 2636 2651	The skeleton is
+T10	background_claim 2672 2746	a tree whose nodes are identified with the joints and edges with the bones
+R4	parts_of_same Arg1:T10 Arg2:T9	
+R5	supports Arg1:T7 Arg2:T6	
+R6	supports Arg1:T8 Arg2:T6	
+T11	background_claim 2748 2852	The only displayed element is a skin, a 3D polygonal mesh, usually equipped with normal and texture data
+T12	background_claim 2863 2924	the terminology is adopted from the virtual humanoid modeling
+T13	background_claim 2926 2986	the skeletal animation is not limited to character animation
+T14	background_claim 2989 3038	it can be applied to a wide range of soft objects
+R7	contradicts Arg1:T13 Arg2:T12	
+R8	supports Arg1:T14 Arg2:T13	
+T15	data 3050 3079	imaginary (cartoon) creatures
+T16	data 3081 3087	plants
+T17	data 3089 3098	furniture
+R9	supports Arg1:T15 Arg2:T14	
+R10	supports Arg1:T16 Arg2:T14	
+R11	supports Arg1:T17 Arg2:T14	
+T18	background_claim 3105 3186	This is an apparent advantage over complex systems which rely on explicit anatomy
+R12	supports Arg1:T13 Arg2:T18	
+T19	background_claim 3188 3243	The skeleton simplifies the animation task considerably
+T20	background_claim 3245 3371	instead of animating each vertex individually, it is sufficient to manipulate the skeleton, and the skin deforms automatically
+R13	supports Arg1:T20 Arg2:T19	
+T21	background_claim 3373 3489	The skeletal animation in general does not specify how exactly the skeleton posture should be propagated to the skin
+T22	background_claim 3500 3578	there is an established standard used in majority of real-time 3D applications
+R14	contradicts Arg1:T21 Arg2:T22	
+T23	background_claim 3580 3747	It comes by many names, all relating to the same algorithm: linear blend skinning (LBS), skeleton subspace deformation, vertex blending, enveloping, or simply skinning
+R15	supports Arg1:T23 Arg2:T22	
+T24	background_claim 3909 3963	LBS is very fast and advantageous to graphics hardware
+T25	background_claim 3965 4084	it suffers from inherent artifacts, known as ”collapsing joints”, ”twisting elbow problem” or a ”candy-wrapper artifact
+R16	contradicts Arg1:T25 Arg2:T24	
+T26	background_claim 4099 4168	the mesh deformed by LBS loses volume as the joint rotation increases
+T27	background_claim 4672 4743	An early contribution concerning the animation of deformable objects is
+T28	background_claim 4777 4821	which considers the movement of a human hand
+T29	data 4745 4774	Magnenat-Thalmann et al. 1988
+R17	parts_of_same Arg1:T28 Arg2:T27	
+R18	supports Arg1:T29 Arg2:T27	
+T30	background_claim 4823 4928	First 3D characters used in numerous computer games were animated by simple, often unpublished algorithms
+T31	background_claim 4940 5016	the basic principles of LBS were described by the game development community
+T32	data 5018 5029	Lander 1998
+T33	data 5031 5042	Lander 1999
+R19	supports Arg1:T32 Arg2:T31	
+R20	supports Arg1:T33 Arg2:T31	
+T34	background_claim 5045 5086	The artifacts of LBS were discovered soon
+T35	data 5089 5099	Weber 2000
+R21	supports Arg1:T35 Arg2:T34	
+T36	background_claim 5102 5180	An improvement based on addition of auxiliary joints has been also proposed in
+T37	data 5183 5193	Weber 2000
+R22	supports Arg1:T37 Arg2:T36	
+T38	background_claim 5205 5231	this reduces the artifacts
+T39	background_claim 5233 5305	the skin to joints relationship must be re-designed after joint addition
+R23	contradicts Arg1:T39 Arg2:T38	
+T40	background_claim 5307 5376	The number and location of the additional joints remains questionable
+R24	contradicts Arg1:T40 Arg2:T38	
+T41	background_claim 5378 5482	Another problem is how the movement of the original skeleton should be propagated into the augmented one
+R25	contradicts Arg1:T41 Arg2:T38	
+T42	background_claim 5484 5558	More formal articles consider skin deformation as an interpolation problem
+T43	data 5570 5587	Lewis et al. 2000
+R26	supports Arg1:T43 Arg2:T42	
+T44	background_claim 5682 5712	Similar method is presented in
+T45	data 5715 5732	Sloan et al. 2001
+T46	data 5739 5754	Kry et al. 2002
+R27	supports Arg1:T46 Arg2:T44	
+R28	supports Arg1:T45 Arg2:T44	
+T47	background_claim 5757 5898	The latter de-correlates the deformation displacements using principal component analysis, which reduces the memory requirements considerably
+T48	background_claim 5900 5978	The advantage of example based methods is that they capture the designed shape
+T49	background_claim 6019 6079	The drawback is the necessity of acquiring the example skins
+T50	background_claim 5980 6017	including effects like muscle bulging
+R29	supports Arg1:T50 Arg2:T48	
+R30	contradicts Arg1:T49 Arg2:T48	
+T51	background_claim 6081 6151	An interesting generalization of LBS is called multi-weight enveloping
+T52	data 6154 6176	Wang and Phillips 2002
+R31	supports Arg1:T52 Arg2:T51	
+T53	background_claim 6223 6271	greater flexibility to the deformation algorithm
+T54	background_claim 6179 6208	It introduces more parameters
+R32	supports Arg1:T54 Arg2:T53	
+T55	background_claim 6458 6485	The disadvantage is obvious
+T56	background_claim 6493 6543	the LBS models can be weighted manually by artists
+T57	background_claim 6560 6608	this is questionable with multiweight enveloping
+T58	data 6546 6556	Steed 2002
+T59	background_claim 6610 6681	Tools that help animators to design the vertex weights are described in
+R33	contradicts Arg1:T56 Arg2:T57	
+R34	supports Arg1:T58 Arg2:T56	
+R35	supports Arg1:T57 Arg2:T55	
+T60	data 6684 6700	Mohr et al. 2003
+R36	supports Arg1:T60 Arg2:T59	
+T61	background_claim 6703 6770	This article is interesting also from the theoretical point of view
+T62	background_claim 6780 6850	it describes how to explore the space of all possible LBS deformations
+R37	supports Arg1:T62 Arg2:T61	
+R38	supports Arg1:T60 Arg2:T62	
+T63	background_claim 6852 6881	Another deformation algorithm
+T64	background_claim 6902 6947	uses a complex auxiliary structure – a medial
+R39	parts_of_same Arg1:T63 Arg2:T64	
+T65	data 6884 6900	Bloomenthal 2002
+R40	supports Arg1:T65 Arg2:T64	
+T66	background_claim 6949 7028	An idea similar to spherical blend skinning (SBS) is bones blending proposed by
+T67	data 7030 7051	Kavan and Zára ˇ 2003
+R41	supports Arg1:T67 Arg2:T66	
+T68	background_claim 7063 7128	bones blending is limited to vertices attached to only two joints
+R42	contradicts Arg1:T68 Arg2:T66	
+T69	background_claim 7143 7188	it requires hand-tuning of special parameters
+T70	background_claim 7190 7323	Another algorithm removes the LBS artifacts by adding additional joints, and computes the vertex weights automatically using examples
+T71	data 7325 7347	Mohr and Gleicher 2003
+R43	supports Arg1:T71 Arg2:T70	
+T72	background_claim 7351 7399	A recent skin deformation algorithm presented in
+T73	background_claim 7433 7473	seems to give results competitive to SBS
+T74	background_claim 7484 7533	it is based on a different mathematical fundament
+T75	data 7402 7431	Magnenat-Thalmann et al. 2004
+T76	data 7536 7546	Alexa 2002
+R44	parts_of_same Arg1:T73 Arg2:T72	
+R45	supports Arg1:T75 Arg2:T72	
+R46	contradicts Arg1:T74 Arg2:T73	
+R47	supports Arg1:T76 Arg2:T74	
+T77	background_claim 7559 7602	this method is considerably slower than LBS
+T78	background_claim 7650 7691	recommends to use rather the standard LBS
+T79	data 7695 7724	the joint rotations are small
+T80	data 7619 7648	Magnenat-Thalmann et al. 2004
+R48	contradicts Arg1:T77 Arg2:T73	
+R49	supports Arg1:T77 Arg2:T78	
+R50	supports Arg1:T80 Arg2:T78	
+R51	supports Arg1:T79 Arg2:T78	
+T82	background_claim 7859 7953	the linear blend skinning is still widely used in many applications, in spite of the artifacts
+T81	background_claim 7739 7792	there are many methods correcting the problems of LBS
+T83	background_claim 7798 7844	none of them is superior to LBS in all aspects
+R52	contradicts Arg1:T83 Arg2:T81	
+R53	supports Arg1:T83 Arg2:T82	
+T84	own_claim 8025 8121	the artifacts of LBS are caused by the straightforward, linear interpolation of vertex positions
+T85	own_claim 8136 8213	a linear blending is not suitable to capture deformations induced by skeleton
+T86	own_claim 8223 8255	their nature is rather spherical
+R54	supports Arg1:T86 Arg2:T85	
+T87	own_claim 8468 8513	we suggest to use a quaternion representation
+T88	data 8398 8466	we consider transformations consisting of a translation and rotation
+R55	supports Arg1:T88 Arg2:T87	
+T89	own_claim 8775 8863	the choice of the center of rotation influences the result of interpolation considerably
+T90	own_claim 8614 8644	we cope with two main problems
+T91	own_claim 8646 8685	determination of the center of rotation
+T92	own_claim 8691 8728	interpolation of multiple quaternions
+R56	supports Arg1:T91 Arg2:T90	
+R57	supports Arg1:T92 Arg2:T90	
+R58	supports Arg1:T89 Arg2:T91	
+T93	background_claim 8935 8994	The second problem is simple in the case of two quaternions
+T94	background_claim 9017 9069	gets considerably harder for more than two rotations
+T95	data 8997 9010	Shoemake 1985
+T96	data 9072 9094	Buss and Fillmore 2001
+T97	data 9096 9112	Park et al. 2002
+T98	data 9114 9124	Alexa 2002
+R59	supports Arg1:T95 Arg2:T93	
+R60	contradicts Arg1:T94 Arg2:T93	
+R61	supports Arg1:T96 Arg2:T94	
+R62	supports Arg1:T97 Arg2:T94	
+R63	supports Arg1:T98 Arg2:T94	
+T99	own_claim 9198 9241	we use a simple linear quaternion averaging
+T100	background_claim 9135 9196	the previous methods are not efficient enough for our purpose
+R64	supports Arg1:T100 Arg2:T99	
+T101	own_claim 9297 9369	this solution is appropriate for our task (and probably for many others)
+T102	own_claim 9397 9491	we obtain a skin animation algorithm that deforms the mesh in much more plausible way then LBS
+T103	own_claim 9371 9395	Resolving those problems
+R65	supports Arg1:T103 Arg2:T102	
+T104	own_claim 9501 9563	we change only the interpolation domain and not the input data
+T105	own_claim 9565 9618	our program works with exactly the same models as LBS
+T106	own_claim 9620 9735	The proposed algorithm improves a deformed shape even of models that have been designed and carefully tuned for LBS
+T107	own_claim 9795 9847	it provides an attractive alternative to classic LBS
+R66	supports Arg1:T104 Arg2:T105	
+R67	semantically_same Arg1:T107 Arg2:T101	
+R68	supports Arg1:T102 Arg2:T101	
+T108	background_claim 9737 9793	Considering the high speed and low memory demands of SBS
+R69	supports Arg1:T108 Arg2:T107	
+T109	own_claim 31637 31700	We compare the shape of the deformed skin on the model of woman
+T110	own_claim 31710 31771	human eye is most sensitive to the deformations of human body
+R70	supports Arg1:T110 Arg2:T109	
+T111	own_claim 31938 31977	both algorithms produce similar results
+T112	data 31914 31936	For small deformations
+T113	data 31989 32011	second row of Figure 6
+R71	supports Arg1:T113 Arg2:T111	
+T114	own_claim 32094 32123	the results of SBS are better
+T115	own_claim 32136 32197	the models have been optimised to work with the LBS algorithm
+R72	contradicts Arg1:T115 Arg2:T114	
+R73	supports Arg1:T112 Arg2:T111	
+T116	own_claim 32968 33013	this number is surprisingly small in practice
+T117	own_claim 33023 33060	the joint influences tend to be local
+R74	supports Arg1:T117 Arg2:T116	
+T118	own_claim 33067 33138	it is unlikely to find vertices influenced by both left and right wrist
+R75	supports Arg1:T118 Arg2:T117	
+T119	own_claim 33245 33340	this amount of memory is negligible, considering the number of different non-trivial joint sets
+T120	own_claim 33141 33234	The additional memory needed for SBS is dominated by caching the computed centers of rotation
+R76	contradicts Arg1:T119 Arg2:T120	
+T121	own_claim 33652 33709	the difference in the deformed skin was barely observable
+T122	data 33728 33752	results from section 4.1
+R77	supports Arg1:T122 Arg2:T121	
+T123	own_claim 33773 33829	the increase in the execution time was quite substantial
+T124	data 33831 33902	For the woman model, the time increased from original 4.54ms to 22.74ms
+R78	supports Arg1:T124 Arg2:T123	
+T125	own_claim 33904 33943	This only confirmed our choice of QLERP
+R79	supports Arg1:T123 Arg2:T125	
+R80	supports Arg1:T121 Arg2:T125	
+T126	own_claim 33471 33496	The algorithm proposed in
+T127	own_claim 33523 33571	behaves like SLERP for the case of two rotations
+R81	parts_of_same Arg1:T127 Arg2:T126	
+T128	data 33499 33521	Buss and Fillmore 2001
+R82	supports Arg1:T128 Arg2:T127	
+T129	own_claim 33573 33632	in contrast to QLERP, which only approximates SLERP results
+R83	contradicts Arg1:T129 Arg2:T127	
+T130	own_claim 32696 32784	it is exactly the number of singular-value decompositions performed by the SBS algorithm
+T131	data 32249 32256	Table 2
+R84	supports Arg1:T131 Arg2:T130	
+T132	own_claim 32873 32953	Theoretically, the number of different non-trivial joint sets could be very high
+R85	contradicts Arg1:T132 Arg2:T116	
+T133	own_claim 32786 32871	This number participates considerably on the difference between times for LBS and SBS
+T134	own_claim 34897 34956	The proposed skin deformation system is by no means perfect
+T135	own_claim 34958 35004	it cannot compete with complex, layered models
+R86	supports Arg1:T135 Arg2:T134	
+T136	own_claim 35015 35103	the SBS algorithm offers reasonable price for elimination of the notorious LBS artifacts
+R87	contradicts Arg1:T136 Arg2:T134	
+T137	own_claim 35170 35243	The overhead of replacing an existing LBS implementation by SBS is minima
+T138	data 35254 35323	the input data, as well as the internal data structures, are the same
+R88	supports Arg1:T138 Arg2:T137	
+T139	own_claim 35359 35403	SBS does not need any additional information
+T141	own_claim 35688 35812	It would be interesting to find out how much can be the SBS results improved by a set of weights especially designed for SBS
+T142	own_claim 35843 35914	a tool to explore the space of SBS deformations would help considerably
+T143	own_claim 35981 36026	the situation of SBS is somewhat more complex
+T144	data 36036 36074	our interpolation method is non-linear
+R89	supports Arg1:T144 Arg2:T143	
+T145	background_claim 35916 35952	This tool has been presented for LBS
+T146	data 35958 35974	Mohr et al. 2003
+R90	supports Arg1:T146 Arg2:T145	
+R91	contradicts Arg1:T143 Arg2:T145	
+T147	own_claim 36087 36156	it would be possible to estimate the SBS vertex weights from examples
+T148	background_claim 36158 36177	as was done for LBS
+T149	data 36182 36204	Mohr and Gleicher 2003
+R92	supports Arg1:T149 Arg2:T148	
+R93	supports Arg1:T148 Arg2:T147	
+T150	own_claim 36207 36267	This could also cover additional effects like muscle bulging
+R94	supports Arg1:T145 Arg2:T142	
+T151	background_claim 10586 10658	The polygonal mesh and the skeleton are designed in a reference position
+T152	background_claim 10665 10723	virtual characters are often posed in the da Vinci posture
+T153	data 10726 10736	Steed 2002
+R95	supports Arg1:T153 Arg2:T152	
+R96	supports Arg1:T152 Arg2:T151	
+T154	own_claim 11167 11328	To compute the shape of the deformed skin, we need yet another set of matrices, describing the position and orientation of joints in the actual, animated posture
+T155	own_claim 11579 11647	The most simple skin deformation algorithm computes v = F j A −1 j v
+T156	own_claim 11791 11915	the first matrix A −1 j transforms v to the position with joint j’s coordinate system aligned to the world coordinate system
+T157	own_claim 11917 12025	The following transformation F j returns the vertex to its current position induced by the animated skeleton
+T158	own_claim 12035 12079	these transformations usually occur together
+R97	supports Arg1:T157 Arg2:T158	
+R98	supports Arg1:T156 Arg2:T158	
+T159	own_claim 12081 12129	we define the ”complete” matrix C j = F j A −1 j
+R99	supports Arg1:T158 Arg2:T159	
+T160	background_claim 12132 12189	Some older computer games animated characters in this way
+T161	own_claim 12203 12248	it does not produce nice, smooth deformations
+R100	contradicts Arg1:T161 Arg2:T160	
+T162	background_claim 12250 12324	The linear blend skinning allows assignment of one vertex to multiple bone
+T163	data 12816 12821	n = 2
+T164	own_claim 12827 12891	vertex v lies on the line segment connecting C j 1 v and C j 2 v
+R101	supports Arg1:T163 Arg2:T164	
+T165	own_claim 13018 13068	the SBS works on a circular arc instead of segment
+T166	data 13074 13082	Figure 1
+R102	supports Arg1:T166 Arg2:T165	
+T167	data 13088 13117	the joint rotations are large
+T168	own_claim 13119 13160	the LBS produces non-natural deformations
+R103	supports Arg1:T167 Arg2:T168	
+T169	own_claim 13162 13250	In the extremal case of rotation by 180 degrees, the skin can collapse to a single point
+R104	supports Arg1:T169 Arg2:T168	
+T170	own_claim 13252 13296	It is the notorious ”candy-wrapper” artifact
+R105	semantically_same Arg1:T169 Arg2:T170	
+T171	data 13323 13331	Figure 2
+R106	supports Arg1:T171 Arg2:T170	
+T172	own_claim 13448 13541	To understand why this undesirable effect occurs, it is sufficient to re-arrange the equation
+T173	own_claim 13827 13857	This formula is less efficient
+T174	data 13867 13904	it blends matrices instead of vectors
+R107	supports Arg1:T174 Arg2:T173	
+T175	own_claim 13910 13937	gives us a valuable insight
+R108	contradicts Arg1:T175 Arg2:T173	
+T176	background_claim 13939 14026	It is well known that the component-wise interpolation of matrices produces odd results
+T177	own_claim 14028 14103	it does not preserve the orthogonality of the rotational part of the matrix
+T178	own_claim 14105 14188	In some situations, it does not preserve even the rank of the interpolated matrices
+R109	supports Arg1:T178 Arg2:T176	
+R110	supports Arg1:T177 Arg2:T176	
+T179	own_claim 14190 14339	This is exactly what happens in the ”candywrapper” problem: the single point the skin collapses to is a result of transformation by a singular matrix
+T180	own_claim 14341 14420	A similar defect is visible also in the proximity of the singular configuration
+T181	data 14431 14452	the matrix is regular
+T182	own_claim 14454 14590	it involves a non-uniform scaling and skewing, which is responsible for the loss of volume of the deformed skin even for small rotations
+R111	contradicts Arg1:T181 Arg2:T182	
+R112	supports Arg1:T182 Arg2:T180	
+T183	own_claim 14711 14763	we propose to change the interpolation method in (2)
+T184	background_claim 14891 14978	An established interpolation of two rotations is spherical linear interpolation (SLERP)
+T185	data 14981 14994	Shoemake 1985
+R113	supports Arg1:T185 Arg2:T184	
+T186	own_claim 14810 14889	the linear interpolation of the translation part of C j i matrices is all right
+T187	background_claim 14997 15064	Its key of success is the use of quaternions to represent rotations
+T188	own_claim 15369 15459	The more important problem is to compute a convenient center of the interpolated rotations
+T189	own_claim 15474 15509	this is really an important problem
+R114	semantically_same Arg1:T189 Arg2:T188	
+T190	own_claim 16623 16716	it is obvious that the center of rotation choice in the left column is much more advantageous
+T191	own_claim 15081 15187	it is not possible to simply replace matrices C j i in (2) with corresponding pairs quaternion-translation
+T192	own_claim 15189 15283	One of the problems is that the linear interpolation of quaternions is not equivalent to SLERP
+R115	supports Arg1:T192 Arg2:T191	
+T193	own_claim 15294 15333	this is not the most serious difficulty
+R116	contradicts Arg1:T192 Arg2:T193	
+T194	own_claim 16268 16336	the transformed rotation center is constant during the interpolation
+T195	data 16229 16250	C j 1 r c = C j 2 r c
+R117	supports Arg1:T195 Arg2:T194	
+T196	data 16447 16468	C j 1 r c = C j 2 r c
+T197	own_claim 16471 16555	the transformed rotation center is linearly interpolated from C j 1 r c to C j 2 r c
+R118	supports Arg1:T196 Arg2:T197	
+T198	own_claim 16732 16789	the interpolation of every single point is a circular arc
+T199	data 16797 16805	Figure 1
+R119	supports Arg1:T199 Arg2:T198	
+R120	supports Arg1:T198 Arg2:T190	
+T200	own_claim 16816 16884	a disturbing drift is inherent to any other choice of rotation cente
+T201	data 16895 16898	r c
+R121	supports Arg1:T201 Arg2:T200	
+R122	contradicts Arg1:T200 Arg2:T198	
+T202	own_claim 16917 16977	the condition of zero translation cannot be always satisfied
+T203	data 16989 17025	for more than two influencing joints
+R123	supports Arg1:T203 Arg2:T202	
+T204	data 17039 17126	the vertex is attached to only two joints k and l that are not neighbours of each other
+T205	own_claim 17128 17162	some translation may be inevitable
+R124	contradicts Arg1:T204 Arg2:T205	
+T206	data 17190 17328	there is no relative rotation between C k and C l , but there is a relative translation induced by the joints in the chain between k and l
+T208	own_claim 17338 17400	no choice of the center of rotation can avoid this translation
+T209	data 17410 17434	the rotation is identity
+R125	supports Arg1:T209 Arg2:T208	
+R126	supports Arg1:T206 Arg2:T208	
+T207	own_claim 17444 17571	it is possible to define the rotation center as the point whose transformations by associated matrices are as close as possible
+T210	own_claim 17573 17668	This minimizes the drift and works even if the vertex is assigned to n joints j 1 , . . . , j n
+R127	supports Arg1:T207 Arg2:T210	
+T211	own_claim 17671 17712	We find the center of rotation r c as the
+T212	own_claim 18168 18294	least-squares solution of the system of n 2 linear vector equations C a r c = C b r c , a &lt; b, a, b ∈ { j 1 , . . . , j n }
+R128	parts_of_same Arg1:T211 Arg2:T212	
+T213	own_claim 18830 18915	we cannot make any assumptions about the rank of matrix D, which can vary from 0 to 3
+T214	data 18926 18961	for example n = 2 and C j 1 = C j 2
+R129	supports Arg1:T214 Arg2:T213	
+T215	data 19031 19087	there are multiple solutions giving the minimal Dr c − e
+T216	own_claim 19090 19129	the r c with the minimal norm is chosen
+R130	supports Arg1:T215 Arg2:T216	
+T217	background_claim 19355 19384	LAPACK routines are efficient
+T218	own_claim 19386 19481	computation of the center of rotation per each vertex would not result in a real-time algorithm
+T219	data 19320 19340	Anderson et al. 1999
+R131	supports Arg1:T219 Arg2:T217	
+R132	contradicts Arg1:T218 Arg2:T217	
+T220	own_claim 19711 19773	we can re-use the center of rotation computed formerly (cached
+T221	data 19628 19708	we encounter another vertex assigned to the same set of joints j 1 , . . . , j n
+T222	data 19496 19612	the center of rotation depends only on the transformations of the joints j 1 , . . . , j n and not the vertex itself
+R133	supports Arg1:T222 Arg2:T220	
+R134	supports Arg1:T221 Arg2:T220	
+R135	contradicts Arg1:T220 Arg2:T218	
+T223	data 19789 19859	there is only one, or two neighboring joints that influence the vertex
+T224	own_claim 19861 19994	we can determine the center of rotation precisely (as indicated in the beginning of this section) and omit the SVD computation at all
+R136	supports Arg1:T223 Arg2:T224	
+R137	contradicts Arg1:T224 Arg2:T218	
+T225	own_claim 20169 20207	This enables the real-time performance
+R138	contradicts Arg1:T225 Arg2:T218	
+T226	own_claim 20014 20146	the number of different non-trivial joint sets, and therefore the number of running the SVD, is surprisingly small for common models
+T227	data 20149 20167	about several tens
+R139	supports Arg1:T227 Arg2:T226	
+R140	supports Arg1:T226 Arg2:T225	
+T228	background_claim 20322 20397	the interpolation of multiple rotations has already received some attention
+T229	background_claim 20441 20501	as well as interpolation of multiple general transformations
+T230	data 20399 20421	Buss and Fillmore 2001
+T231	data 20423 20439	Park et al. 2002
+T232	data 20503 20513	Alexa 2002
+R141	supports Arg1:T232 Arg2:T229	
+R142	supports Arg1:T230 Arg2:T228	
+R143	supports Arg1:T231 Arg2:T228	
+T233	background_claim 20531 20622	all these methods are substantially slower then the simple linear interpolation used in LBS
+T234	own_claim 20695 20756	we propose an approximate but fast linear quaternion blending
+T235	own_claim 20630 20693	our goal is an algorithm with comparable time complexity as LBS
+R144	supports Arg1:T235 Arg2:T234	
+T236	own_claim 20969 21002	this correspondence is not unique
+T237	data 21012 21065	both quaternions q and −q represent the same rotation
+R145	supports Arg1:T237 Arg2:T236	
+T238	background_claim 21067 21147	The SLERP of two unit quaternions p, q assumes that their dot product (p, q) ≥ 0
+T239	data 21152 21181	the dot product (p, q) &lt; 0
+T240	own_claim 21183 21205	we use −p instead of p
+R146	supports Arg1:T239 Arg2:T240	
+R147	supports Arg1:T237 Arg2:T240	
+T241	data 21233 21274	both p and −p represent the same rotation
+R148	semantically_same Arg1:T237 Arg2:T241	
+R149	supports Arg1:T241 Arg2:T240	
+T242	own_claim 21720 21754	The difference to SLERP is obvious
+T243	own_claim 21756 21890	QLERP interpolates along the shortest segment, and then projects to arc, which does not result in the uniform interpolation of the arc
+R150	supports Arg1:T243 Arg2:T242	
+T244	own_claim 21924 21956	QLERP is sufficient for our task
+R151	contradicts Arg1:T243 Arg2:T244	
+T245	data 22125 22130	t = 0
+T246	own_claim 22132 22171	both QLERP and SLERP return of course p
+R152	supports Arg1:T245 Arg2:T246	
+T247	data 22177 22186	t &gt; 0,
+T248	own_claim 22207 22307	both QLERP and SLERP work by concatenating p with some rotation (multiplying p with some quaternion)
+R153	supports Arg1:T247 Arg2:T248	
+T249	own_claim 22358 22395	It can be expressed as p ∗ s(t; p, q)
+T250	data 22405 22444	pr s (t) = pp ∗ s(t; p, q) = s(t; p, q)
+R154	supports Arg1:T250 Arg2:T249	
+T251	own_claim 23356 23474	the SLERP can be written as pr s (t) and QLERP as pr l (t), where the rotations r s (t) and r l (t) have the same axis
+T252	own_claim 23486 23558	this axis is constant, i.e. independent on the interpolation parameter t
+T253	own_claim 23576 23668	the only difference between QLERP and SLERP is in the angle of rotations r s (t) and r l (t)
+R155	supports Arg1:T252 Arg2:T253	
+R156	supports Arg1:T251 Arg2:T253	
+T254	own_claim 24729 24839	both SLERP and QLERP interpolate by multiplying the first quaternion with a rotation with the same, fixed axis
+T255	own_claim 24841 25014	The difference between SLERP and QLERP is only in the angle of this rotation, and is strictly less then 0.143 radians (8.15 degrees) for any interpolation parameter t ∈ 0, 1
+R157	semantically_same Arg1:T255 Arg2:T253	
+T256	own_claim 25017 25140	This is an upper bound; practical results are much smaller and could hardly cause an observable defect in the deformed skin
+T257	own_claim 25142 25239	The big advantage of QLERP is that it can be easily generalized to interpolate multiple rotations
+T258	data 23954 23986	SLERP assumes cos θ = (p, q) ≥ 0
+T259	own_claim 23988 24018	the angle θ cannot exceed π /2
+R158	supports Arg1:T258 Arg2:T259	
+T260	data 23680 23765	both r s (t) and r l (t) have a form of linear combination of quaternions 1 and p ∗ q
+T261	own_claim 23781 23864	the results of both r s (t) and r l (t) always end up in certain 2D subspace of R 4
+R159	supports Arg1:T260 Arg2:T261	
+T262	own_claim 22815 22887	we can express it as p ∗ q = cos θ + u sin θ for some axis of rotation u
+T263	data 22787 22813	p ∗ q is a unit quaternion
+R160	supports Arg1:T263 Arg2:T262	
+T264	data 22892 22928	we substitute this into equation (5)
+T265	own_claim 22930 23003	we obtain sin((1 − t) θ ) + sin(t θ ) cos θ r s (t) = sin θ + u sin(t θ )
+T266	own_claim 23021 23068	the direction of the axis u is independent on t
+R161	supports Arg1:T264 Arg2:T265	
+R162	supports Arg1:T265 Arg2:T266	
+T267	data 26275 26323	(q j 1 , q j i ) &lt; 0 for any i = 2, . . . , n
+T268	own_claim 26325 26375	we replace q j i with −q j i (by analogy to SLERP)
+T269	own_claim 26377 26483	Then the QLERP computes s = w 1 q j 1 + . . . + w n q j n , which is subsequently normalized to s n = s/ s
+R163	supports Arg1:T267 Arg2:T268	
+R164	supports Arg1:T268 Arg2:T269	
+T270	own_claim 27002 27127	the shift of the center of rotation does not influence the interpolated rotation – it manifests only in the translation part.
+T271	own_claim 27534 27568	should be as efficient as possible
+T272	own_claim 27461 27518	The equation (9) has to be evaluated once per each vertex
+R165	supports Arg1:T272 Arg2:T271	
+T273	own_claim 27643 27758	they do not depend on the actual vertex – only on the joint’s transformation, similarly as the rotation centers r c
+T274	own_claim 27570 27632	The basic optimization is to pre-compute the quaternions q j i
+R166	supports Arg1:T273 Arg2:T274	
+T275	own_claim 27774 27814	QLERP has to be executed for each vertex
+T276	data 27822 27856	weights w 1 , . . . , w n can vary
+R167	supports Arg1:T276 Arg2:T275	
+T277	own_claim 27926 27993	The vertex v can be represented by a quaternion with zero real part
+T278	own_claim 28019 28126	its rotation by quaternion q can be expressed as q vq ∗ , which is a quaternion with zero real part as well
+T279	data 28129 28140	Eberly 2001
+R168	supports Arg1:T277 Arg2:T278	
+R169	supports Arg1:T279 Arg2:T278	
+T280	own_claim 28152 28200	this expression is not efficient for computation
+T281	own_claim 28202 28243	because of slow quaternion multiplication
+T282	own_claim 28246 28353	it enables us to write out the rotation of v by quaternion s n as s n vs n ∗ = s 1 2 svs ∗ = (s, 1 s) svs ∗
+R170	supports Arg1:T281 Arg2:T280	
+R171	contradicts Arg1:T280 Arg2:T282	
+T283	own_claim 28354 28461	This suggests to convert already the quaternion s to matrix Q and normalize subsequently by dividing (s, s)
+R172	supports Arg1:T282 Arg2:T283	
+T284	own_claim 28474 28553	we can compute the Q matrix from (9) as Q = (s,s) Q and save the sqrt operation
+R173	supports Arg1:T283 Arg2:T284	
+T285	data 29092 29123	we substitute r c in place of v
+T286	own_claim 29125 29143	no rotation occurs
+T287	own_claim 29162 29196	r c is indeed a center of rotation
+R174	supports Arg1:T285 Arg2:T286	
+R175	supports Arg1:T286 Arg2:T287	
+T288	data 29209 29240	n = 2 and C j 1 r c = C j 2 r c
+T289	own_claim 29277 29430	the translation part becomes w 1 C j 1 r c + w 2 C j 2 r c = (w 1 + w 2 )C j 1 r c = C j 1 r c which is independent of interpolation parameters (weights)
+T290	own_claim 29437 29492	the translation during interpolation is constant indeed
+R176	supports Arg1:T288 Arg2:T289	
+R177	supports Arg1:T289 Arg2:T290	
+T291	own_claim 29501 29605	the equation (9) is nothing but a generalization of LBS to an arbitrary method of rotation interpolation
+T292	own_claim 29607 29651	The choice of QLERP is not important for (9)
+T293	own_claim 29653 29737	the matrix Q can be replaced by matrix resulting from any other interpolation scheme
+T294	data 29749 29771	Buss and Fillmore 2001
+R178	supports Arg1:T294 Arg2:T293	
+R179	supports Arg1:T293 Arg2:T292	
+T295	data 29777 29810	we substitute Q = ∑ w i C rot j i
+T296	own_claim 29868 30070	we obtain v = Q(v − r c ) + ∑ w i C j i r c = ∑ w i C rot j i v − ∑ w i C rot j i r c + ∑ w i C rot j i r c + ∑ w i C tr j i = ∑ w i C rot j i v + ∑ w i C tr j i = ∑ w i C j i v which is exactly the LBS
+T297	data 30071 30083	equation (1)
+R180	supports Arg1:T297 Arg2:T296	
+R181	supports Arg1:T295 Arg2:T296	
+T298	own_claim 30106 30175	LBS is a special case, which is independent of the center of rotation
+R182	supports Arg1:T296 Arg2:T298	
+T299	data 13004 13016	next section
+R183	supports Arg1:T299 Arg2:T165	

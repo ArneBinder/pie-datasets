@@ -83,3 +83,15 @@ class TestTokenDocumentWithLabeledSpans(TokenBasedDocument):
 @dataclasses.dataclass
 class TestTokenDocumentWithLabeledSpansAndBinaryRelations(TestTokenDocumentWithLabeledSpans):
     binary_relations: AnnotationList[BinaryRelation] = annotation_field(target="labeled_spans")
+
+
+@dataclasses.dataclass
+class TestTokenDocumentWithLabeledPartitions(TokenBasedDocument):
+    labeled_partitions: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
+
+
+@dataclasses.dataclass
+class TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions(
+    TestTokenDocumentWithLabeledSpansAndBinaryRelations, TestTokenDocumentWithLabeledPartitions
+):
+    pass
