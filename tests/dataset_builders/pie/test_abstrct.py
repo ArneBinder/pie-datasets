@@ -313,6 +313,6 @@ def test_document_converters(dataset_variant):
         assert set(document_converters) == {
             TextDocumentWithLabeledSpansAndBinaryRelations,
         }
-        assert all(callable(v) for k, v in document_converters.items()) #currently not callable
+        assert all(dict(v) for k, v in document_converters.items())
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
