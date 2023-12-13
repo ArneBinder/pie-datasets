@@ -56,9 +56,11 @@ def document(dataset, dataset_variant) -> Union[BratDocument, BratDocumentWithMe
 
 def test_document(document):
     assert document.text.startswith("Should students be taught to compete or to cooperate?")
-    assert document.text.endswith("Consequently, no matter from the view of individual development or the relationship "
-                                  "between competition and cooperation we can receive the same conclusion that a more "
-                                  "cooperative attitudes towards life is more profitable in one's success.")
+    assert document.text.endswith(
+        "Consequently, no matter from the view of individual development or the relationship "
+        "between competition and cooperation we can receive the same conclusion that a more "
+        "cooperative attitudes towards life is more profitable in one's success."
+    )
 
 
 @pytest.fixture(scope="module")
@@ -152,8 +154,10 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
 
         # check the relations
         # for conversion_method="connect_first"
-        assert len(doc.binary_relations) == 6
-        relation_tuples = [(str(rel.head), rel.label, str(rel.tail)) for rel in doc.binary_relations]
+        assert len(doc.binary_relations) == 10
+        relation_tuples = [
+            (str(rel.head), rel.label, str(rel.tail)) for rel in doc.binary_relations
+        ]
         assert relation_tuples[0] == (
             "What we acquired from team work is not only how to achieve the same goal with others but more importantly, "
             "how to get along with others",
@@ -191,6 +195,27 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
             "the significance of competition is that how to become more excellence to gain the victory",
             "supports",
             "competition makes the society more effective",
+        )
+        assert relation_tuples[6] == (
+            "through cooperation, children can learn about interpersonal skills which are significant in the future "
+            "life of all students",
+            "supports",
+            "we should attach more importance to cooperation during primary education",
+        )
+        assert relation_tuples[7] == (
+            "competition makes the society more effective",
+            "attacks",
+            "we should attach more importance to cooperation during primary education",
+        )
+        assert relation_tuples[8] == (
+            "without the cooperation, there would be no victory of competition",
+            "supports",
+            "we should attach more importance to cooperation during primary education",
+        )
+        assert relation_tuples[9] == (
+            "a more cooperative attitudes towards life is more profitable in one's success",
+            "semantically_same",
+            "we should attach more importance to cooperation during primary education",
         )
 
 
@@ -246,9 +271,53 @@ def test_dataset_of_text_documents_with_labeled_spans_binary_relations_and_label
             doc_with_partitions, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
         )
 
-        # TODO
-        raise NotImplementedError()
+        partitions = doc_with_partitions.labeled_partitions
+        assert len(partitions) == 5
+        assert [partition.label == "partition" for partition in partitions]
+        assert str(partitions[0]) == "Should students be taught to compete or to cooperate?"
+        assert (
+            str(partitions[1])
+            == "It is always said that competition can effectively promote the development of economy. In order to "
+            "survive in the competition, companies continue to improve their products and service, and as a result, "
+            "the whole society prospers. However, when we discuss the issue of competition or cooperation, what "
+            "we are concerned about is not the whole society, but the development of an individual's whole life. "
+            "From this point of view, I firmly believe that we should attach more importance to cooperation during "
+            "primary education."
+        )
+        assert (
+            str(partitions[2])
+            == "First of all, through cooperation, children can learn about interpersonal skills which are "
+            "significant in the future life of all students. What we acquired from team work is not only how to "
+            "achieve the same goal with others but more importantly, how to get along with others. During the "
+            "process of cooperation, children can learn about how to listen to opinions of others, how to "
+            "communicate with others, how to think comprehensively, and even how to compromise with other team "
+            "members when conflicts occurred. All of these skills help them to get on well with other people and "
+            "will benefit them for the whole life."
+        )
+        assert (
+            str(partitions[3])
+            == "On the other hand, the significance of competition is that how to become more excellence to gain the "
+            "victory. Hence it is always said that competition makes the society more effective. However, when we "
+            "consider about the question that how to win the game, we always find that we need the cooperation. "
+            "The greater our goal is, the more competition we need. Take Olympic games which is a form of "
+            "competition for instance, it is hard to imagine how an athlete could win the game without the "
+            "training of his or her coach, and the help of other professional staffs such as the people who take "
+            "care of his diet, and those who are in charge of the medical care. The winner is the athlete but the "
+            "success belongs to the whole team. Therefore without the cooperation, there would be no victory of "
+            "competition."
+        )
+        assert (
+            str(partitions[4])
+            == "Consequently, no matter from the view of individual development or the relationship between "
+            "competition and cooperation we can receive the same conclusion that a more cooperative attitudes "
+            "towards life is more profitable in one's success."
+        )
 
+        # check the entities
+        assert doc_with_partitions.labeled_spans == doc_without_partitions.labeled_spans
+
+        # check the relations
+        assert doc_with_partitions.binary_relations == doc_without_partitions.binary_relations
 
 
 @pytest.fixture(scope="module")
@@ -287,7 +356,7 @@ def test_tokenized_documents_with_labeled_spans_and_binary_relations(
         assert len(docs) == 1
         doc = docs[0]
         assert len(doc.labeled_spans) == 11
-        assert len(doc.binary_relations) == 6
+        assert len(doc.binary_relations) == 10
         assert len(doc.tokens) == 427
         # Check the first ten tokens
         assert doc.tokens[:10] == (
@@ -305,62 +374,62 @@ def test_tokenized_documents_with_labeled_spans_and_binary_relations(
         # sort the entities by their start position
         sorted_entities = sorted(doc.labeled_spans, key=lambda ent: ent.start)
         assert (
-                str(sorted_entities[0])
-                == "('we', 'should', 'attach', 'more', 'importance', 'to', 'cooperation', 'during', 'primary', 'education')"
+            str(sorted_entities[0])
+            == "('we', 'should', 'attach', 'more', 'importance', 'to', 'cooperation', 'during', 'primary', 'education')"
         )
         assert (
-                str(sorted_entities[1])
-                == "('through', 'cooperation', ',', 'children', 'can', 'learn', 'about', 'inter', '##personal', 'skills', "
-                   "'which', 'are', 'significant', 'in', 'the', 'future', 'life', 'of', 'all', 'students')"
+            str(sorted_entities[1])
+            == "('through', 'cooperation', ',', 'children', 'can', 'learn', 'about', 'inter', '##personal', 'skills', "
+            "'which', 'are', 'significant', 'in', 'the', 'future', 'life', 'of', 'all', 'students')"
         )
         assert (
-                str(sorted_entities[2])
-                == "('what', 'we', 'acquired', 'from', 'team', 'work', 'is', 'not', 'only', 'how', 'to', 'achieve', 'the', "
-                   "'same', 'goal', 'with', 'others', 'but', 'more', 'importantly', ',', 'how', 'to', 'get', 'along', "
-                   "'with', 'others')"
+            str(sorted_entities[2])
+            == "('what', 'we', 'acquired', 'from', 'team', 'work', 'is', 'not', 'only', 'how', 'to', 'achieve', 'the', "
+            "'same', 'goal', 'with', 'others', 'but', 'more', 'importantly', ',', 'how', 'to', 'get', 'along', "
+            "'with', 'others')"
         )
         assert (
-                str(sorted_entities[3])
-                == "('during', 'the', 'process', 'of', 'cooperation', ',', 'children', 'can', 'learn', 'about', 'how', 'to', "
-                   "'listen', 'to', 'opinions', 'of', 'others', ',', 'how', 'to', 'communicate', 'with', 'others', ',', "
-                   "'how', 'to', 'think', 'comprehensive', '##ly', ',', 'and', 'even', 'how', 'to', 'compromise', 'with', "
-                   "'other', 'team', 'members', 'when', 'conflicts', 'occurred')"
+            str(sorted_entities[3])
+            == "('during', 'the', 'process', 'of', 'cooperation', ',', 'children', 'can', 'learn', 'about', 'how', 'to', "
+            "'listen', 'to', 'opinions', 'of', 'others', ',', 'how', 'to', 'communicate', 'with', 'others', ',', "
+            "'how', 'to', 'think', 'comprehensive', '##ly', ',', 'and', 'even', 'how', 'to', 'compromise', 'with', "
+            "'other', 'team', 'members', 'when', 'conflicts', 'occurred')"
         )
         assert (
-                str(sorted_entities[4])
-                == "('all', 'of', 'these', 'skills', 'help', 'them', 'to', 'get', 'on', 'well', 'with', 'other', 'people', "
-                   "'and', 'will', 'benefit', 'them', 'for', 'the', 'whole', 'life')"
+            str(sorted_entities[4])
+            == "('all', 'of', 'these', 'skills', 'help', 'them', 'to', 'get', 'on', 'well', 'with', 'other', 'people', "
+            "'and', 'will', 'benefit', 'them', 'for', 'the', 'whole', 'life')"
         )
         assert (
-                str(sorted_entities[5])
-                == "('the', 'significance', 'of', 'competition', 'is', 'that', 'how', 'to', 'become', 'more', 'excellence', "
-                   "'to', 'gain', 'the', 'victory')"
+            str(sorted_entities[5])
+            == "('the', 'significance', 'of', 'competition', 'is', 'that', 'how', 'to', 'become', 'more', 'excellence', "
+            "'to', 'gain', 'the', 'victory')"
         )
         assert (
-                str(sorted_entities[6])
-                == "('competition', 'makes', 'the', 'society', 'more', 'effective')"
+            str(sorted_entities[6])
+            == "('competition', 'makes', 'the', 'society', 'more', 'effective')"
         )
         assert (
-                str(sorted_entities[7])
-                == "('when', 'we', 'consider', 'about', 'the', 'question', 'that', 'how', 'to', 'win', 'the', 'game', ',', "
-                   "'we', 'always', 'find', 'that', 'we', 'need', 'the', 'cooperation')"
+            str(sorted_entities[7])
+            == "('when', 'we', 'consider', 'about', 'the', 'question', 'that', 'how', 'to', 'win', 'the', 'game', ',', "
+            "'we', 'always', 'find', 'that', 'we', 'need', 'the', 'cooperation')"
         )
         assert (
-                str(sorted_entities[8])
-                == "('take', 'olympic', 'games', 'which', 'is', 'a', 'form', 'of', 'competition', 'for', 'instance', ',', "
-                   "'it', 'is', 'hard', 'to', 'imagine', 'how', 'an', 'athlete', 'could', 'win', 'the', 'game', 'without', "
-                   "'the', 'training', 'of', 'his', 'or', 'her', 'coach', ',', 'and', 'the', 'help', 'of', 'other', "
-                   "'professional', 'staff', '##s', 'such', 'as', 'the', 'people', 'who', 'take', 'care', 'of', 'his', "
-                   "'diet', ',', 'and', 'those', 'who', 'are', 'in', 'charge', 'of', 'the', 'medical', 'care')"
+            str(sorted_entities[8])
+            == "('take', 'olympic', 'games', 'which', 'is', 'a', 'form', 'of', 'competition', 'for', 'instance', ',', "
+            "'it', 'is', 'hard', 'to', 'imagine', 'how', 'an', 'athlete', 'could', 'win', 'the', 'game', 'without', "
+            "'the', 'training', 'of', 'his', 'or', 'her', 'coach', ',', 'and', 'the', 'help', 'of', 'other', "
+            "'professional', 'staff', '##s', 'such', 'as', 'the', 'people', 'who', 'take', 'care', 'of', 'his', "
+            "'diet', ',', 'and', 'those', 'who', 'are', 'in', 'charge', 'of', 'the', 'medical', 'care')"
         )
         assert (
-                str(sorted_entities[9])
-                == "('without', 'the', 'cooperation', ',', 'there', 'would', 'be', 'no', 'victory', 'of', 'competition')"
+            str(sorted_entities[9])
+            == "('without', 'the', 'cooperation', ',', 'there', 'would', 'be', 'no', 'victory', 'of', 'competition')"
         )
         assert (
-                str(sorted_entities[10])
-                == "('a', 'more', 'cooperative', 'attitudes', 'towards', 'life', 'is', 'more', 'profitable', "
-                   "'in', 'one', \"'\", 's', 'success')"
+            str(sorted_entities[10])
+            == "('a', 'more', 'cooperative', 'attitudes', 'towards', 'life', 'is', 'more', 'profitable', "
+            "'in', 'one', \"'\", 's', 'success')"
         )
 
 
@@ -424,13 +493,25 @@ def test_tokenized_documents_with_labeled_spans_binary_relations_and_labeled_par
         docs_without_partitions = tokenized_documents_with_labeled_spans_and_binary_relations
 
         # check that the tokenization was fine
+        # look  different from sciarg
         assert len(docs_with_partitions) == 1
         doc_with_partitions = docs_with_partitions[0]
-        doc_without_partitions = docs_without_partitions[0]
-        assert len(doc_with_partitions.labeled_partitions) == 10
-        assert doc_with_partitions.labeled_spans == doc_without_partitions.labeled_spans
-        assert doc_with_partitions.binary_relations == doc_without_partitions.binary_relations
-        assert doc_with_partitions.tokens == doc_without_partitions.tokens
+        assert len(doc_with_partitions.labeled_partitions) == 5
+        assert len(doc_with_partitions.labeled_spans) == 11
+        assert len(doc_with_partitions.binary_relations) == 10
+        assert doc_with_partitions.tokens[:11] == (
+            "[CLS]",
+            "should",
+            "students",
+            "be",
+            "taught",
+            "to",
+            "compete",
+            "or",
+            "to",
+            "cooperate",
+            "?",
+        )
 
 
 def test_tokenized_documents_with_entities_relations_and_partitions_all(
@@ -460,6 +541,9 @@ def test_tokenized_documents_with_entities_relations_and_partitions_all(
                 # we just ensure that we get at least one tokenized document
                 assert tokenized_docs is not None
                 assert len(tokenized_docs) > 0
+                for tokenized_doc in tokenized_docs:
+                    assert tokenized_doc.labeled_partitions is not None
+                    assert len(tokenized_doc.labeled_partitions) == 1  # 5
 
 
 def test_document_converters(dataset_variant):
