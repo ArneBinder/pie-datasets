@@ -54,13 +54,12 @@ class ScientificPapersConfig(datasets.BuilderConfig):
 class ScientificPapers(GeneratorBasedBuilder):
     DOCUMENT_TYPE = ScientificPapersDocument
 
-    BASE_DATASET_PATH = "squad_v2"
-    BASE_DATASET_REVISION = "e4d7191788b08fde3cbd09bd8fe1fcd827ee1715"
+    BASE_DATASET_PATH = "scientific_papers"
 
     BUILDER_CONFIGS = [
         ScientificPapersConfig(
             name="scientific_papers",
-            version=datasets.Version("1.0.0"),
+            version=datasets.Version("1.1.1"),
             description="Scientific Papers dataset",
         ),
     ]
