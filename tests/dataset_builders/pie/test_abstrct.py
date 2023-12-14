@@ -17,6 +17,7 @@ from tests.dataset_builders.common import (
 disable_caching()
 
 DATASET_NAME = "abstrct"
+BUILDER_CLASS = AbstRCT
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 SPLIT_SIZES = {
     "glaucoma_test": 100,
@@ -28,7 +29,7 @@ SPLIT_SIZES = {
 SPLIT = "neoplasm_train"
 
 
-@pytest.fixture(scope="module", params=[config.name for config in AbstRCT.BUILDER_CONFIGS])
+@pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
 def dataset_variant(request) -> str:
     return request.param
 
@@ -60,6 +61,11 @@ def test_document(document, dataset_variant):
     assert document.text.startswith(
         " A combination of mitoxantrone plus prednisone is preferable to prednisone alone"
     )
+    # TODO: test the actual content (annotation of the document)
+    # if dataset_variant == "default":
+    # assert
+    # elif dataset_variant == "merge_fragmented_spans":
+    # assert
 
 
 @pytest.fixture(scope="module")
@@ -303,7 +309,7 @@ def test_tokenized_documents_with_entities_and_relations_all(
 
 
 def test_document_converters(dataset_variant):
-    builder = AbstRCT(config_name=dataset_variant)
+    builder = BUILDER_CLASS(config_name=dataset_variant)
     document_converters = builder.document_converters
 
     if dataset_variant == "default":
@@ -313,6 +319,7 @@ def test_document_converters(dataset_variant):
         assert set(document_converters) == {
             TextDocumentWithLabeledSpansAndBinaryRelations,
         }
+        # TODO: recheck this
         assert all(dict(v) for k, v in document_converters.items())
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
