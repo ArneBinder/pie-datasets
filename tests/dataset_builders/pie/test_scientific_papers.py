@@ -34,8 +34,11 @@ def hf_example(dataset_variant):
 
 
 @pytest.fixture(scope="module")
-def generate_document_kwargs(hf_dataset):
-    return BUILDER_CLASS()._generate_document_kwargs(hf_dataset["train"]) or {}
+def generate_document_kwargs(hf_dataset, dataset_variant):
+    return (
+        BUILDER_CLASS(config_name=dataset_variant)._generate_document_kwargs(hf_dataset["train"])
+        or {}
+    )
 
 
 def test_hf_dataset(hf_dataset, dataset_variant):
@@ -53,8 +56,15 @@ def test_hf_example(hf_example):
     assert "section_names" in hf_example
 
 
-def test_generate_document(hf_example, generate_document_kwargs):
-    doc = BUILDER_CLASS()._generate_document(hf_example, **generate_document_kwargs)
+def test_generate_document_kwargs(hf_dataset, generate_document_kwargs):
+    assert generate_document_kwargs is not None
+    assert isinstance(generate_document_kwargs, dict)
+
+
+def test_generate_document(hf_example, generate_document_kwargs, dataset_variant):
+    doc = BUILDER_CLASS(config_name=dataset_variant)._generate_document(
+        hf_example, **generate_document_kwargs
+    )
     assert doc is not None
     assert isinstance(doc, DOCUMENT_TYPE)
     assert doc.text is not None
@@ -62,8 +72,10 @@ def test_generate_document(hf_example, generate_document_kwargs):
     assert doc.section_names is not None
 
 
-def test_generate_example(hf_example, generate_document_kwargs):
-    doc = BUILDER_CLASS()._generate_document(hf_example, **generate_document_kwargs)
-    example = BUILDER_CLASS()._generate_example(doc)
+def test_generate_example(hf_example, generate_document_kwargs, dataset_variant):
+    doc = BUILDER_CLASS(config_name=dataset_variant)._generate_document(
+        hf_example, **generate_document_kwargs
+    )
+    example = BUILDER_CLASS(config_name=dataset_variant)._generate_example(doc)
     assert example is not None
     assert isinstance(example, dict)
