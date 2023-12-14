@@ -58,13 +58,18 @@ class ScientificPapers(GeneratorBasedBuilder):
 
     BUILDER_CONFIGS = [
         ScientificPapersConfig(
-            name="scientific_papers",
+            name="arxiv",
             version=datasets.Version("1.1.1"),
-            description="Scientific Papers dataset",
+            description="Scientific Papers dataset - ArXiv variant",
+        ),
+        ScientificPapersConfig(
+            name="pubmed",
+            version=datasets.Version("1.1.1"),
+            description="Scientific Papers dataset - PubMed variant",
         ),
     ]
 
-    DEFAULT_CONFIG_NAME = "scientific_papers"
+    DEFAULT_CONFIG_NAME = "arxiv"
 
     def _generate_document(self, example, **kwargs):
         return example_to_document(example)
