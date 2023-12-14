@@ -1,5 +1,5 @@
 import dataclasses
-from typing import Any, Dict
+from typing import Any, Dict, List
 
 import datasets
 from pytorch_ie.core import annotation_field
@@ -13,7 +13,7 @@ class ScientificPapersDocument(TextBasedDocument):
     """A PIE document for scientific papers dataset."""
 
     abstract: str = annotation_field()
-    section_names: str = annotation_field()
+    section_names: List[str] = annotation_field()
 
 
 def example_to_document(
