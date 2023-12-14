@@ -208,7 +208,7 @@ def tokenized_documents_with_labeled_spans_and_binary_relations(
         tokenizer=tokenizer,
         return_overflowing_tokens=True,
         result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-        strict_span_conversion=False,
+        strict_span_conversion=True,
         verbose=True,
     )
     return tokenized_docs
@@ -294,7 +294,7 @@ def test_tokenized_documents_with_entities_and_relations_all(
                     tokenizer=tokenizer,
                     return_overflowing_tokens=True,
                     result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-                    strict_span_conversion=False,
+                    strict_span_conversion=True,
                     verbose=True,
                 )
                 # we just ensure that we get at least one tokenized document
