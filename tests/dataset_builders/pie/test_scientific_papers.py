@@ -23,12 +23,12 @@ def dataset_variant(request):
 def hf_dataset(dataset_variant):
     dataset = load_dataset(DATASET_NAME, dataset_variant, split="train", streaming=True)
     dataset_head = dataset.take(STREAM_SIZE)
-    return dataset_head
+    return list(dataset_head)
 
 
 @pytest.fixture(scope="module")
 def hf_example(hf_dataset):
-    return list(hf_dataset)[0]
+    return hf_dataset[0]
 
 
 @pytest.fixture(scope="module")
@@ -63,6 +63,10 @@ def test_generate_document(hf_example, generate_document_kwargs, dataset_variant
     assert doc.abstract is not None
     assert doc.section_names is not None
 
+    assert doc.text == hf_example["article"]
+    assert doc.abstract == hf_example["abstract"]
+    assert doc.section_names == hf_example["section_names"].split("\n")
+
 
 def test_generate_example(hf_example, generate_document_kwargs, dataset_variant):
     doc = BUILDER_CLASS(config_name=dataset_variant)._generate_document(
@@ -71,3 +75,7 @@ def test_generate_example(hf_example, generate_document_kwargs, dataset_variant)
     example = BUILDER_CLASS(config_name=dataset_variant)._generate_example(doc)
     assert example is not None
     assert isinstance(example, dict)
+
+    assert example["article"] == doc.text
+    assert example["abstract"] == doc.abstract
+    assert example["section_names"] == "\n".join(doc.section_names)
