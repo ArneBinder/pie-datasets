@@ -341,7 +341,7 @@ def tokenized_documents_with_labeled_spans_and_binary_relations(
         tokenizer=tokenizer,
         return_overflowing_tokens=True,
         result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-        strict_span_conversion=False,
+        strict_span_conversion=True,
         verbose=True,
     )
     return tokenized_docs
@@ -449,7 +449,7 @@ def test_tokenized_documents_with_entities_and_relations_all(
                     tokenizer=tokenizer,
                     return_overflowing_tokens=True,
                     result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-                    strict_span_conversion=False,
+                    strict_span_conversion=True,
                     verbose=True,
                 )
                 # we just ensure that we get at least one tokenized document
@@ -533,6 +533,7 @@ def test_tokenized_documents_with_entities_relations_and_partitions_all(
                 tokenized_docs = tokenize_document(
                     doc,
                     tokenizer=tokenizer,
+                    partition_layer="labeled_partitions",
                     return_overflowing_tokens=True,
                     result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
                     strict_span_conversion=False,
@@ -543,7 +544,9 @@ def test_tokenized_documents_with_entities_relations_and_partitions_all(
                 assert len(tokenized_docs) > 0
                 for tokenized_doc in tokenized_docs:
                     assert tokenized_doc.labeled_partitions is not None
-                    assert len(tokenized_doc.labeled_partitions) == 1  # 5
+                    # We use the partitions to partition the input, so each tokenized
+                    # document should have exactly one partition annotation.
+                    assert len(tokenized_doc.labeled_partitions) == 1
 
 
 def test_document_converters(dataset_variant):
