@@ -71,6 +71,9 @@ class ScientificPapers(GeneratorBasedBuilder):
 
     DEFAULT_CONFIG_NAME = "arxiv"
 
+    def _generate_document_kwargs(self, example, **kwargs):
+        return {}
+
     def _generate_document(self, example, **kwargs):
         return example_to_document(example)
 
