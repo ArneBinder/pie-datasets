@@ -108,9 +108,10 @@ def test_hf_example(hf_example, expected_output):
 def test_pie_example(pie_example, expected_output):
     assert pie_example is not None
     assert pie_example.text.startswith(expected_output["article"])
-    assert pie_example.abstract[0].text.startswith(expected_output["abstract"])
+    # Note that we use the string representation of the abstract and section name annotations
+    assert str(pie_example.abstract[0]).startswith(expected_output["abstract"])
     str_section_names = "\n".join(
-        [section_name.text for section_name in pie_example.section_names]
+        [str(section_name) for section_name in pie_example.section_names]
     )
     assert str_section_names.startswith(expected_output["section_names"])
 
