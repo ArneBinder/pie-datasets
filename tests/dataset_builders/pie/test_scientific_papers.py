@@ -13,6 +13,7 @@ STREAM_SIZE = 10
 DOCUMENT_TYPE = BUILDER_CLASS.DOCUMENT_TYPE
 HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
+SPLIT = "train"
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
@@ -22,7 +23,13 @@ def dataset_variant(request):
 
 @pytest.fixture(scope="module")
 def hf_dataset(dataset_variant):
-    dataset = load_dataset(DATASET_NAME, dataset_variant, split="train", streaming=True)
+    dataset = load_dataset(
+        BUILDER_CLASS.BASE_DATASET_PATH,
+        revision=BUILDER_CLASS.BASE_DATASET_REVISION,
+        name=dataset_variant,
+        split=SPLIT,
+        streaming=True,
+    )
     dataset_head = dataset.take(STREAM_SIZE)
     return list(dataset_head)
 
@@ -30,7 +37,7 @@ def hf_dataset(dataset_variant):
 @pytest.fixture(scope="module")
 def pie_dataset(dataset_variant):
     dataset = load_pie_dataset(
-        str(PIE_DATASET_PATH), dataset_variant, split="train", streaming=True
+        str(PIE_DATASET_PATH), name=dataset_variant, split=SPLIT, streaming=True
     )
     dataset_head = dataset.take(STREAM_SIZE)
     return list(dataset_head)
