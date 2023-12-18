@@ -66,34 +66,34 @@ def test_document(document, dataset_variant):
     assert (
         span_texts[0]
         == "A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain "
-           "in men with metastatic, hormone-resistant, prostate cancer."
+        "in men with metastatic, hormone-resistant, prostate cancer."
     )
     assert span_texts[1] == "At 6 weeks, both groups showed improvement in several HQL domains,"
     assert (
         span_texts[2]
         == "only physical functioning and pain were better in the mitoxantrone-plus-prednisone group than in the "
-           "prednisone-alone group."
+        "prednisone-alone group."
     )
     assert (
         span_texts[3]
         == "After 6 weeks, patients taking prednisone showed no improvement in HQL scores, whereas those taking "
-           "mitoxantrone plus prednisone showed significant improvements in global quality of life (P =.009), four "
-           "functioning domains, and nine symptoms (.001 < P <. 01),"
+        "mitoxantrone plus prednisone showed significant improvements in global quality of life (P =.009), four "
+        "functioning domains, and nine symptoms (.001 < P <. 01),"
     )
     assert (
         span_texts[4]
         == "the improvement (> 10 units on a scale of 0 to100) lasted longer than in the prednisone-alone group "
-           "(.004 < P <.05)."
+        "(.004 < P <.05)."
     )
     assert (
         span_texts[5]
         == "The addition of mitoxantrone to prednisone after failure of prednisone alone was associated with "
-           "improvements in pain, pain impact, pain relief, insomnia, and global quality of life (.001 < P <.003)."
+        "improvements in pain, pain impact, pain relief, insomnia, and global quality of life (.001 < P <.003)."
     )
     assert (
         span_texts[6]
         == "Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement "
-           "in several HQL domains and symptoms than treatment with prednisone alone."
+        "in several HQL domains and symptoms than treatment with prednisone alone."
     )
 
     # check relations
