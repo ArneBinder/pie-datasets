@@ -446,7 +446,6 @@ def test_tokenized_documents_with_entities_and_relations_all(
                 # if the input text is too long.
                 tokenized_docs = tokenize_document(
                     doc,
-                    tokenizer=tokenizer,
                     return_overflowing_tokens=True,
                     result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
                     strict_span_conversion=True,
@@ -474,6 +473,7 @@ def tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitio
         tokenized_docs = tokenize_document(
             doc,
             tokenizer=tokenizer,
+            partition_layer="labeled_partitions",
             return_overflowing_tokens=True,
             result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
             strict_span_conversion=False,
@@ -490,16 +490,14 @@ def test_tokenized_documents_with_labeled_spans_binary_relations_and_labeled_par
         docs_with_partitions = (
             tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions
         )
-        docs_without_partitions = tokenized_documents_with_labeled_spans_and_binary_relations
 
         # check that the tokenization was fine
-        # look  different from sciarg
-        assert len(docs_with_partitions) == 1
+        assert len(docs_with_partitions) == 5
         doc_with_partitions = docs_with_partitions[0]
-        assert len(doc_with_partitions.labeled_partitions) == 5
-        assert len(doc_with_partitions.labeled_spans) == 11
-        assert len(doc_with_partitions.binary_relations) == 10
-        assert doc_with_partitions.tokens[:11] == (
+        assert len(doc_with_partitions.labeled_partitions) == 1
+        assert len(doc_with_partitions.labeled_spans) == 0
+        assert len(doc_with_partitions.binary_relations) == 0
+        assert doc_with_partitions.tokens == (
             "[CLS]",
             "should",
             "students",
@@ -511,6 +509,7 @@ def test_tokenized_documents_with_labeled_spans_binary_relations_and_labeled_par
             "to",
             "cooperate",
             "?",
+            "[SEP]",
         )
 
 

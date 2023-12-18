@@ -114,7 +114,7 @@ See further description in Stab & Gurevych 2017, p.627 and the [annotation guide
 
 #### Initial Data Collection and Normalization
 
-`# TODO`
+Persuasive essays were collected from [essayforum.com](https://essayforum.com/) (See essay prompts, along with the essay's `id`'s [here](https://github.com/ArneBinder/pie-datasets/blob/db94035602610cefca2b1678aa2fe4455c96155d/data/datasets/ArgumentAnnotatedEssays-2.0/prompts.csv)).
 
 #### Who are the source language producers?
 
