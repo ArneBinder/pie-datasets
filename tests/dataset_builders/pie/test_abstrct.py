@@ -58,14 +58,64 @@ def document(dataset, dataset_variant) -> Union[BratDocument, BratDocumentWithMe
 
 def test_document(document, dataset_variant):
     assert document is not None
-    assert document.text.startswith(
-        " A combination of mitoxantrone plus prednisone is preferable to prednisone alone"
+    assert document.id == "10561201"
+
+    # check spans
+    assert len(document.spans) == 7
+    span_texts = document.metadata["span_texts"]
+    assert (
+        span_texts[0]
+        == "A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain "
+           "in men with metastatic, hormone-resistant, prostate cancer."
     )
-    # TODO: test the actual content (annotation of the document)
-    # if dataset_variant == "default":
-    # assert
-    # elif dataset_variant == "merge_fragmented_spans":
-    # assert
+    assert span_texts[1] == "At 6 weeks, both groups showed improvement in several HQL domains,"
+    assert (
+        span_texts[2]
+        == "only physical functioning and pain were better in the mitoxantrone-plus-prednisone group than in the "
+           "prednisone-alone group."
+    )
+    assert (
+        span_texts[3]
+        == "After 6 weeks, patients taking prednisone showed no improvement in HQL scores, whereas those taking "
+           "mitoxantrone plus prednisone showed significant improvements in global quality of life (P =.009), four "
+           "functioning domains, and nine symptoms (.001 < P <. 01),"
+    )
+    assert (
+        span_texts[4]
+        == "the improvement (> 10 units on a scale of 0 to100) lasted longer than in the prednisone-alone group "
+           "(.004 < P <.05)."
+    )
+    assert (
+        span_texts[5]
+        == "The addition of mitoxantrone to prednisone after failure of prednisone alone was associated with "
+           "improvements in pain, pain impact, pain relief, insomnia, and global quality of life (.001 < P <.003)."
+    )
+    assert (
+        span_texts[6]
+        == "Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement "
+           "in several HQL domains and symptoms than treatment with prednisone alone."
+    )
+
+    # check relations
+    assert len(document.relations) == 6
+    document.relations[0].label == "Support"
+    document.relations[0].head == document.spans[6]
+    document.relations[0].tail == document.spans[0]
+    document.relations[1].label == "Support"
+    document.relations[1].head == document.spans[1]
+    document.relations[1].tail == document.spans[6]
+    document.relations[2].label == "Support"
+    document.relations[2].head == document.spans[2]
+    document.relations[2].tail == document.spans[6]
+    document.relations[3].label == "Support"
+    document.relations[3].head == document.spans[5]
+    document.relations[3].tail == document.spans[6]
+    document.relations[4].label == "Support"
+    document.relations[4].head == document.spans[3]
+    document.relations[4].tail == document.spans[6]
+    document.relations[5].label == "Support"
+    document.relations[5].head == document.spans[5]
+    document.relations[5].tail == document.spans[0]
 
 
 @pytest.fixture(scope="module")
@@ -319,7 +369,9 @@ def test_document_converters(dataset_variant):
         assert set(document_converters) == {
             TextDocumentWithLabeledSpansAndBinaryRelations,
         }
-        # TODO: recheck this
-        assert all(dict(v) for k, v in document_converters.items())
+        assert document_converters[TextDocumentWithLabeledSpansAndBinaryRelations] == {
+            "spans": "labeled_spans",
+            "relations": "binary_relations",
+        }
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
