@@ -446,6 +446,7 @@ def test_tokenized_documents_with_entities_and_relations_all(
                 # if the input text is too long.
                 tokenized_docs = tokenize_document(
                     doc,
+                    tokenizer=tokenizer,
                     return_overflowing_tokens=True,
                     result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
                     strict_span_conversion=True,
