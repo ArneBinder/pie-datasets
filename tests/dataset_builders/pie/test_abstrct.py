@@ -60,40 +60,51 @@ def test_document(document, dataset_variant):
     assert document is not None
     assert document.id == "10561201"
 
+    # check the annotation
+    if dataset_variant == "default":
+        span_texts_labels_tuples = [
+            (document.text[span.slices[0][0] : span.slices[-1][1]], span.label)
+            for span in document.spans
+        ]
+    elif dataset_variant == "merge_fragmented_spans":
+        span_texts_labels_tuples = [(str(span), span.label) for span in document.spans]
+
     # check spans
     assert len(document.spans) == 7
-    span_texts = document.metadata["span_texts"]
-    assert (
-        span_texts[0]
-        == "A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain "
-        "in men with metastatic, hormone-resistant, prostate cancer."
+    assert span_texts_labels_tuples[0] == (
+        "A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain "
+        "in men with metastatic, hormone-resistant, prostate cancer.",
+        "MajorClaim",
     )
-    assert span_texts[1] == "At 6 weeks, both groups showed improvement in several HQL domains,"
-    assert (
-        span_texts[2]
-        == "only physical functioning and pain were better in the mitoxantrone-plus-prednisone group than in the "
-        "prednisone-alone group."
+    assert span_texts_labels_tuples[1] == (
+        "At 6 weeks, both groups showed improvement in several HQL domains,",
+        "Premise",
     )
-    assert (
-        span_texts[3]
-        == "After 6 weeks, patients taking prednisone showed no improvement in HQL scores, whereas those taking "
+    assert span_texts_labels_tuples[2] == (
+        "only physical functioning and pain were better in the mitoxantrone-plus-prednisone group than in the "
+        "prednisone-alone group.",
+        "Premise",
+    )
+    assert span_texts_labels_tuples[3] == (
+        "After 6 weeks, patients taking prednisone showed no improvement in HQL scores, whereas those taking "
         "mitoxantrone plus prednisone showed significant improvements in global quality of life (P =.009), four "
-        "functioning domains, and nine symptoms (.001 < P <. 01),"
+        "functioning domains, and nine symptoms (.001 < P <. 01),",
+        "Premise",
     )
-    assert (
-        span_texts[4]
-        == "the improvement (> 10 units on a scale of 0 to100) lasted longer than in the prednisone-alone group "
-        "(.004 < P <.05)."
+    assert span_texts_labels_tuples[4] == (
+        "the improvement (> 10 units on a scale of 0 to100) lasted longer than in the prednisone-alone group "
+        "(.004 < P <.05).",
+        "Premise",
     )
-    assert (
-        span_texts[5]
-        == "The addition of mitoxantrone to prednisone after failure of prednisone alone was associated with "
-        "improvements in pain, pain impact, pain relief, insomnia, and global quality of life (.001 < P <.003)."
+    assert span_texts_labels_tuples[5] == (
+        "The addition of mitoxantrone to prednisone after failure of prednisone alone was associated with "
+        "improvements in pain, pain impact, pain relief, insomnia, and global quality of life (.001 < P <.003).",
+        "Premise",
     )
-    assert (
-        span_texts[6]
-        == "Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement "
-        "in several HQL domains and symptoms than treatment with prednisone alone."
+    assert span_texts_labels_tuples[6] == (
+        "Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement "
+        "in several HQL domains and symptoms than treatment with prednisone alone.",
+        "Claim",
     )
 
     # check relations
