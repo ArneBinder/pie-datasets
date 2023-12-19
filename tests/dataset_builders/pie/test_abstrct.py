@@ -49,7 +49,7 @@ def test_no_fragmented_spans(dataset, dataset_variant):
         for split, docs in dataset.items():
             for doc in docs:
                 # test the number of slices of the LabeledMultiSpan annotations
-                assert [len(span.slices) == 1 for span in doc.spans]
+                assert all([len(span.slices) == 1 for span in doc.spans])
 
 
 @pytest.fixture(scope="module")
