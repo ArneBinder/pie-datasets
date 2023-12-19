@@ -1,7 +1,7 @@
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
-from pie_datasets.builders import BratBuilder
-from pie_datasets.core.dataset import DocumentConvertersType
+from pie_datasets.builders import BratBuilder, BratConfig
+from pie_datasets.builders.brat import BratDocumentWithMergedSpans
 
 URL = "https://gitlab.com/tomaye/abstrct/-/archive/master/abstrct-master.zip"
 SPLIT_PATHS = {
@@ -17,22 +17,22 @@ class AbstRCT(BratBuilder):
     BASE_DATASET_PATH = "DFKI-SLT/brat"
     BASE_DATASET_REVISION = "bb8c37d84ddf2da1e691d226c55fef48fd8149b5"
 
+    BUILDER_CONFIGS = [
+        BratConfig(name=BratBuilder.DEFAULT_CONFIG_NAME, merge_fragmented_spans=True),
+    ]
+    DOCUMENT_TYPES = {
+        BratBuilder.DEFAULT_CONFIG_NAME: BratDocumentWithMergedSpans,
+    }
+
     # we need to add None to the list of dataset variants to support the default dataset variant
     BASE_BUILDER_KWARGS_DICT = {
         dataset_variant: {"url": URL, "split_paths": SPLIT_PATHS}
         for dataset_variant in ["default", "merge_fragmented_spans", None]
     }
 
-    @property
-    def document_converters(self) -> DocumentConvertersType:
-        if self.config.name == "default":
-            return {}
-        elif self.config.name == "merge_fragmented_spans":
-            return {
-                TextDocumentWithLabeledSpansAndBinaryRelations: {
-                    "spans": "labeled_spans",
-                    "relations": "binary_relations",
-                },
-            }
-        else:
-            raise ValueError(f"Unknown dataset variant: {self.config.name}")
+    DOCUMENT_CONVERTERS = {
+        TextDocumentWithLabeledSpansAndBinaryRelations: {
+            "spans": "labeled_spans",
+            "relations": "binary_relations",
+        },
+    }

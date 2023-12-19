@@ -1,14 +1,15 @@
-from typing import List, Optional, Union
+from typing import List, Optional
 
 import pytest
 from datasets import disable_caching
 from pie_modules.document.processing import tokenize_document
+from pytorch_ie.core import Document
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.abstrct.abstrct import AbstRCT
 from pie_datasets import DatasetDict
-from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
+from pie_datasets.builders.brat import BratDocumentWithMergedSpans
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
     TestTokenDocumentWithLabeledSpansAndBinaryRelations,
@@ -44,23 +45,25 @@ def test_dataset(dataset):
     assert {name: len(ds) for name, ds in dataset.items()} == SPLIT_SIZES
 
 
-def test_no_fragmented_spans(dataset, dataset_variant):
-    if dataset_variant == "default":
-        for split, docs in dataset.items():
-            for doc in docs:
-                # test the number of slices of the LabeledMultiSpan annotations
-                assert all([len(span.slices) == 1 for span in doc.spans])
+@pytest.fixture(scope="module")
+def builder(dataset_variant) -> BUILDER_CLASS:
+    return BUILDER_CLASS(config_name=dataset_variant)
+
+
+def test_builder(builder, dataset_variant):
+    assert builder is not None
+    assert builder.config_id == dataset_variant
+    assert builder.dataset_name == DATASET_NAME
+    assert builder.document_type == BratDocumentWithMergedSpans
 
 
 @pytest.fixture(scope="module")
-def document(dataset, dataset_variant) -> Union[BratDocument, BratDocumentWithMergedSpans]:
+def document(dataset) -> BratDocumentWithMergedSpans:
     result = dataset[SPLIT][0]
-    if dataset_variant == "default":
-        assert isinstance(result, BratDocument)
-    elif dataset_variant == "merge_fragmented_spans":
-        assert isinstance(result, BratDocumentWithMergedSpans)
-    else:
-        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+    # we can not assert the real document type because it may come from a dataset loading script
+    # downloaded to a temporary directory and thus have a different type object, although it is
+    # semantically the same
+    assert isinstance(result, Document)
     return result
 
 
@@ -69,12 +72,7 @@ def test_document(document, dataset_variant):
     assert document.id == "10561201"
 
     # check the annotation
-    if dataset_variant == "default":
-        span_texts_labels_tuples = [
-            (" ".join([document.text[start:end] for start, end in span.slices]), span.label)
-            for span in document.spans
-        ]
-    elif dataset_variant == "merge_fragmented_spans":
+    if dataset_variant == "default" or dataset_variant is None:
         span_texts_labels_tuples = [(str(span), span.label) for span in document.spans]
 
     # check spans
@@ -141,20 +139,7 @@ def test_document(document, dataset_variant):
 def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
     dataset, dataset_variant
 ) -> Optional[DatasetDict]:
-    if dataset_variant == "default":
-        with pytest.raises(ValueError) as excinfo:
-            dataset.to_document_type(TextDocumentWithLabeledSpansAndBinaryRelations)
-        assert (
-            str(excinfo.value)
-            == "No valid key (either subclass or superclass) was found for the document type "
-            "'<class 'pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations'>' in the "
-            "document_converters of the dataset. Available keys: set(). Consider adding a respective "
-            "converter to the dataset with dataset.register_document_converter(my_converter_method) "
-            "where my_converter_method should accept <class 'pie_datasets.builders.brat.BratDocument'> "
-            "as input and return '<class 'pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations'>'."
-        )
-        converted_dataset = None
-    elif dataset_variant == "merge_fragmented_spans":
+    if dataset_variant == "default" or dataset_variant is None:
         converted_dataset = dataset.to_document_type(
             TextDocumentWithLabeledSpansAndBinaryRelations
         )
@@ -168,9 +153,7 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
 ):
     if dataset_of_text_documents_with_labeled_spans_and_binary_relations is not None:
         # get a document to check
-        converted_doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations[
-            "neoplasm_train"
-        ][0]
+        converted_doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations[SPLIT][0]
         # check that the conversion is correct and the data makes sense
         assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndBinaryRelations)
 
@@ -382,8 +365,6 @@ def test_document_converters(dataset_variant):
     document_converters = builder.document_converters
 
     if dataset_variant == "default":
-        assert document_converters == {}
-    elif dataset_variant == "merge_fragmented_spans":
         assert len(document_converters) == 1
         assert set(document_converters) == {
             TextDocumentWithLabeledSpansAndBinaryRelations,
