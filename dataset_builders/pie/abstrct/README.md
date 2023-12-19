@@ -46,9 +46,9 @@ assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
 The dataset provides document converters for the following target document types:
 
 - `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
-  - `LabeledSpans`, converted from `BratDocument`'s `spans`
+  - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
     - labels: `MajorClaim`, `Claim`, `Premise`
-  - `BinraryRelations`, converted from `BratDocument`'s `relations`
+  - `BinraryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
     - labels:  `Support`, `Partial-Attack`, `Attack`
 
 See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
