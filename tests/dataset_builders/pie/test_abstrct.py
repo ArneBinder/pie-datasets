@@ -44,6 +44,14 @@ def test_dataset(dataset):
     assert {name: len(ds) for name, ds in dataset.items()} == SPLIT_SIZES
 
 
+def test_no_fragmented_spans(dataset, dataset_variant):
+    if dataset_variant == "default":
+        for split, docs in dataset.items():
+            for doc in docs:
+                # test the number of slices of the LabeledMultiSpan annotations
+                assert [len(span.slices) == 1 for span in doc.spans]
+
+
 @pytest.fixture(scope="module")
 def document(dataset, dataset_variant) -> Union[BratDocument, BratDocumentWithMergedSpans]:
     result = dataset[SPLIT][0]
@@ -63,7 +71,7 @@ def test_document(document, dataset_variant):
     # check the annotation
     if dataset_variant == "default":
         span_texts_labels_tuples = [
-            (document.text[span.slices[0][0] : span.slices[-1][1]], span.label)
+            (" ".join([document.text[start:end] for start, end in span.slices]), span.label)
             for span in document.spans
         ]
     elif dataset_variant == "merge_fragmented_spans":
