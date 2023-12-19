@@ -55,12 +55,55 @@ def document(dataset, dataset_variant) -> Union[BratDocument, BratDocumentWithMe
 
 
 def test_document(document):
-    assert document.text.startswith("Should students be taught to compete or to cooperate?")
-    assert document.text.endswith(
-        "Consequently, no matter from the view of individual development or the relationship "
-        "between competition and cooperation we can receive the same conclusion that a more "
-        "cooperative attitudes towards life is more profitable in one's success."
-    )
+    assert document is not None
+    assert document.id == 'essay001'
+
+    # check the annotation
+    if dataset_variant == "default":
+        span_texts_labels_tuples = [
+            (" ".join([document.text[start:end] for start, end in span.slices]), span.label)
+            for span in document.spans
+        ]
+    elif dataset_variant == "merge_fragmented_spans":
+        span_texts_labels_tuples = [(str(span), span.label) for span in document.spans]
+
+    # check spans
+    assert len(document.spans) == 11
+    assert span_texts_labels_tuples[0] == ('we should attach more importance to cooperation during primary education', 'MajorClaim')
+    assert span_texts_labels_tuples[1] == ("a more cooperative attitudes towards life is more profitable in one's success", 'MajorClaim')
+    assert span_texts_labels_tuples[2] == ('through cooperation, children can learn about interpersonal skills which are significant in the future life of all students', 'Claim')
+    assert span_texts_labels_tuples[3] == ('What we acquired from team work is not only how to achieve the same goal with others but more importantly, how to get along with others', 'Premise')
+    assert span_texts_labels_tuples[4] == ('During the process of cooperation, children can learn about how to listen to opinions of others, how to communicate with others, how to think comprehensively, and even how to compromise with other team members when conflicts occurred', 'Premise')
+    assert span_texts_labels_tuples[5] == ('All of these skills help them to get on well with other people and will benefit them for the whole life', 'Premise')
+    assert span_texts_labels_tuples[6] == ('competition makes the society more effective', 'Claim')
+    assert span_texts_labels_tuples[7] == ('the significance of competition is that how to become more excellence to gain the victory', 'Premise')
+    assert span_texts_labels_tuples[8] == ('when we consider about the question that how to win the game, we always find that we need the cooperation', 'Premise')
+    assert span_texts_labels_tuples[9] == ('Take Olympic games which is a form of competition for instance, it is hard to imagine how an athlete could win the game without the training of his or her coach, and the help of other professional staffs such as the people who take care of his diet, and those who are in charge of the medical care', 'Premise')
+    assert span_texts_labels_tuples[10] == ('without the cooperation, there would be no victory of competition', 'Claim')
+
+    # check relations
+    assert len(document.relations) == 6
+    document.relations[0].label == "supports"
+    document.relations[0].head == document.spans[3]
+    document.relations[0].tail == document.spans[2]
+    document.relations[1].label == "supports"
+    document.relations[1].head == document.spans[4]
+    document.relations[1].tail == document.spans[2]
+    document.relations[2].label == "supports"
+    document.relations[2].head == document.spans[5]
+    document.relations[2].tail == document.spans[2]
+    document.relations[3].label == "supports"
+    document.relations[3].head == document.spans[9]
+    document.relations[3].tail == document.spans[10]
+    document.relations[4].label == "supports"
+    document.relations[4].head == document.spans[8]
+    document.relations[4].tail == document.spans[10]
+    document.relations[5].label == "supports"
+    document.relations[5].head == document.spans[7]
+    document.relations[5].tail == document.spans[8]
+
+
+
 
 
 @pytest.fixture(scope="module")
