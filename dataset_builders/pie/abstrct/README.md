@@ -21,7 +21,10 @@ The language in the dataset is English (in the medical/healthcare domain).
 
 ### Dataset Variants
 
-See [PIE-Brat Data Variants](https://huggingface.co/datasets/pie/brat#data-variants).
+The `abstrct` dataset comes in a single version (`default`) with `BratDocumentWithMergedSpans` as document type. Note,
+that this in contrast to the base `brat` dataset, where the document type for the `default` variant is `BratDocument`.
+The reason is that the AbstRCT dataset has already been published with only single-fragment spans.
+Without any need to merge fragments, the document type `BratDocumentWithMergedSpans` is easier to handle for most of the task modules.
 
 ### Data Schema
 
@@ -34,13 +37,8 @@ from pie_datasets import load_dataset, builders
 
 # load default version
 datasets = load_dataset("pie/abstrct")
-doc = datasets["train"][0]
-assert isinstance(doc, builders.brat.BratDocument)
-
-# load version with merged span fragments
-dataset_merged_spans = load_dataset("pie/abstrct", name="merge_fragmented_spans")
-doc_merged_spans = dataset_merged_spans["train"][0]
-assert isinstance(doc_merged_spans, builders.brat.BratDocumentWithMergedSpans)
+doc = datasets["neoplasm_train"][0]
+assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
 ```
 
 ### Document Converters
