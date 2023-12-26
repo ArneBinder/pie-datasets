@@ -9,7 +9,10 @@ from pytorch_ie.documents import (
 )
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
-from dataset_builders.pie.aae2.aae2 import ArgumentAnnotatedEssaysV2
+from dataset_builders.pie.aae2.aae2 import (
+    ArgumentAnnotatedEssaysV2,
+    convert_aae2_claim_attributions_to_relations,
+)
 from pie_datasets import DatasetDict
 from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
 from tests.dataset_builders.common import (
@@ -21,13 +24,12 @@ from tests.dataset_builders.common import (
 disable_caching()
 
 DATASET_NAME = "aae2"
+BUILDER_CLASS = ArgumentAnnotatedEssaysV2
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 SPLIT_SIZES = {"test": 80, "train": 322}
 
 
-@pytest.fixture(
-    scope="module", params=[config.name for config in ArgumentAnnotatedEssaysV2.BUILDER_CONFIGS]
-)
+@pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
 def dataset_variant(request) -> str:
     return request.param
 
@@ -171,6 +173,19 @@ def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
     return converted_dataset
+
+
+@pytest.mark.parametrize("method", ["connect_first", "connect_all"])
+def test_convert_aae2_claim_attributions_to_relations_all(document, method):
+    if dataset_variant == "merge_fragmented_spans":
+        converted_doc = convert_aae2_claim_attributions_to_relations(document, method)
+        converted_binary_relations = converted_doc.binary_relations
+        if method == "connect_first":
+            assert len(converted_binary_relations) == 10
+        elif method == "connect_all":
+            assert len(converted_binary_relations) == 12
+        else:
+            raise ValueError(f"Unknown method: {method}")
 
 
 def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
@@ -634,7 +649,7 @@ def test_tokenized_documents_with_entities_relations_and_partitions_all(
 
 
 def test_document_converters(dataset_variant):
-    builder = ArgumentAnnotatedEssaysV2(config_name=dataset_variant)
+    builder = BUILDER_CLASS(config_name=dataset_variant)
     document_converters = builder.document_converters
 
     if dataset_variant == "default":
