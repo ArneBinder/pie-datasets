@@ -142,24 +142,24 @@ class ArgumentAnnotatedEssaysV2(BratBuilder):
     # we need to add None to the list of dataset variants to support the default dataset variant
     BASE_BUILDER_KWARGS_DICT = {
         dataset_variant: {"url": URL, "split_paths": SPLIT_PATHS}
-        for dataset_variant in ["default", "merge_fragmented_spans", None]
+        for dataset_variant in ["default", None]
     }
 
     BUILDER_CONFIGS = [
-        ArgumentAnnotatedEssaysV2Config(name="default", conversion_method="connect_first"),
         ArgumentAnnotatedEssaysV2Config(
-            name="merge_fragmented_spans",
+            name=BratBuilder.DEFAULT_CONFIG_NAME,
             merge_fragmented_spans=True,
             conversion_method="connect_first",
         ),
     ]
 
+    DOCUMENT_TYPES = {
+        BratBuilder.DEFAULT_CONFIG_NAME: BratDocumentWithMergedSpans,
+    }
+
     @property
     def document_converters(self) -> DocumentConvertersType:
-        if self.config.name == "default":
-            # we do not support any auto-conversion for the default BratDocument for now
-            return {}
-        elif self.config.name == "merge_fragmented_spans":
+        if self.config.name == "default" or None:
             return {
                 TextDocumentWithLabeledSpansAndBinaryRelations: Pipeline(
                     **get_common_pipeline_steps(conversion_method=self.config.conversion_method)
