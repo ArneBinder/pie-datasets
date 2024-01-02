@@ -21,9 +21,9 @@ The language in the dataset is English (persuasive essays).
 
 ### Dataset Variants
 
-See [PIE-Brat Dataset Variants](https://huggingface.co/datasets/pie/brat#dataset-variants).
+The `aae2` dataset comes in a single version (`default`) with `BratDocumentWithMergedSpans` as document type. Note, that this in contrast to the base brat dataset, where the document type for the `default` variant is `BratDocument`. The reason is that the AAE2 dataset has already been published with only single-fragment spans. Without any need to merge fragments, the document type `BratDocumentWithMergedSpans` is easier to handle for most of the task modules.
 
-## Data Schema
+### Data Schema
 
 See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema).
 
@@ -35,28 +35,23 @@ from pie_datasets import load_dataset, builders
 # load default version
 datasets = load_dataset("pie/aae2")
 doc = datasets["train"][0]
-assert isinstance(doc, builders.brat.BratDocument)
-
-# load version with merged span fragments
-dataset_merged_spans = load_dataset("pie/aae2", name="merge_fragmented_spans")
-doc_merged_spans = dataset_merged_spans["train"][0]
-assert isinstance(doc_merged_spans, builders.brat.BratDocumentWithMergedSpans)
+assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
 ```
 
-## Document Converters
+### Document Converters
 
 The dataset provides document converters for the following target document types:
 
 - `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
-  - `LabeledSpans`, converted from `BratDocument`'s `spans`
+  - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
     - labels: `MajorClaim`, `Claim`, `Premise`
-  - `BinaryRelations`, converted from `BratDocument`'s `relations`
+  - `BinaryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
     - labels: `support`, `attack`, `semantically_same`
     - there are two conversion methods that convert `Claim`'s attributes to their relations to `MajorClaim` (see [Relation Conversions](#relation-conversions) below, for more details)
 - `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
   - - `LabeledSpans`, as above
   - `BinaryRelations`, as above
-  - `LabeledPartitions`, partitioned `BratDocument`'s `text`, according to the paragraph, using regex.
+  - `LabeledPartitions`, partitioned `BratDocumentWithMergedSpans`'s `text`, according to the paragraph, using regex.
     - every partition is labeled as `labeled_partition`
 
 See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
@@ -105,7 +100,7 @@ See further description in Stab & Gurevych 2017, p.627 and the [annotation guide
 
 #### Relation Conversions
 
-When converting from `BratDocument(WithMergedSpan)` to `TextDocumentWithLabeledSpansAndBinaryRelations` and `TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`,
+When converting from `BratDocumentWithMergedSpan` to `TextDocumentWithLabeledSpansAndBinaryRelations` and `TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`,
 we apply a relation-conversion methods to build relations between `Claim`'s and `MajorClaim`'s, based on the annotated `Claim`'s attribution.
 
 The two conversion methods are:
@@ -196,7 +191,7 @@ Three non-native speakers; one of the three being an expert annotator.
 ### Social Impact of Dataset
 
 "\[Computational Argumentation\] have
-broad application potential in various areas such as legal decision support (Mochales-Palau and Moens 2009), information retrieval (Carstens and Toni 2015), policy making (Sardianos et al. 2015), and debating technologies (Levy et al. 2014; Rinott et al.
+broad application potential in various areas such as legal decision support (Mochales-Palau and Moens 2009), information retrieval (Carstens and Toni 2015), policy making (Sardianos et al. 2015), and debating technologies (Levy et al. 2014; Rinott et al.
 2015)." (p. 619)
 
 ### Discussion of Biases
