@@ -3,6 +3,7 @@ from typing import List
 import pytest
 from datasets import disable_caching
 from pie_modules.document.processing import tokenize_document
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import Document
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
@@ -15,7 +16,7 @@ from dataset_builders.pie.aae2.aae2 import (
     convert_aae2_claim_attributions_to_relations,
 )
 from pie_datasets import DatasetDict
-from pie_datasets.builders.brat import BratDocumentWithMergedSpans
+from pie_datasets.builders.brat import BratAttribute, BratDocumentWithMergedSpans
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
     TestTokenDocumentWithLabeledSpansAndBinaryRelations,
@@ -158,16 +159,50 @@ def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
 
 
 @pytest.mark.parametrize("method", ["connect_first", "connect_all"])
-def test_convert_aae2_claim_attributions_to_relations_all(document, method):
-    if dataset_variant == "default" or None:
-        converted_doc = convert_aae2_claim_attributions_to_relations(document, method)
-        converted_binary_relations = converted_doc.binary_relations
-        if method == "connect_first":
-            assert len(converted_binary_relations) == 10
-        elif method == "connect_all":
-            assert len(converted_binary_relations) == 12
-        else:
-            raise ValueError(f"Unknown method: {method}")
+def test_convert_aae2_claim_attributions_to_relations(method):
+    # create sample document for testing
+    sample_doc = BratDocumentWithMergedSpans(
+        text="This is an example claim. This is the first major claim. "
+             "This is the second major claim."
+    )
+    claim = LabeledSpan(start=0, end=25, label="Claim")
+    first_majorclaim = LabeledSpan(start=26, end=56, label="MajorClaim")
+    second_majorclaim = LabeledSpan(start=57, end=88, label="MajorClaim")
+    sample_doc.spans.extend([claim, first_majorclaim, second_majorclaim])
+    # sanity check (works only after labeled spans were added to the document)
+    assert str(claim) == "This is an example claim."
+    assert str(first_majorclaim) == "This is the first major claim."
+    assert str(second_majorclaim) == "This is the second major claim."
+    # create claim attribute
+    claim_attribute = BratAttribute(annotation=claim, label="Stance", value="For")
+    sample_doc.span_attributes.append(claim_attribute)
+
+    # check results
+    converted_doc = convert_aae2_claim_attributions_to_relations(sample_doc, method)
+    converted_binary_relations_tuples = [
+        (str(relation.head), relation.label, str(relation.tail))
+        for relation in converted_doc.binary_relations
+    ]
+    assert len(converted_binary_relations_tuples) == 2
+    assert converted_binary_relations_tuples[0] == (
+        "This is an example claim.",
+        "supports",
+        "This is the first major claim.",
+    )
+    if method == "connect_first":
+        assert converted_binary_relations_tuples[1] == (
+            "This is the second major claim.",
+            "semantically_same",
+            "This is the first major claim.",
+        )
+    elif method == "connect_all":
+        assert converted_binary_relations_tuples[1] == (
+            "This is an example claim.",
+            "supports",
+            "This is the second major claim.",
+        )
+    else:
+        raise ValueError(f"Unknown method: {method}")
 
 
 def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
