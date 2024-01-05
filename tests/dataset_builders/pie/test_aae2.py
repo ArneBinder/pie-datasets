@@ -163,7 +163,7 @@ def test_convert_aae2_claim_attributions_to_relations(method):
     # create sample document for testing
     sample_doc = BratDocumentWithMergedSpans(
         text="This is an example claim. This is the first major claim. "
-             "This is the second major claim."
+        "This is the second major claim."
     )
     claim = LabeledSpan(start=0, end=25, label="Claim")
     first_majorclaim = LabeledSpan(start=26, end=56, label="MajorClaim")
