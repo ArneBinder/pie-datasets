@@ -332,7 +332,7 @@ def test_dataset_of_text_documents_with_labeled_spans_binary_relations_and_label
 
     partitions = doc_with_partitions.labeled_partitions
     assert len(partitions) == 5
-    assert [partition.label == "partition" for partition in partitions]
+    assert all([partition.label == "paragraph" for partition in partitions])
     assert str(partitions[0]) == "Should students be taught to compete or to cooperate?"
     assert (
         str(partitions[1])

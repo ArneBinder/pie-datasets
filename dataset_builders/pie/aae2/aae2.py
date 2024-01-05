@@ -171,6 +171,7 @@ class ArgumentAnnotatedEssaysV2(BratBuilder):
                     ),
                     add_partitions=RegexPartitioner(
                         partition_layer_name="labeled_partitions",
+                        default_partition_label="paragraph",
                         pattern="\n",
                         strip_whitespace=True,
                         verbose=False,

@@ -38,25 +38,6 @@ doc = datasets["train"][0]
 assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
 ```
 
-### Document Converters
-
-The dataset provides document converters for the following target document types:
-
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
-  - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
-    - labels: `MajorClaim`, `Claim`, `Premise`
-  - `BinaryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
-    - labels: `support`, `attack`, `semantically_same`
-    - there are two conversion methods that convert `Claim`'s attributes to their relations to `MajorClaim` (see [Relation Conversions](#relation-conversions) below, for more details)
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
-  - - `LabeledSpans`, as above
-  - `BinaryRelations`, as above
-  - `LabeledPartitions`, partitioned `BratDocumentWithMergedSpans`'s `text`, according to the paragraph, using regex.
-    - every partition is labeled as `labeled_partition`
-
-See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
-definitions.
-
 ### Data Splits
 
 | Statistics                                                       |                      Train |                     Test |
@@ -98,18 +79,37 @@ See further statistics in Stab & Gurevych (2017), p. 650, Table A.1.
 
 See further description in Stab & Gurevych 2017, p.627 and the [annotation guideline](https://github.com/ArneBinder/pie-datasets/blob/db94035602610cefca2b1678aa2fe4455c96155d/data/datasets/ArgumentAnnotatedEssays-2.0/guideline.pdf).
 
-#### Relation Conversions
+### Document Converters
+
+The dataset provides document converters for the following target document types:
+
+- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+  - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
+    - labels: `MajorClaim`, `Claim`, `Premise`
+  - `BinaryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
+    - labels: `support`, `attack`, `semantically_same`
+    - there are two conversion methods that convert `Claim`'s attributes to their relations to `MajorClaim` (see the label-count changes after this relation conversion [here below](#label-counts-after-document-converter)):
+      - `connect_first` (default setting):
+        - build a `Support` or `Attack` relation from each `Claim` to the first `MajorClaim`, and
+        - build a `semantically_same` relation between following `MajorClaim` to the first `MajorClaim`
+      - `connect_all`
+        - build a `Support` or `Attack` relation from each `Claim` to every `MajorClaim`
+        - no relations between each `MajorClaim`
+- `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
+  - - `LabeledSpans`, as above
+  - `BinaryRelations`, as above
+  - `LabeledPartitions`, partitioned `BratDocumentWithMergedSpans`'s `text`, according to the paragraph, using regex.
+    - every partition is labeled as `paragraph`
+
+See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
+definitions.
+
+#### Label Counts after Document Converter
 
 When converting from `BratDocumentWithMergedSpan` to `TextDocumentWithLabeledSpansAndBinaryRelations` and `TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`,
-we apply a relation-conversion methods to build relations between `Claim`'s and `MajorClaim`'s, based on the annotated `Claim`'s attribution.
-
-The two conversion methods are:
+we apply a relation-conversion methods that change the number of label count for the relations, as follows:
 
 1. `connect_first` (default):
-   - build a `Support` or `Attack` relation from each `Claim` to the first `MajorClaim`, and
-   - build a `semantically_same` relation between following `MajorClaim` to the first `MajorClaim`
-
-The relation counts for this conversion method is as follows:
 
 | Relations                  | Count | Percentage |
 | -------------------------- | ----: | ---------: |
@@ -118,10 +118,6 @@ The relation counts for this conversion method is as follows:
 | other: `semantically_same` |   349 |      6.2 % |
 
 2. `connect_all`
-   - build a `Support` or `Attack` relation from each `Claim` to every `MajorClaim`
-   - no relations between each `MajorClaim`
-
-The relation counts for this conversion method is as follows:
 
 | Relations          | Count | Percentage |
 | ------------------ | ----: | ---------: |
