@@ -565,7 +565,10 @@ def tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitio
         partition_layer="labeled_partitions",
         return_overflowing_tokens=True,
         result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-        strict_span_conversion=True,
+        # We set strict_span_conversion to False
+        # because we added relations between Claims and MajorClaims from different paragraphs
+        # and those relations are lost in annotations
+        strict_span_conversion=False,
         verbose=True,
     )
     return tokenized_docs
@@ -619,7 +622,10 @@ def test_tokenized_documents_with_entities_relations_and_partitions_all(
                 partition_layer="labeled_partitions",
                 return_overflowing_tokens=True,
                 result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-                strict_span_conversion=True,
+                # We set strict_span_conversion to False
+                # because we added relations between Claims and MajorClaims from different paragraphs
+                # and those relations are lost in annotations
+                strict_span_conversion=False,
                 verbose=True,
             )
             # we just ensure that we get at least one tokenized document
