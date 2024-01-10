@@ -142,7 +142,7 @@ class ArgumentAnnotatedEssaysV2(BratBuilder):
     # we need to add None to the list of dataset variants to support the default dataset variant
     BASE_BUILDER_KWARGS_DICT = {
         dataset_variant: {"url": URL, "split_paths": SPLIT_PATHS}
-        for dataset_variant in ["default", None]
+        for dataset_variant in [BratBuilder.DEFAULT_CONFIG_NAME, None]
     }
 
     BUILDER_CONFIGS = [
