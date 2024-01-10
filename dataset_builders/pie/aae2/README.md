@@ -94,7 +94,7 @@ The dataset provides document converters for the following target document types
       - `connect_all`
         - build a `supports` or `attacks` relation from each `Claim` to every `MajorClaim`
         - no relations between each `MajorClaim`
-    - labels: `supports`, `attack`, and `semantically_same` if `connect_first`
+    - labels: `supports`, `attacks`, and `semantically_same` if `connect_first`
 - `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions` with layers:
   - `labeled_spans`, as above
   - `binary_relations`, as above
