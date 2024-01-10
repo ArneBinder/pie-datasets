@@ -6,7 +6,7 @@ Therefore, the `aae2` dataset as described here follows the data structure from 
 
 ### Dataset Summary
 
-Argument Annotated Essays Corpus (AAEC) ([Stab and Gurevych, 2017](https://aclanthology.org/J17-3005.pdf)) contains student essays. A stance for a controversial theme is expressed by a `MajorClaim` component as well as `Claim` components, and `Premise` components justify or refute the claims. `Attack` and `Support` labels are defined as relations. The span covers a statement, *which can stand in isolation as a complete sentence*, according to the AAEC annotation guidelines. All components are annotated with minimum boundaries of a clause or sentence excluding so-called "shell" language such as *On the other hand* and *Hence*. (Morio et al., 2022, p. 642)
+Argument Annotated Essays Corpus (AAEC) ([Stab and Gurevych, 2017](https://aclanthology.org/J17-3005.pdf)) contains student essays. A stance for a controversial theme is expressed by a `MajorClaim` component as well as `Claim` components, and `Premise` components justify or refute the claims. `attacks` and `supports` labels are defined as relations. The span covers a statement, *which can stand in isolation as a complete sentence*, according to the AAEC annotation guidelines. All components are annotated with minimum boundaries of a clause or sentence excluding so-called "shell" language such as *On the other hand* and *Hence*. (Morio et al., 2022, p. 642)
 
 There are two types of data: essay-level and paragraph-level ([Eger et al., 2017](https://aclanthology.org/P17-1002/)). In other words, a tree structure is complete within each paragraph, and there was no `Premise` that link to another `Premise` or `Claim` in a different paragraph, as seen in **Example** below. Therefore, it is possible to train a model on a paragraph-level which is also less memory-exhaustive (Eger et al., 2017, p. 16).
 
@@ -44,7 +44,7 @@ assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
 | ---------------------------------------------------------------- | -------------------------: | -----------------------: |
 | No. of document                                                  |                        322 |                       80 |
 | Components     <br/>- `MajorClaim`<br/>- `Claim`<br/>- `Premise` | <br/>598<br/>1202<br/>3023 | <br/>153<br/>304<br/>809 |
-| Relations\*<br/>- `Support`<br/>- `Attack`                       |          <br/>3820<br/>405 |         <br/>1021<br/>92 |
+| Relations\*<br/>- `supports`<br/>- `attacks`                     |          <br/>3820<br/>405 |         <br/>1021<br/>92 |
 
 \* included all relations between claims and premises and all claim attributions.
 
@@ -60,18 +60,18 @@ See further statistics in Stab & Gurevych (2017), p. 650, Table A.1.
 | `Claim`      |  1506 |     24.7 % |
 | `Premise`    |  3832 |     62.9 % |
 
-- `MajorClaim` is the root node of the argumentation structure and represents the author’s standpoint on the topic. Essay bodies either support or attack the author’s standpoint expressed in the major claim.
-- `Claim` constitutes the central component of each argument. Each one has at least one premise and take the values "for" or "against"
+- `MajorClaim` is the root node of the argumentation structure and represents the author’s standpoint on the topic. Essay bodies either support or attack the author’s standpoint expressed in the major claim. The major claim can be mentioned multiple times in a single document.
+- `Claim` constitutes the central component of each argument. Each one has at least one premise and takes stance attribute values "for" or "against" with regarding the major claim.
 - `Premise` is the reasons of the argument; either linked to claim or another premise.
 
-**Note that** relations between `MajorClaim` and  `Claim` were not annotated; however, each claim is annotated with `Attribute`: `for` or `against` - which indicates the relation between itself and `MajorClaim`. In addition, when two non-related `claim` 's appear in one paragraph, there is also no relations to one another.
+**Note that** relations between `MajorClaim` and  `Claim` were not annotated; however, each claim is annotated with an `Attribute` annotation with value `for` or `against` - which indicates the relation between itself and `MajorClaim`. In addition, when two non-related `Claim` 's appear in one paragraph, there is also no relations to one another.
 
 #### Relations
 
-| Relations          | Count | Percentage |
-| ------------------ | ----: | ---------: |
-| support: `Support` |  3613 |     94.3 % |
-| attack: `Attack`   |   219 |      5.7 % |
+| Relations           | Count | Percentage |
+| ------------------- | ----: | ---------: |
+| support: `supports` |  3613 |     94.3 % |
+| attack: `attacks`   |   219 |      5.7 % |
 
 - "Each premise `p` has one **outgoing relation** (i.e., there is a relation that has p as source component) and none or several **incoming relations** (i.e., there can be a relation with `p` as target component)."
 - "A `Claim` can exhibit several **incoming relations** but no **outgoing relation**." (S&G, 2017, p. 68)
@@ -83,46 +83,46 @@ See further description in Stab & Gurevych 2017, p.627 and the [annotation guide
 
 The dataset provides document converters for the following target document types:
 
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
-  - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
+- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations` with layers:
+  - `labeled_spans`: `LabeledSpan` annotations, converted from `BratDocumentWithMergedSpans`'s `spans`
     - labels: `MajorClaim`, `Claim`, `Premise`
-  - `BinaryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
-    - labels: `support`, `attack`, `semantically_same`
-    - there are two conversion methods that convert `Claim`'s attributes to their relations to `MajorClaim` (see the label-count changes after this relation conversion [here below](#label-counts-after-document-converter)):
+  - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocumentWithMergedSpans`'s `relations`
+    - there are two conversion methods that convert `Claim` attributes to their relations to `MajorClaim` (also see the label-count changes after this relation conversion [here below](#label-counts-after-document-converter)):
       - `connect_first` (default setting):
-        - build a `Support` or `Attack` relation from each `Claim` to the first `MajorClaim`, and
+        - build a `supports` or `attacks` relation from each `Claim` to the first `MajorClaim` depending on the `Claim`'s attribute (`for` or `against`), and
         - build a `semantically_same` relation between following `MajorClaim` to the first `MajorClaim`
       - `connect_all`
-        - build a `Support` or `Attack` relation from each `Claim` to every `MajorClaim`
+        - build a `supports` or `attacks` relation from each `Claim` to every `MajorClaim`
         - no relations between each `MajorClaim`
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
-  - - `LabeledSpans`, as above
-  - `BinaryRelations`, as above
-  - `LabeledPartitions`, partitioned `BratDocumentWithMergedSpans`'s `text`, according to the paragraph, using regex.
+    - labels: `supports`, `attack`, and `semantically_same` if `connect_first`
+- `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions` with layers:
+  - `labeled_spans`, as above
+  - `binary_relations`, as above
+  - `labeled_partitions`, `LabeledSpan` annotations, created from splitting `BratDocumentWithMergedSpans`'s `text` at new lines (`\n`).
     - every partition is labeled as `paragraph`
 
 See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
 definitions.
 
-#### Label Counts after Document Converter
+#### Label Statistics after Document Conversion
 
 When converting from `BratDocumentWithMergedSpan` to `TextDocumentWithLabeledSpansAndBinaryRelations` and `TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`,
-we apply a relation-conversion methods that change the number of label count for the relations, as follows:
+we apply a relation-conversion method (see above) that changes the label counts for the relations, as follows:
 
 1. `connect_first` (default):
 
 | Relations                  | Count | Percentage |
 | -------------------------- | ----: | ---------: |
-| support: `Support`         |  4841 |     85.1 % |
-| attack: `Attack`           |   497 |      8.7 % |
+| support: `supports`        |  4841 |     85.1 % |
+| attack: `attacks`          |   497 |      8.7 % |
 | other: `semantically_same` |   349 |      6.2 % |
 
 2. `connect_all`
 
-| Relations          | Count | Percentage |
-| ------------------ | ----: | ---------: |
-| support: `Support` |  5958 |     89.3 % |
-| attack: `Attack`   |   715 |     10.7 % |
+| Relations           | Count | Percentage |
+| ------------------- | ----: | ---------: |
+| support: `supports` |  5958 |     89.3 % |
+| attack: `attacks`   |   715 |     10.7 % |
 
 ## Dataset Creation
 
