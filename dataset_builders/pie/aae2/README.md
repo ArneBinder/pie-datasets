@@ -6,9 +6,9 @@ Therefore, the `aae2` dataset as described here follows the data structure from 
 
 ### Dataset Summary
 
-Argument Annotated Essays Corpus (AAEC) ([Stab and Gurevych, 2017](https://aclanthology.org/J17-3005.pdf)) contains student essays. A stance for a controversial theme is expressed by a `MajorClaim` component as well as `Claim` components, and `Premise` components justify or refute the claims. `attacks` and `supports` labels are defined as relations. The span covers a statement, *which can stand in isolation as a complete sentence*, according to the AAEC annotation guidelines. All components are annotated with minimum boundaries of a clause or sentence excluding so-called "shell" language such as *On the other hand* and *Hence*. (Morio et al., 2022, p. 642)
+Argument Annotated Essays Corpus (AAEC) ([Stab and Gurevych, 2017](https://aclanthology.org/J17-3005.pdf)) contains student essays. A stance for a controversial theme is expressed by a major claim component as well as claim components, and premise components justify or refute the claims. Attack and support labels are defined as relations. The span covers a statement, *which can stand in isolation as a complete sentence*, according to the AAEC annotation guidelines. All components are annotated with minimum boundaries of a clause or sentence excluding so-called "shell" language such as *On the other hand* and *Hence*. (Morio et al., 2022, p. 642)
 
-There are two types of data: essay-level and paragraph-level ([Eger et al., 2017](https://aclanthology.org/P17-1002/)). In other words, a tree structure is complete within each paragraph, and there was no `Premise` that link to another `Premise` or `Claim` in a different paragraph, as seen in **Example** below. Therefore, it is possible to train a model on a paragraph-level which is also less memory-exhaustive (Eger et al., 2017, p. 16).
+There is no premise that links to another premise or claim in a different paragraph. That means, an argumentation tree structure is complete within each paragraph. Therefore, it is possible to train a model on the full documents or just at the paragraph-level which is usually less memory-exhaustive (Eger et al., 2017, p. 16).
 
 ### Supported Tasks and Leaderboards
 
