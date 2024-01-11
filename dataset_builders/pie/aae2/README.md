@@ -8,7 +8,8 @@ Therefore, the `aae2` dataset as described here follows the data structure from 
 
 Argument Annotated Essays Corpus (AAEC) ([Stab and Gurevych, 2017](https://aclanthology.org/J17-3005.pdf)) contains student essays. A stance for a controversial theme is expressed by a major claim component as well as claim components, and premise components justify or refute the claims. Attack and support labels are defined as relations. The span covers a statement, *which can stand in isolation as a complete sentence*, according to the AAEC annotation guidelines. All components are annotated with minimum boundaries of a clause or sentence excluding so-called "shell" language such as *On the other hand* and *Hence*. (Morio et al., 2022, p. 642)
 
-There is no premise that links to another premise or claim in a different paragraph. That means, an argumentation tree structure is complete within each paragraph. Therefore, it is possible to train a model on the full documents or just at the paragraph-level which is usually less memory-exhaustive (Eger et al., 2017, p. 16).
+In the original dataset, there is no premise that links to another premise or claim in a different paragraph. That means, an argumentation tree structure is complete within each paragraph. Therefore, it is possible to train a model on the full documents or just at the paragraph-level which is usually less memory-exhaustive (Eger et al., 2017, p. 16).
+However, through our `DOCUMENT_CONVERTERS`, we build links between claims, creating a graph structure throughout an entire essay (see [Document Converters](#document-converters)).
 
 ### Supported Tasks and Leaderboards
 
@@ -64,8 +65,6 @@ See further statistics in Stab & Gurevych (2017), p. 650, Table A.1.
 - `Claim` constitutes the central component of each argument. Each one has at least one premise and takes stance attribute values "for" or "against" with regarding the major claim.
 - `Premise` is the reasons of the argument; either linked to claim or another premise.
 
-**Note that** relations between `MajorClaim` and  `Claim` were not annotated; however, each claim is annotated with an `Attribute` annotation with value `for` or `against` - which indicates the relation between itself and `MajorClaim`. In addition, when two non-related `Claim` 's appear in one paragraph, there is also no relations to one another.
-
 #### Relations
 
 | Relations           | Count | Percentage |
@@ -76,6 +75,10 @@ See further statistics in Stab & Gurevych (2017), p. 650, Table A.1.
 - "Each premise `p` has one **outgoing relation** (i.e., there is a relation that has p as source component) and none or several **incoming relations** (i.e., there can be a relation with `p` as target component)."
 - "A `Claim` can exhibit several **incoming relations** but no **outgoing relation**." (S&G, 2017, p. 68)
 - "The relations from the claims of the arguments to the major claim are dotted since we will not explicitly annotated them. The relation of each argument to the major claim is indicated by a stance attribute of each claim. This attribute can either be for or against as illustrated in figure 1.4." (Stab & Gurevych, *Guidelines for Annotating Argumentation Structures in Persuasive Essays*, 2015, p. 5)
+
+**Note that** relations between `MajorClaim` and  `Claim` were not annotated; however, each claim is annotated with an `Attribute` annotation with value `for` or `against` - which indicates the relation between itself and `MajorClaim`. In addition, when two non-related `Claim` 's appear in one paragraph, there is also no relations to one another. An example of a document is shown here below:
+
+![Example](img/sg17f2.png)
 
 See further description in Stab & Gurevych 2017, p.627 and the [annotation guideline](https://github.com/ArneBinder/pie-datasets/blob/db94035602610cefca2b1678aa2fe4455c96155d/data/datasets/ArgumentAnnotatedEssays-2.0/guideline.pdf).
 
