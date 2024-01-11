@@ -41,19 +41,6 @@ doc = datasets["neoplasm_train"][0]
 assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
 ```
 
-### Document Converters
-
-The dataset provides document converters for the following target document types:
-
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
-  - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
-    - labels: `MajorClaim`, `Claim`, `Premise`
-  - `BinraryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
-    - labels:  `Support`, `Partial-Attack`, `Attack`
-
-See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
-definitions.
-
 ### Data Splits
 
 | Diseease-based Split                                      |              `neoplasm` |           `glaucoma` |              `mixed` |
@@ -65,7 +52,7 @@ definitions.
 - `mixed_test` contains 20 abstracts on the following diseases: glaucoma, neoplasm, diabetes, hypertension, hepatitis.
 - 31 out of 40 abstracts in `mixed_test` overlap with abstracts in `neoplasm_test` and `glaucoma_test`.
 
-### Label Descriptions
+### Label Descriptions and Statistics
 
 In this section, we describe labels according to [Mayer et al. (2020)](https://ebooks.iospress.nl/publication/55129), as well as our label counts on 669 abstracts.
 
@@ -104,6 +91,23 @@ Morio et al. ([2022](https://aclanthology.org/2022.tacl-1.37.pdf); p. 642, Table
 - There might be more than one **outgoing** and/or **incoming relation** . In rare case, there is no relation to another component at all.
 
 (Mayer et al. 2020, p.2110)
+
+#### Examples
+
+![Examples](img/abstr-sam.png)
+
+### Document Converters
+
+The dataset provides document converters for the following target document types:
+
+- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+  - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
+    - labels: `MajorClaim`, `Claim`, `Premise`
+  - `BinraryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
+    - labels:  `Support`, `Partial-Attack`, `Attack`
+
+See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
+definitions.
 
 ## Dataset Creation
 
