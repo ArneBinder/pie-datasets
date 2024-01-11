@@ -51,7 +51,7 @@ assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
 
 See further statistics in Stab & Gurevych (2017), p. 650, Table A.1.
 
-### Label Descriptions
+### Label Descriptions and Statistics
 
 #### Components
 
@@ -76,11 +76,13 @@ See further statistics in Stab & Gurevych (2017), p. 650, Table A.1.
 - "A `Claim` can exhibit several **incoming relations** but no **outgoing relation**." (S&G, 2017, p. 68)
 - "The relations from the claims of the arguments to the major claim are dotted since we will not explicitly annotated them. The relation of each argument to the major claim is indicated by a stance attribute of each claim. This attribute can either be for or against as illustrated in figure 1.4." (Stab & Gurevych, *Guidelines for Annotating Argumentation Structures in Persuasive Essays*, 2015, p. 5)
 
-**Note that** relations between `MajorClaim` and  `Claim` were not annotated; however, each claim is annotated with an `Attribute` annotation with value `for` or `against` - which indicates the relation between itself and `MajorClaim`. In addition, when two non-related `Claim` 's appear in one paragraph, there is also no relations to one another. An example of a document is shown here below:
+See further description in Stab & Gurevych 2017, p.627 and the [annotation guideline](https://github.com/ArneBinder/pie-datasets/blob/db94035602610cefca2b1678aa2fe4455c96155d/data/datasets/ArgumentAnnotatedEssays-2.0/guideline.pdf).
+
+**Note that** relations between `MajorClaim` and  `Claim` were not annotated; however, each claim is annotated with an `Attribute` annotation with value `for` or `against` - which indicates the relation between itself and `MajorClaim`. In addition, when two non-related `Claim` 's appear in one paragraph, there is also no relations to one another. An example of a document is shown here below.
+
+#### Example
 
 ![Example](img/sg17f2.png)
-
-See further description in Stab & Gurevych 2017, p.627 and the [annotation guideline](https://github.com/ArneBinder/pie-datasets/blob/db94035602610cefca2b1678aa2fe4455c96155d/data/datasets/ArgumentAnnotatedEssays-2.0/guideline.pdf).
 
 ### Document Converters
 
