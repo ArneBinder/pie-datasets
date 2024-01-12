@@ -23,6 +23,11 @@ See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/a
 The dataset provides document converters for the following target document types:
 
 - `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+  - `LabeledSpans`, converted from `SciDTBArgminDocument`'s `units`
+    - labels: `proposal`, `assertion`, `result`, `observation`, `means`, `description`
+    - tuples of `tokens` are transformed to list, and join with one whitespace to create `Document`'s `text`
+  - `BinraryRelations`, converted from `SciDTBArgminDocument`'s `relations`
+    - labels: `support`, `attack`, `additional`, `detail`, `sequence`
 
 See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
 definitions.
