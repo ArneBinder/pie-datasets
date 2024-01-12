@@ -62,7 +62,7 @@ The language in the dataset is English (AmE).
 
 ### Label Description and Statistics
 
-In this section, we report our own statistics of the corpus. However, note that there is yet discrepency, comparing to the author's report (see Park & Cardie, 2017, p. 1627, Table 2), and in Morio et al. (2022), who also utilized this corpus.
+In this section, we report our own statistics of the corpus. However, note that there are yet discrepancies, comparing to the author's report (see Park & Cardie, 2017, p. 1627, Table 2), and in Morio et al. (2022), who also utilized this corpus.
 
 #### Components
 
