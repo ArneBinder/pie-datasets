@@ -62,11 +62,13 @@ The language in the dataset is English (AmE).
 
 ### Label Description and Statistics
 
+In this section, we report our own statistics of the corpus. However, note that there is yet discrepency, comparing to the author's report (see Park & Cardie, 2017, p. 1627, Table 2), and in Morio et al. (2022), who also utilized this corpus.
+
 #### Components
 
-| Components                                                          |                               train |                              test |
-| ------------------------------------------------------------------- | ----------------------------------: | --------------------------------: |
-| `Fact`<br/> `Testimony`<br/> `Reference`<br/> `Value`<br/> `Policy` | 654<br/>873<br/>31<br/>1686<br/>662 | 132<br/>244<br/>1<br/>496<br/>153 |
+| Components                                                          |                               train |                              test |                                total |
+| ------------------------------------------------------------------- | ----------------------------------: | --------------------------------: | -----------------------------------: |
+| `Fact`<br/> `Testimony`<br/> `Reference`<br/> `Value`<br/> `Policy` | 654<br/>873<br/>31<br/>1686<br/>662 | 132<br/>244<br/>1<br/>496<br/>153 | 786<br/>1117<br/>32<br/>2182<br/>815 |
 
 - `Value`: "judgments without making specific claims about what should be done"
 - `Fact`: "expressing or dealing with facts or conditions as perceived without distortion by personal feelings, prejudices, or interpretations"
@@ -78,14 +80,18 @@ The language in the dataset is English (AmE).
 
 #### Relations
 
-| Relations                |       train |       test |
-| :----------------------- | ----------: | ---------: |
-| `Reason`<br/> `Evidence` | 1055<br/>47 | 298<br/>26 |
+| Relations                |       train |       test |       total |
+| :----------------------- | ----------: | ---------: | ----------: |
+| `Reason`<br/> `Evidence` | 1055<br/>47 | 298<br/>26 | 1353<br/>73 |
 
 - `Reason`: "X (source) is `reason` for a proposition Y (target; `policy`, `value`, `fact`, `testimony`) if X provides rationale for Y"
 - `Evidence`: "X (`testimony`, `fact`, `reference`) is `evidence` for a proposition Y if X proves whether proposition Y is true or not"
 
 (Park & Cardie, 2018, pp. 1625-1626)
+
+#### Examples
+
+![Examples](img/cdcp-sam.png)
 
 ## Dataset Creation
 
