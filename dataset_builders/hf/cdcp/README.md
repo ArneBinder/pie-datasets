@@ -66,9 +66,9 @@ In this section, we report our own statistics of the corpus. However, there are 
 
 #### Components
 
-| Components                                                          |                               train |                              test |                                total |
-| ------------------------------------------------------------------- | ----------------------------------: | --------------------------------: | -----------------------------------: |
-| `fact`<br/> `testimony`<br/> `reference`<br/> `value`<br/> `policy` | 654<br/>873<br/>31<br/>1686<br/>662 | 132<br/>244<br/>1<br/>496<br/>153 | 786<br/>1117<br/>32<br/>2182<br/>815 |
+| Components                                                          |                               train |                              test |                                total |                                   percentage |
+| ------------------------------------------------------------------- | ----------------------------------: | --------------------------------: | -----------------------------------: | -------------------------------------------: |
+| `fact`<br/> `testimony`<br/> `reference`<br/> `value`<br/> `policy` | 654<br/>873<br/>31<br/>1686<br/>662 | 132<br/>244<br/>1<br/>496<br/>153 | 786<br/>1117<br/>32<br/>2182<br/>815 | 15.9%<br/>22.6%<br/>0.6%<br/>44.2%<br/>16.5% |
 
 - `value`: "judgments without making specific claims about what should be done"
 - `fact`: "expressing or dealing with facts or conditions as perceived without distortion by personal feelings, prejudices, or interpretations"
@@ -80,9 +80,9 @@ In this section, we report our own statistics of the corpus. However, there are 
 
 #### Relations
 
-| Relations                |       train |       test |       total |
-| :----------------------- | ----------: | ---------: | ----------: |
-| `reason`<br/> `evidence` | 1055<br/>47 | 298<br/>26 | 1353<br/>73 |
+| Relations                |       train |       test |       total |     percentage |
+| :----------------------- | ----------: | ---------: | ----------: | -------------: |
+| `reason`<br/> `evidence` | 1055<br/>47 | 298<br/>26 | 1353<br/>73 | 94.9%<br/>5.1% |
 
 - `reason`: "X (source) is `reason` for a proposition Y (target; `policy`, `value`, `fact`, `testimony`) if X provides rationale for Y"
 - `evidence`: "X (`testimony`, `fact`, `reference`) is `evidence` for a proposition Y if X proves whether proposition Y is true or not"
