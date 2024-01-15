@@ -9,7 +9,7 @@ size_categories:
 
 ### Dataset Summary
 
-CDCP (a.k.a. *Cornell eRulemaking Corpus*; [Park and Cardie, 2018](https://aclanthology.org/L18-1257.pdf)) consists of 731 user comments from an eRulemaking platform in the English language. There are five types of components (`Fact`, `Testimony`, `Reference`, `Value`, and `Policy`) and two types of supporting relations (`Reason` and `Evidence`) are annotated on the basis of the study by Park et al. (2015). The resulting dataset contains 4931 elementary unit and 1221 support relation annotations. (pp. 1623-1624)
+CDCP (a.k.a. *Cornell eRulemaking Corpus*; [Park and Cardie, 2018](https://aclanthology.org/L18-1257.pdf)) consists of 731 user comments from an eRulemaking platform in the English language. There are five types of components (`fact`, `testimony`, `reference`, `value`, and `policy`) and two types of supporting relations (`reason` and `evidence`) are annotated on the basis of the study by Park et al. (2015). The resulting dataset contains 4931 elementary unit and 1221 support relation annotations (pp. 1623-1624). The spans are segmented into elementary units with a proposition consisting of a sentence or a clause, as well as a few non-argumentative units (Morio et al., 2022, p. 642).
 
 ### Supported Tasks and Leaderboards
 
@@ -62,19 +62,19 @@ The language in the dataset is English (AmE).
 
 ### Label Description and Statistics
 
-In this section, we report our own statistics of the corpus. However, note that there are yet discrepancies, comparing to the author's report (see Park & Cardie, 2017, p. 1627, Table 2), and in Morio et al. (2022), who also utilized this corpus.
+In this section, we report our own statistics of the corpus. However, there are yet discrepancies between our report, the author's report (see Park & Cardie, 2017, p. 1627, Table 2), and Morio et al. (2022)'s, who also utilized this corpus.
 
 #### Components
 
 | Components                                                          |                               train |                              test |                                total |
 | ------------------------------------------------------------------- | ----------------------------------: | --------------------------------: | -----------------------------------: |
-| `Fact`<br/> `Testimony`<br/> `Reference`<br/> `Value`<br/> `Policy` | 654<br/>873<br/>31<br/>1686<br/>662 | 132<br/>244<br/>1<br/>496<br/>153 | 786<br/>1117<br/>32<br/>2182<br/>815 |
+| `fact`<br/> `testimony`<br/> `reference`<br/> `value`<br/> `policy` | 654<br/>873<br/>31<br/>1686<br/>662 | 132<br/>244<br/>1<br/>496<br/>153 | 786<br/>1117<br/>32<br/>2182<br/>815 |
 
-- `Value`: "judgments without making specific claims about what should be done"
-- `Fact`: "expressing or dealing with facts or conditions as perceived without distortion by personal feelings, prejudices, or interpretations"
-- `Testimony`:  "an objective proposition about the author’s personal state or experience"; "often practically impossible to provide objective evidence in online commenting setting"
-- `Policy`: "a specific course of action to be taken"; "typically contains modal verbs like “should” and “ought to.”"
-- `Reference`: "a source of objective evidence"
+- `value`: "judgments without making specific claims about what should be done"
+- `fact`: "expressing or dealing with facts or conditions as perceived without distortion by personal feelings, prejudices, or interpretations"
+- `testimony`:  "an objective proposition about the author’s personal state or experience"; "often practically impossible to provide objective evidence in online commenting setting"
+- `policy`: "a specific course of action to be taken"; "typically contains modal verbs like “should” and “ought to.”"
+- `reference`: "a source of objective evidence"
 
 (Park & Cardie, 2018, p. 1625)
 
@@ -82,10 +82,10 @@ In this section, we report our own statistics of the corpus. However, note that 
 
 | Relations                |       train |       test |       total |
 | :----------------------- | ----------: | ---------: | ----------: |
-| `Reason`<br/> `Evidence` | 1055<br/>47 | 298<br/>26 | 1353<br/>73 |
+| `reason`<br/> `evidence` | 1055<br/>47 | 298<br/>26 | 1353<br/>73 |
 
-- `Reason`: "X (source) is `reason` for a proposition Y (target; `policy`, `value`, `fact`, `testimony`) if X provides rationale for Y"
-- `Evidence`: "X (`testimony`, `fact`, `reference`) is `evidence` for a proposition Y if X proves whether proposition Y is true or not"
+- `reason`: "X (source) is `reason` for a proposition Y (target; `policy`, `value`, `fact`, `testimony`) if X provides rationale for Y"
+- `evidence`: "X (`testimony`, `fact`, `reference`) is `evidence` for a proposition Y if X proves whether proposition Y is true or not"
 
 (Park & Cardie, 2018, pp. 1625-1626)
 
@@ -143,7 +143,7 @@ General public participants, implying American citizens.
 
 ### Discussion of Biases
 
-About 45% of the elementary units are `VALUE` type. A significant portion, roughly 75%, of support relation annotations are between adjacent elementary units. While commenters certainly tend to provide reasons immediately after the proposition to be supported, it is also easier for annotators to identify support relations in proximity. Thus, support relations in the wild may be not as skewed toward those between adjacent elementary units. (pp. 1626-1627)
+About 45% of the elementary units are `value` type. A significant portion, roughly 75%, of support relation annotations are between adjacent elementary units. While commenters certainly tend to provide reasons immediately after the proposition to be supported, it is also easier for annotators to identify support relations in proximity. Thus, support relations in the wild may be not as skewed toward those between adjacent elementary units. (pp. 1626-1627)
 
 ### Other Known Limitations
 
