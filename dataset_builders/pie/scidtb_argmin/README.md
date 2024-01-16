@@ -7,7 +7,7 @@ This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for t
 
 The document type for this dataset is `SciDTBArgminDocument` which defines the following data fields:
 
-- `tokens` (Tuple of string)
+- `tokens` (tuple of string)
 - `id` (str, optional)
 - `metadata` (dictionary, optional)
 
@@ -25,7 +25,7 @@ The dataset provides document converters for the following target document types
 - `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
   - `LabeledSpans`, converted from `SciDTBArgminDocument`'s `units`
     - labels: `proposal`, `assertion`, `result`, `observation`, `means`, `description`
-    - tuples of `tokens` are transformed to list, and join with one whitespace to create `Document`'s `text`
+    - tuples of `tokens` are joined with a whitespace to create `text` for `LabeledSpans`
   - `BinraryRelations`, converted from `SciDTBArgminDocument`'s `relations`
     - labels: `support`, `attack`, `additional`, `detail`, `sequence`
 

@@ -2,9 +2,8 @@
 
 ### Dataset Summary
 
-Built from 60 English scientific abstracts in the larger annotated dataset, *Discourse Dependency TreeBank for Scientific Abstracts* ([Yang & Li, 2018](https://aclanthology.org/P18-2071)), [Accuosto and Saggion (2019)](https://aclanthology.org/W19-4505.pdf) offered a fine-grained annotated dataset for the argumentative component classification and relation classification tasks.
-
-The dataset contains 327 sentences, 8012 tokens, 862 discourse units and 352 argumentative units (of 6 labels) linked by 292 argumentative relations (of 5 labels).
+Built from 60 English scientific abstracts in the larger annotated dataset: *Discourse Dependency TreeBank for Scientific Abstracts* (SciDTB; [Yang & Li, 2018](https://aclanthology.org/P18-2071)), [Accuosto and Saggion (2019)](https://aclanthology.org/W19-4505.pdf) offered a fine-grained annotated dataset for the argumentative component classification and relation classification tasks, based on the study of Kirschner et al. ([2015](https://aclanthology.org/W15-0501/)).
+The dataset is token-based and segmented into elementary units that cover that entire text.
 
 ### Supported Tasks and Leaderboards
 
@@ -13,13 +12,13 @@ The dataset contains 327 sentences, 8012 tokens, 862 discourse units and 352 arg
 
 ### Languages
 
-The language in the dataset is English (academic).
+The language in the dataset is English (academic; computational linguistics).
 
 ## Dataset Structure
 
 ### Data Instances
 
-- **Size of downloaded dataset files:** 32.4 KB
+- **Size of downloaded dataset files:** 32.4 KB ([link](http://scientmin.taln.upf.edu/argmin/scidtb_argmin_annotations.tgz))
 
 ```
 {
@@ -52,15 +51,32 @@ This dataset contains 60 documents, and it is not pre-split.
 
 #### Components
 
-|                                                                                        |                                 train |
-| -------------------------------------------------------------------------------------- | ------------------------------------: |
-| `Proposal`<br/>`Mean`<br/>`Result`<br/>`Observation`<br/>`Assertion`<br/>`Description` | 110<br/>63<br/>74<br/>11<br/>88<br/>7 |
+|                                                                                        |                                 train |                                                  percentage |
+| -------------------------------------------------------------------------------------- | ------------------------------------: | ----------------------------------------------------------: |
+| `proposal`<br/>`mean`<br/>`result`<br/>`observation`<br/>`assertion`<br/>`description` | 110<br/>63<br/>74<br/>11<br/>88<br/>7 | 31.2 %<br/>17.8 %<br/>21.0 %<br/>3.1 %<br/>24.9 %<br/>2.0 % |
+
+- `proposal`: problem or approach
+- `assertion`: conclusion or known fact
+- `result`: interpretation of data
+- `observation`: data
+- `means`: implementation
+- `description`: definitions/other information
+
+(Accuosto & Saggion, 2019, p. 44)
 
 #### Relations
 
-|                                                                     |                           train |
-| ------------------------------------------------------------------- | ------------------------------: |
-| `Support`<br/>`Attack`<br/>`Detail`<br/>`Sequence`<br/>`Additional` | 126<br/>0<br/>129<br/>11<br/>27 |
+|                                                                     |                           train |                                    percentage |
+| ------------------------------------------------------------------- | ------------------------------: | --------------------------------------------: |
+| `support`<br/>`attack`<br/>`detail`<br/>`sequence`<br/>`additional` | 126<br/>0<br/>129<br/>11<br/>27 | 43.0 %<br/>0 %<br/>22.0 %<br/>3.8 %<br/>9.2 % |
+
+- `support`: between an argument component A and another argument component B indicates that A supports (reasons, proves) B.
+- `attack`: if A attacks (restricts, contradicts) B. However, the authors claimed that they did not identify any attack in the current texts (2020, p.44).
+- `additional`: *not explicitly stated*, but possibly refers to discourse relation in Yang & Li (2018, p.445), in other words, elaboration
+- `detail`: if A is a detail of B and gives more information or defines something stated in B without argumentative reason
+- `sequence`: if two (or more) argument components belong together and only make sense in combination, i.e., they form a multi-sentence argument component.
+
+(Kirschner et al., 2015, p. 5)
 
 #### Examples
 
@@ -78,7 +94,7 @@ This dataset contains 60 documents, and it is not pre-split.
 
 ### Source Data
 
-The source data is available online at https://emnlp2014.org/.
+The source data is a subset of EMNLP abstracts in the year 2014, available online at https://emnlp2014.org/.
 
 #### Initial Data Collection and Normalization
 
