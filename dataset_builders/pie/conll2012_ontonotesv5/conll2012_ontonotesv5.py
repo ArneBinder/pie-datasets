@@ -299,7 +299,7 @@ class Conll2012Ontonotesv5(GeneratorBasedBuilder):
         TextDocumentWithLabeledSpansAndLabeledPartitions: convert_to_text_document_with_labeled_spans_and_labeled_partitions
     }
 
-    BASE_DATASET_PATH = "DFKI-SLT/conll2012_ontonotesv5"
+    BASE_DATASET_PATH = "conll2012_ontonotesv5"
     BASE_DATASET_REVISION = "df483c66c395645d152cf57e2b836d390580f0c4"
 
     BUILDER_CONFIGS = [
