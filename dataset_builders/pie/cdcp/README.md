@@ -24,10 +24,10 @@ See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/a
 The dataset provides document converters for the following target document types:
 
 - `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
-  - `LabeledSpans`, converted from `CDCPDocument`'s `propositions`
+  - `labeled_spans`: `LabeledSpan` annotations, converted from `CDCPDocument`'s `propositions`
     - labels: `fact`, `policy`, `reference`, `testimony`, `value`
     - if `propositions` contain whitespace at the beginning and/or the end, the whitespace are trimmed out.
-  - `BinraryRelations`, converted from `CDCPDocument`'s `relations`
+  - `binary_relations`: `BinaryRelation` annotations, converted from `CDCPDocument`'s `relations`
     - labels:  `reason`, `evidence`
 
 See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type

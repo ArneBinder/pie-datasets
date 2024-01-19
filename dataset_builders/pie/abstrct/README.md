@@ -101,9 +101,9 @@ Morio et al. ([2022](https://aclanthology.org/2022.tacl-1.37.pdf); p. 642, Table
 The dataset provides document converters for the following target document types:
 
 - `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
-  - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
+  - `labeled_spans`: `LabeledSpan` annotations, converted from `BratDocumentWithMergedSpans`'s `spans`
     - labels: `MajorClaim`, `Claim`, `Premise`
-  - `BinraryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
+  - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocumentWithMergedSpans`'s `relations`
     - labels:  `Support`, `Partial-Attack`, `Attack`
 
 See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
