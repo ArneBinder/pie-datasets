@@ -1,4 +1,4 @@
-# PIE Dataset Card for "CDCP"
+# PIE Dataset Card for "cdcp"
 
 This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for the
 [CDCP Huggingface dataset loading script](https://huggingface.co/datasets/DFKI-SLT/cdcp).
@@ -24,6 +24,11 @@ See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/a
 The dataset provides document converters for the following target document types:
 
 - `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+  - `labeled_spans`: `LabeledSpan` annotations, converted from `CDCPDocument`'s `propositions`
+    - labels: `fact`, `policy`, `reference`, `testimony`, `value`
+    - if `propositions` contain whitespace at the beginning and/or the end, the whitespace are trimmed out.
+  - `binary_relations`: `BinaryRelation` annotations, converted from `CDCPDocument`'s `relations`
+    - labels:  `reason`, `evidence`
 
 See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
 definitions.

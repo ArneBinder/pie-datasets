@@ -26,6 +26,7 @@ from tests.dataset_builders.common import (
 disable_caching()
 
 DATASET_NAME = "scidtb_argmin"
+BUILDER_CLASS = SciDTBArgmin
 SPLIT_SIZES = {"train": 60}
 HF_DATASET_PATH = SciDTBArgmin.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
@@ -55,12 +56,12 @@ def test_hf_example(hf_example):
 
 @pytest.fixture(scope="module")
 def generate_document_kwargs(hf_dataset):
-    return SciDTBArgmin()._generate_document_kwargs(hf_dataset["train"])
+    return BUILDER_CLASS()._generate_document_kwargs(hf_dataset["train"])
 
 
 @pytest.fixture(scope="module")
 def generated_document(hf_example, generate_document_kwargs):
-    return SciDTBArgmin()._generate_document(hf_example, **generate_document_kwargs)
+    return BUILDER_CLASS()._generate_document(hf_example, **generate_document_kwargs)
 
 
 def test_generated_document(generated_document):

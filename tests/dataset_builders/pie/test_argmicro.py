@@ -27,6 +27,7 @@ from tests.dataset_builders.common import (
 disable_caching()
 
 DATASET_NAME = "argmicro"
+BUILDER_CLASS = ArgMicro
 SPLIT_SIZES = {"train": 112}
 DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "arg-microtexts-master.zip"
 HF_DATASET_PATH = ArgMicro.BASE_DATASET_PATH
@@ -46,7 +47,7 @@ def hf_dataset(dataset_variant):
 @pytest.fixture(scope="module")
 def generate_document_kwargs(hf_dataset, dataset_variant):
     ds = hf_dataset["train"]
-    return ArgMicro(config_name=dataset_variant)._generate_document_kwargs(ds)
+    return BUILDER_CLASS(config_name=dataset_variant)._generate_document_kwargs(ds)
 
 
 def test_hf_dataset(hf_dataset, dataset_variant, generate_document_kwargs):
@@ -135,7 +136,7 @@ def test_hf_example(hf_example, hf_dataset, dataset_variant, generate_document_k
 
 @pytest.fixture(scope="module")
 def generated_document(hf_dataset, dataset_variant, generate_document_kwargs):
-    return ArgMicro(config_name=dataset_variant)._generate_document(
+    return BUILDER_CLASS(config_name=dataset_variant)._generate_document(
         hf_dataset["train"][0], **generate_document_kwargs
     )
 

@@ -42,33 +42,8 @@ from pie_datasets import load_dataset, builders
 # load default version
 datasets = load_dataset("pie/sciarg")
 doc = datasets["train"][0]
-assert isinstance(doc, builders.brat.BratDocument)
-
-# load version with merged span fragments
-dataset_merged_spans = load_dataset("pie/sciarg", name="merge_fragmented_spans")
-doc_merged_spans = dataset_merged_spans["train"][0]
-assert isinstance(doc_merged_spans, builders.brat.BratDocumentWithMergedSpans)
+assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
 ```
-
-### Document Converters
-
-The dataset provides document converters for the following target document types:
-
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
-  - `LabeledSpans`, converted from `BratDocument`'s `spans`
-    - labels: `background_claim`, `own_claim`, `data`
-    - if `spans` contain whitespace at the beginning and/or the end, the whitespace are trimmed out.
-  - `BinraryRelations`, converted from `BratDocument`'s `relations`
-    - labels: `supports`, `contradicts`, `semantically_same`, `parts_of_same`
-    - if the `relations` label is `semantically_same` or `parts_of_same`, they are merged if they are the same arguments after sorting.
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
-  - `LabeledSpans`, as above
-  - `BinaryRelations`, as above
-  - `LabeledPartitions`, partitioned `BratDocument`'s `text`, according to the paragraph, using regex.
-    - labels: `title`, `abstract`, `H1`
-
-See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
-definitions.
 
 ### Data Splits
 
@@ -76,7 +51,14 @@ The dataset consists of a single `train` split that has 40 documents.
 
 For detailed statistics on the corpus, see Lauscher et al. ([2018](<(https://aclanthology.org/W18-5206/)>), p. 43), and the author's [resource analysis](https://github.com/anlausch/sciarg_resource_analysis).
 
-### Label Descriptions
+### Label Descriptions and Statistics
+
+In this section, we report our own corpus' statistics; however, there are currently discrepancies in label counts between our report and:
+
+- previous report in [Lauscher et al., 2018](https://aclanthology.org/W18-5206/), p. 43),
+- current report above here (labels counted in `BratDocument`'s);
+
+possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) presents the numbers of the real argumentative components, whereas here discontinuous components are still split (marked with the `parts_of_same` helper relation) and, thus, count per fragment.
 
 #### Components
 
@@ -117,14 +99,33 @@ For detailed statistics on the corpus, see Lauscher et al. ([2018](<(https://acl
 
 (*Annotation Guidelines*, pp. 4-6)
 
-**Important note on label counts**:
+#### Examples
 
-There are currently discrepancies in label counts between
+![sample1](img/leaannof3.png)
 
-- previous report in [Lauscher et al., 2018](https://aclanthology.org/W18-5206/), p. 43),
-- current report above here (labels counted in `BratDocument`'s);
+Subset of relations in `A01`
 
-possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) presents the numbers of the real argumentative components, whereas here discontinuous components are still split (marked with the `parts_of_same` helper relation) and, thus, count per fragment.
+![sample2](img/sciarg-sam.png)
+
+### Document Converters
+
+The dataset provides document converters for the following target document types:
+
+- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+  - `labeled_spans`: `LabeledSpan` annotations, converted from `BratDocument`'s `spans`
+    - labels: `background_claim`, `own_claim`, `data`
+    - if `spans` contain whitespace at the beginning and/or the end, the whitespace are trimmed out.
+  - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocument`'s `relations`
+    - labels: `supports`, `contradicts`, `semantically_same`, `parts_of_same`
+    - if the `relations` label is `semantically_same` or `parts_of_same`, they are merged if they are the same arguments after sorting.
+- `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
+  - `labeled_spans`, as above
+  - `binary_relations`, as above
+  - `labeled_partitions`, `LabeledSpan` annotations, created from splitting `BratDocument`'s `text` at new paragraph in `xml` format.
+    - labels: `title`, `abstract`, `H1`
+
+See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
+definitions.
 
 ## Dataset Creation
 
