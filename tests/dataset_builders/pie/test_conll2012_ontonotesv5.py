@@ -33,14 +33,12 @@ def hf_dataset(dataset_variant, split_name):
     dataset = load_dataset(
         BUILDER_CLASS.BASE_DATASET_PATH, name=dataset_variant, split=split_name, streaming=True
     )
-    # return dataset
     dataset_head = dataset.take(STREAM_SIZE)
     return list(dataset_head)
 
 
 def test_hf_dataset(hf_dataset, dataset_variant, split_name):
     assert hf_dataset is not None
-    # assert set(hf_dataset) == SPLIT_NAMES
 
 
 @pytest.fixture(scope="module")
@@ -64,3 +62,4 @@ def hf_example(hf_dataset):
 @pytest.fixture(scope="module")
 def pie_example(pie_dataset):
     return pie_dataset[0]
+
