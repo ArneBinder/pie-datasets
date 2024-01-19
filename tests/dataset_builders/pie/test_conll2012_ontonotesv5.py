@@ -14,7 +14,7 @@ BUILDER_CLASS = Conll2012Ontonotesv5
 DOCUMENT_TYPE = BUILDER_CLASS.DOCUMENT_TYPE
 HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
-STREAM_SIZE = 10
+STREAM_SIZE = 5
 SPLIT_NAMES = {"train", "validation", "test"}
 
 
@@ -62,4 +62,3 @@ def hf_example(hf_dataset):
 @pytest.fixture(scope="module")
 def pie_example(pie_dataset):
     return pie_dataset[0]
-
