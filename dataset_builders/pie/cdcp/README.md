@@ -1,4 +1,4 @@
-# PIE Dataset Card for "CDCP"
+# PIE Dataset Card for "cdcp"
 
 This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for the
 [CDCP Huggingface dataset loading script](https://huggingface.co/datasets/DFKI-SLT/cdcp).
