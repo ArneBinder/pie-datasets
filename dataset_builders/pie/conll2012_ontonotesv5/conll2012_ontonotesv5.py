@@ -300,7 +300,7 @@ class Conll2012Ontonotesv5(GeneratorBasedBuilder):
     }
 
     BASE_DATASET_PATH = "conll2012_ontonotesv5"
-    BASE_DATASET_REVISION = "df483c66c395645d152cf57e2b836d390580f0c4"
+    BASE_DATASET_REVISION = "1161216f7e7185a4b2f4d0a4e0734dc7919dfa15"
 
     BUILDER_CONFIGS = [
         Conll2012OntonotesV5Config(
