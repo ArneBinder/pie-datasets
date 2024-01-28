@@ -62,3 +62,11 @@ def hf_example(hf_dataset):
 @pytest.fixture(scope="module")
 def pie_example(pie_dataset):
     return pie_dataset[0]
+
+
+def test_hf_example(hf_example):
+    assert hf_example is not None
+
+
+def test_pie_example(pie_example):
+    assert pie_example is not None

@@ -127,10 +127,12 @@ def example_to_document(
         current_sentence = Span(start=sentence_offset, end=sentence_offset + len(current_tokens))
         sentences.append(current_sentence)
 
-        if pos_tag_labels.int2str is not None:
+        if pos_tag_labels is not None:
             pos_tags.extend(
                 [pos_tag_labels.int2str(pos_tag_id) for pos_tag_id in sentence_dict["pos_tags"]]
             )
+            if pos_tag_labels.int2str is None:
+                raise ValueError("pos_tag_labels.int2str is None.")
         else:
             pos_tags.extend(sentence_dict["pos_tags"])
         parse_trees.append(
