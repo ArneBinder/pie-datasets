@@ -9,6 +9,54 @@ The distance is measured from the first token of the first argumentative unit to
 We collect the following statistics: number of documents in the split (*no. doc*), no. of argumentative units (*len*), mean of token distance (*mean*), standard deviation of the distance (*std*), minimum outer distance (*min*), and maximum outer distance (*max*).
 We also present histograms in the collasible, showing the distribution of these relation distances (x-axis; and unit-counts in y-axis), accordingly.
 
+### Usage
+
+To manually collect a statistics for each dataset, execute the command as follows.
+
+<details>
+<summary>Command lines</summary>
+
+AAE2
+
+```
+python src/evaluate_documents.py dataset=aae2_prepared metric=count_relation_argument_distances
+```
+
+AbsTRCT
+
+```
+python src/evaluate_documents.py dataset=abstrct_prepared metric=count_relation_argument_distances
+```
+
+ArgMicro
+
+```
+python src/evaluate_documents.py dataset=argmicro_prepared metric=count_relation_argument_distances
+```
+
+CDCP
+
+```
+python src/evaluate_documents.py dataset=cdcp_prepared metric=count_relation_argument_distances
+```
+
+SciArg
+
+```
+python src/evaluate_documents.py dataset=sciarg_prepared metric=count_relation_argument_distances ++metric.tokenize_kwargs.strict_span_conversion=false
+```
+
+SciDTB_Argmin
+
+```
+python src/evaluate_documents.py dataset=scidtb_argmin_prepared metric=count_relation_argument_distances
+```
+
+**Remark**:
+The script `evaluate_documents.py` is from [PyTorch-IE-Hydra-Template](https://github.com/ArneBinder/pytorch-ie-hydra-template-1).
+
+</details>
+
 ## AAE2
 
 | statistics |   train |    test |
@@ -20,13 +68,13 @@ We also present histograms in the collasible, showing the distribution of these 
 | min        |       9 |      10 |
 | max        |     514 |     442 |
 
-<details open>
+<details>
   <summary>Histogram (split: train, 322 documents)</summary>
 
 ![rtd_aae2_train.png](img%2Frelation_token_distance%2Frtd_aae2_train.png)
 
 </details>
-  <details open>
+  <details>
   <summary>Histogram (split: test, 80 documents)</summary>
 
 ![rtd_aae2_test.png](img%2Frelation_token_distance%2Frtd_aae2_test.png)
@@ -46,31 +94,31 @@ Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
 | min        |             17 |           24 |            22 |            26 |         23 |
 | max        |            511 |          625 |           459 |           488 |        459 |
 
-<details open>
+<details>
   <summary>Histogram (split: neoplasm_train, 350 documents)</summary>
 
 ![rtd_abs-neo_train.png](img%2Frelation_token_distance%2Frtd_abs-neo_train.png)
 
 </details>
-  <details open>
+  <details>
   <summary>Histogram (split: neoplasm_dev, 50 documents)</summary>
 
 ![rtd_abs-neo_dev.png](img%2Frelation_token_distance%2Frtd_abs-neo_dev.png)
 
 </details>
-  <details open>
+  <details>
   <summary>Histogram (split: neoplasm_test, 100 documents)</summary>
 
 ![rtd_abs-neo_test.png](img%2Frelation_token_distance%2Frtd_abs-neo_test.png)
 
 </details>
-  <details open>
+  <details>
   <summary>Histogram (split: glucoma_test, 100 documents)</summary>
 
 ![rtd_abs-glu_test.png](img%2Frelation_token_distance%2Frtd_abs-glu_test.png)
 
 </details>
-  <details open>
+  <details>
   <summary>Histogram (split: mixed_test, 100 documents)</summary>
 
 ![rtd_abs-mix_test.png](img%2Frelation_token_distance%2Frtd_abs-mix_test.png)
@@ -88,7 +136,7 @@ Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
 | min        |     14 |
 | max        |    127 |
 
-<details open>
+<details>
   <summary>Histogram (split: train, 112 documents)</summary>
 
 ![rtd_argmicro.png](img%2Frelation_token_distance%2Frtd_argmicro.png)
@@ -106,13 +154,13 @@ Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
 | min        |      8 |      8 |
 | max        |    240 |    212 |
 
-<details open>
+<details>
   <summary>Histogram (split: train, 581 documents)</summary>
 
 ![rtd_cdcp_train.png](img%2Frelation_token_distance%2Frtd_cdcp_train.png)
 
 </details>
-  <details open>
+  <details>
   <summary>Histogram (split: test, 150 documents)</summary>
 
 ![rtd_cdcp_test.png](img%2Frelation_token_distance%2Frtd_cdcp_test.png)
@@ -130,7 +178,7 @@ Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
 | min        |      3 |
 | max        |   2864 |
 
-<details open>
+<details>
   <summary>Histogram (split: train, 40 documents)</summary>
 
 ![rtd_sciarg.png](img%2Frelation_token_distance%2Frtd_sciarg.png)
@@ -148,7 +196,7 @@ Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
 | min        |     21 |
 | max        |    277 |
 
-<details open>
+<details>
   <summary>Histogram (split: train, 60 documents)</summary>
 
 ![rtd_scidtb-argmin.png](img%2Frelation_token_distance%2Frtd_scidtb-argmin.png)
