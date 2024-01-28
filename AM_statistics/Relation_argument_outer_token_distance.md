@@ -9,53 +9,10 @@ The distance is measured from the first token of the first argumentative unit to
 We collect the following statistics: number of documents in the split (*no. doc*), no. of argumentative units (*len*), mean of token distance (*mean*), standard deviation of the distance (*std*), minimum outer distance (*min*), and maximum outer distance (*max*).
 We also present histograms in the collasible, showing the distribution of these relation distances (x-axis; and unit-counts in y-axis), accordingly.
 
-### Usage
-
-To manually collect a statistics for each dataset, execute the command as follows.
-
-<details>
-<summary>Command lines</summary>
-
-AAE2
-
-```
-python src/evaluate_documents.py dataset=aae2_prepared metric=count_relation_argument_distances
-```
-
-AbsTRCT
-
-```
-python src/evaluate_documents.py dataset=abstrct_prepared metric=count_relation_argument_distances
-```
-
-ArgMicro
-
-```
-python src/evaluate_documents.py dataset=argmicro_prepared metric=count_relation_argument_distances
-```
-
-CDCP
-
-```
-python src/evaluate_documents.py dataset=cdcp_prepared metric=count_relation_argument_distances
-```
-
-SciArg
-
-```
-python src/evaluate_documents.py dataset=sciarg_prepared metric=count_relation_argument_distances ++metric.tokenize_kwargs.strict_span_conversion=false
-```
-
-SciDTB_Argmin
-
-```
-python src/evaluate_documents.py dataset=scidtb_argmin_prepared metric=count_relation_argument_distances
-```
-
-**Remark**:
-The script `evaluate_documents.py` is from [PyTorch-IE-Hydra-Template](https://github.com/ArneBinder/pytorch-ie-hydra-template-1).
-
-</details>
+**Remark on statistics collection**:
+To manually collect a statistics for each dataset, execute the command provided under each dataset,
+using the base variant of the dataset configuration, namely, `*DATASET*_base`.
+The script `evaluate_documents.py` comes from [PyTorch-IE-Hydra-Template](https://github.com/ArneBinder/pytorch-ie-hydra-template-1).
 
 ## AAE2
 
@@ -78,6 +35,15 @@ The script `evaluate_documents.py` is from [PyTorch-IE-Hydra-Template](https://g
   <summary>Histogram (split: test, 80 documents)</summary>
 
 ![rtd_aae2_test.png](img%2Frelation_token_distance%2Frtd_aae2_test.png)
+
+</details>
+
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=aae2_base metric=count_relation_argument_distances
+```
 
 </details>
 
@@ -125,6 +91,15 @@ Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
 
 </details>
 
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=abstrct_base metric=count_relation_argument_distances
+```
+
+</details>
+
 ## ArgMicro
 
 | statistics |  train |
@@ -140,6 +115,15 @@ Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
   <summary>Histogram (split: train, 112 documents)</summary>
 
 ![rtd_argmicro.png](img%2Frelation_token_distance%2Frtd_argmicro.png)
+
+</details>
+
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=argmicro_base metric=count_relation_argument_distances
+```
 
 </details>
 
@@ -167,6 +151,15 @@ Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
 
 </details>
 
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=cdcp_base metric=count_relation_argument_distances
+```
+
+</details>
+
 ## SciArg
 
 | statistics |  train |
@@ -185,6 +178,15 @@ Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
 
 </details>
 
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=sciarg_base metric=count_relation_argument_distances ++metric.tokenize_kwargs.strict_span_conversion=false
+```
+
+</details>
+
 ## SciDTB_Argmin
 
 | statistics |  train |
@@ -200,5 +202,14 @@ Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
   <summary>Histogram (split: train, 60 documents)</summary>
 
 ![rtd_scidtb-argmin.png](img%2Frelation_token_distance%2Frtd_scidtb-argmin.png)
+
+</details>
+
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=scidtb_argmin_base metric=count_relation_argument_distances
+```
 
 </details>
