@@ -656,6 +656,32 @@ class DatasetDict(datasets.DatasetDict):
         logger.info(f"dataset size after moving to new split: {split_sizes}")
         return dataset_without_ids
 
+    def move_shard_to_new_split(
+        self,
+        source_split: str = "train",
+        target_split: str = "test",
+        **shard_kwargs,
+    ) -> "DatasetDict":
+        """Shards the source split and moves one shard to the target split.
+
+        Args:
+            source_split: name of the split to move the shard from
+            target_split: name of the new split to move the shard to
+            shard_kwargs: additional keyword arguments for `datasets.Dataset.shard()`
+        """
+        pie_split = self[source_split]
+        if not isinstance(pie_split, Dataset):
+            raise TypeError(
+                f"can only create a train-test-split from a Dataset, but the source split '{source_split}' is of type "
+                f"{type(pie_split)}"
+            )
+        shard_result_hf = pie_split.shard(**shard_kwargs)
+        shard_ids = [doc.id for doc in shard_result_hf]
+
+        return self.move_to_new_split(
+            ids=shard_ids, source_split=source_split, target_split=target_split
+        )
+
     def cast_document_type(
         self, new_document_type: Union[Type[Document], str], **kwargs
     ) -> "DatasetDict":
