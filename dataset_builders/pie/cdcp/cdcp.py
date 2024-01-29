@@ -125,7 +125,7 @@ class CDCP(GeneratorBasedBuilder):
     }
 
     BASE_DATASET_PATH = "DFKI-SLT/cdcp"
-    BASE_DATASET_REVISION = "45cf7a6d89866caa8a21c40edf335b88a725ecdb"
+    BASE_DATASET_REVISION = "3cf79257900b3f97e4b8f9faae2484b1a534f484"
 
     BUILDER_CONFIGS = [datasets.BuilderConfig(name="default")]
 

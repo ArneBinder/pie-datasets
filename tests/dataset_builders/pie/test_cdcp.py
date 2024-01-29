@@ -31,8 +31,9 @@ disable_caching()
 
 DATASET_NAME = "cdcp"
 BUILDER_CLASS = CDCP
-SPLIT_SIZES = {"train": 581, "test": 150}
+SPLIT_SIZES = {"train": 580, "test": 150}
 HF_DATASET_PATH = CDCP.BASE_DATASET_PATH
+HF_DATASET_REVISION = CDCP.BASE_DATASET_REVISION
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "cdcp_acl17.zip"
 
@@ -77,7 +78,7 @@ def split(request):
 
 @pytest.fixture(scope="module")
 def hf_dataset():
-    return load_dataset(str(HF_DATASET_PATH), data_dir=DATA_PATH)
+    return load_dataset(str(HF_DATASET_PATH), data_dir=DATA_PATH, revision=HF_DATASET_REVISION)
 
 
 def test_hf_dataset(hf_dataset):
