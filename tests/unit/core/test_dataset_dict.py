@@ -451,6 +451,51 @@ def test_move_to_new_split_missing_arguments(dataset_dict):
     assert str(excinfo.value) == "please provide either a list of ids or a filter function"
 
 
+def test_move_shard_to_new_split(dataset_dict):
+    ids_per_split_original = {}
+    for split in dataset_dict:
+        ids_per_split_original[split] = [doc.id for doc in dataset_dict[split]]
+    assert ids_per_split_original == {
+        "test": ["0", "1", "2"],
+        "train": ["0", "1", "2"],
+        "validation": ["0", "1", "2"],
+    }
+    # move the second and third document from train to new_validation
+    dataset_dict_moved = dataset_dict.move_shard_to_new_split(
+        source_split="train",
+        target_split="new_validation",
+        num_shards=3,
+        index=2,
+        contiguous=True,
+    )
+    ids_per_split = {}
+    for split in dataset_dict_moved:
+        ids_per_split[split] = [doc.id for doc in dataset_dict_moved[split]]
+    assert ids_per_split == {
+        "train": ["0", "1"],
+        "validation": ["0", "1", "2"],
+        "test": ["0", "1", "2"],
+        "new_validation": ["2"],
+    }
+
+    assert len(dataset_dict_moved["train"]) == 2
+    assert len(dataset_dict_moved["new_validation"]) == 1
+    assert_doc_lists_equal(
+        list(dataset_dict_moved["train"]) + list(dataset_dict_moved["new_validation"]),
+        dataset_dict["train"],
+    )
+
+    # the remaining splits should be unchanged
+    assert (
+        len(dataset_dict_moved["validation"])
+        == len(dataset_dict["validation"])
+        == N_FIXTURE_SAMPLES
+    )
+    assert len(dataset_dict_moved["test"]) == len(dataset_dict["test"]) == N_FIXTURE_SAMPLES
+    assert_doc_lists_equal(dataset_dict_moved["validation"], dataset_dict["validation"])
+    assert_doc_lists_equal(dataset_dict_moved["test"], dataset_dict["test"])
+
+
 def test_cast_document_type(dataset_dict):
     dataset_dict_cast = dataset_dict.cast_document_type(TextBasedDocument)
     assert dataset_dict_cast.document_type == TextBasedDocument
