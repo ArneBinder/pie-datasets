@@ -670,11 +670,6 @@ class DatasetDict(datasets.DatasetDict):
             shard_kwargs: additional keyword arguments for `datasets.Dataset.shard()`
         """
         pie_split = self[source_split]
-        if not isinstance(pie_split, Dataset):
-            raise TypeError(
-                f"can only create a train-test-split from a Dataset, but the source split '{source_split}' is of type "
-                f"{type(pie_split)}"
-            )
         shard_result_hf = pie_split.shard(**shard_kwargs)
         shard_ids = [doc.id for doc in shard_result_hf]
 
