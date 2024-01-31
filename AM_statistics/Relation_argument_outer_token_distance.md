@@ -6,7 +6,7 @@ For the tokenization, we use `bert-base-uncased` from `transformer.AutoTokenizer
 to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py)).
 The distance is measured from the first token of the first argumentative unit to the last token of the last unit, a.k.a. outer distance.
 
-We collect the following statistics: number of documents in the split (*no. doc*), no. of argumentative units (*len*), mean of token distance (*mean*), standard deviation of the distance (*std*), minimum outer distance (*min*), and maximum outer distance (*max*).
+We collect the following statistics: number of documents in the split (*no. doc*), no. of relations (*len*), mean of token distance (*mean*), standard deviation of the distance (*std*), minimum outer distance (*min*), and maximum outer distance (*max*).
 We also present histograms in the collasible, showing the distribution of these relation distances (x-axis; and unit-counts in y-axis), accordingly.
 
 **Remark on statistics collection**:
@@ -129,7 +129,7 @@ python src/evaluate_documents.py dataset=argmicro_base metric=count_relation_arg
 
 | statistics |  train |   test |
 | :--------- | -----: | -----: |
-| no. doc    |    581 |    150 |
+| no. doc    |    580 |    150 |
 | len        |   2204 |    648 |
 | mean       | 48.839 | 51.299 |
 | std        | 31.462 | 31.159 |
@@ -137,7 +137,7 @@ python src/evaluate_documents.py dataset=argmicro_base metric=count_relation_arg
 | max        |    240 |    212 |
 
 <details>
-  <summary>Histogram (split: train, 581 documents)</summary>
+  <summary>Histogram (split: train, 580 documents)</summary>
 
 ![rtd_cdcp_train.png](img%2Frelation_token_distance%2Frtd_cdcp_train.png)
 

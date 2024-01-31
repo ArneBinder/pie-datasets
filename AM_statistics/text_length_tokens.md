@@ -4,10 +4,10 @@ In this document, we collect statistics regarding the token distance between the
 
 For the tokenization, we use `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased))
 to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py)).
-The length is measured from the first token of the document to the last one.
+The text (document) length is measured from the first token of the document to the last one.
 
 We collect the following statistics: number of documents in the split (*no. doc*), mean of document token-length (*mean*), standard deviation of the length (*std*), minimum number of tokens in a document (*min*), and maximum number of tokens in a document (*max*).
-We also present histograms in the collasible, showing the distribution of these relation distances (x-axis; and unit-counts in y-axis), accordingly.
+We also present histograms in the collasible, showing the distribution of these text lengths (x-axis; and unit-counts in y-axis), accordingly.
 
 **Remark on statistics collection**:
 To manually collect a statistics for each dataset, execute the command provided under each dataset,
@@ -126,7 +126,7 @@ python src/evaluate_documents.py dataset=argmicro_base metric=count_text_tokens
 
 | statistics |   train |    test |
 | :--------- | ------: | ------: |
-| no. doc    |     581 |     150 |
+| no. doc    |     580 |     150 |
 | mean       | 130.781 | 128.673 |
 | std        | 101.121 |  98.708 |
 | min        |      13 |      15 |
