@@ -49,8 +49,6 @@ python src/evaluate_documents.py dataset=aae2_base metric=count_relation_argumen
 
 ## AbsRCT
 
-Relation argument (outer) token distances (split: neoplasm_train, 350 documents)
-
 | statistics | neoplasm_train | neoplasm_dev | neoplasm_test | glaucoma_test | mixed_test |
 | :--------- | -------------: | -----------: | ------------: | ------------: | ---------: |
 | no. doc    |            350 |           50 |           100 |           100 |        100 |
