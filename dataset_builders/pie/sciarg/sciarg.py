@@ -110,21 +110,14 @@ class SpansWithRelationsMerger:
         relation_layer: str,
         link_relation_label: str,
         result_document_type: type[Document],
-        result_field_mapping: dict[str, str] = None,
+        result_field_mapping: dict[str, str],
         create_multi_spans: bool = True,
     ):
         self.relation_layer = relation_layer
         self.link_relation_label = link_relation_label
         self.create_multi_spans = create_multi_spans
         self.result_document_type = result_document_type
-        if result_field_mapping is None:
-            self.result_field_mapping = {"binary_relations": "binary_relations"}
-            if create_multi_spans:
-                self.result_field_mapping["labeled_multi_spans"] = "labeled_multi_spans"
-            else:
-                self.result_field_mapping["labeled_spans"] = "labeled_spans"
-        else:
-            self.result_field_mapping = result_field_mapping
+        self.result_field_mapping = result_field_mapping
 
     def __call__(self, document: Document) -> Document:
         relations: Sequence[BinaryRelation] = document[self.relation_layer]
@@ -138,8 +131,9 @@ class SpansWithRelationsMerger:
         )
 
         result = document.copy(with_annotations=False).as_type(new_type=self.result_document_type)
-        result_span_layer_name = self.result_field_mapping["labeled_spans"]
-        result_relation_layer_name = self.result_field_mapping["binary_relations"]
+        span_layer_name = document[self.relation_layer].target_name
+        result_span_layer_name = self.result_field_mapping[span_layer_name]
+        result_relation_layer_name = self.result_field_mapping[self.relation_layer]
         result[result_span_layer_name].extend(new_spans)
         result[result_relation_layer_name].extend(new_relations)
 
@@ -199,17 +193,17 @@ class SciArg(BratBuilder):
     # Actual span fragments are annotated via "parts_of_same" relations.
     BUILDER_CONFIGS = [
         SciArgConfig(name=BratBuilder.DEFAULT_CONFIG_NAME),
-        # TODO: add config with merge_parts_of_same=True
-        # TODO: add config for create_multi_spans=True
+        SciArgConfig(name="resolve_parts_of_same", resolve_parts_of_same=True),
     ]
     DOCUMENT_TYPES = {
         BratBuilder.DEFAULT_CONFIG_NAME: BratDocumentWithMergedSpans,
+        "resolve_parts_of_same": BratDocumentWithMergedSpans,
     }
 
     # we need to add None to the list of dataset variants to support the default dataset variant
     BASE_BUILDER_KWARGS_DICT = {
         dataset_variant: {"url": URL, "split_paths": SPLIT_PATHS}
-        for dataset_variant in ["default", "merge_fragmented_spans", None]
+        for dataset_variant in ["default", "resolve_parts_of_same", None]
     }
 
     @property
