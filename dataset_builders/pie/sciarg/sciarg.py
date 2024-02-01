@@ -183,13 +183,11 @@ class SciArgConfig(BratConfig):
     def __init__(
         self,
         name: str,
-        merge_multi_spans: bool = False,
-        create_multi_spans: bool = False,
+        resolve_parts_of_same: bool = False,
         **kwargs,
     ):
         super().__init__(name=name, merge_fragmented_spans=True, **kwargs)
-        self.merge_multi_spans = merge_multi_spans
-        self.create_multi_spans = create_multi_spans
+        self.resolve_parts_of_same = resolve_parts_of_same
 
 
 class SciArg(BratBuilder):
@@ -224,7 +222,7 @@ class SciArg(BratBuilder):
             skip_initial_partition=True,
             strip_whitespace=True,
         )
-        if not self.config.merge_multi_spans:
+        if not self.config.resolve_parts_of_same:
             return {
                 TextDocumentWithLabeledSpansAndBinaryRelations: Pipeline(
                     **get_common_pipeline_steps(TextDocumentWithLabeledSpansAndBinaryRelations)
@@ -249,5 +247,6 @@ class SciArg(BratBuilder):
                     ),
                     add_partitions=regex_partitioner,
                 ),
+                # TODO: add TextDocumentWithLabeledMultiSpansAndBinaryRelations
+                # TODO: add TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions
             }
-        # TODO: implement logic for self.config.create_multi_spans=True
