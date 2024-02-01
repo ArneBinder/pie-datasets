@@ -1,3 +1,4 @@
+from collections import Counter
 from typing import List, Optional
 
 import datasets
@@ -148,7 +149,7 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
         assert len(doc.binary_relations) == 116
         relation_tuples = resolve_annotations(doc.binary_relations)
         # check the first ten relations
-        assert relation_tuples[:10] == [
+        assert relation_tuples[:13] == [
             (
                 ("the model is very detailed", "data"),
                 "supports",
@@ -216,7 +217,32 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
                     "background_claim",
                 ),
             ),
+            (
+                ("This approach is not commonly applied", "background_claim"),
+                "contradicts",
+                (
+                    "artists will edit the geometry of characters in the rest pose to fine-tune animations",
+                    "background_claim",
+                ),
+            ),
+            (
+                ("editing in the rest pose will influence most other poses", "background_claim"),
+                "supports",
+                ("This approach is not commonly applied", "background_claim"),
+            ),
+            (
+                ("For those applications that require visual fidelity", "background_claim"),
+                "parts_of_same",
+                ("SSD serves only as a basic framework", "background_claim"),
+            ),
         ]
+        counter = Counter([rt[1] for rt in relation_tuples])
+        assert dict(counter) == {
+            "supports": 93,
+            "contradicts": 8,
+            "parts_of_same": 6,
+            "semantically_same": 9,
+        }
     elif dataset_variant == "resolve_parts_of_same":
         assert isinstance(doc, TextDocumentWithLabeledSpansAndBinaryRelations)
 
@@ -249,6 +275,12 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
                 "own_claim",
             ),
         ]
+
+        # this comes out of the 13th relation which is a parts_of_same relation (see above)
+        assert sorted_entity_tuples[20] == (
+            "For those applications that require visual fidelity, such as movies, SSD serves only as a basic framework",
+            "background_claim",
+        )
 
         # check the relations
         assert len(doc.binary_relations) == 110
@@ -323,6 +355,8 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
                 ),
             ),
         ]
+        counter = Counter([rt[1] for rt in relation_tuples])
+        assert dict(counter) == {"supports": 93, "contradicts": 8, "semantically_same": 9}
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
