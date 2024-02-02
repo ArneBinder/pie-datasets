@@ -80,13 +80,13 @@ def _load_json(fn: str):
 def resolve_annotation(annotation: Annotation) -> Any:
     if annotation.target is None:
         return None
-    if isinstance(annotation, LabeledMultiSpan):
+    if isinstance(annotation, LabeledSpan):
+        return annotation.target[annotation.start : annotation.end], annotation.label
+    elif isinstance(annotation, LabeledMultiSpan):
         return (
-            [annotation.target[start:end] for start, end in annotation.slices],
+            tuple(annotation.target[start:end] for start, end in annotation.slices),
             annotation.label,
         )
-    elif isinstance(annotation, LabeledSpan):
-        return annotation.target[annotation.start : annotation.end], annotation.label
     elif isinstance(annotation, BinaryRelation):
         return (
             resolve_annotation(annotation.head),
@@ -117,11 +117,20 @@ def sort_annotations(annotations: Sequence[Annotation]) -> List[Annotation]:
         return sorted(annotations, key=lambda a: (a.start, a.end, a.label))
     elif isinstance(annotation, Span):
         return sorted(annotations, key=lambda a: (a.start, a.end))
+    elif isinstance(annotation, LabeledMultiSpan):
+        return sorted(annotations, key=lambda a: (a.slices, a.label))
     elif isinstance(annotation, BinaryRelation):
         if isinstance(annotation.head, LabeledSpan) and isinstance(annotation.tail, LabeledSpan):
             return sorted(
                 annotations,
                 key=lambda a: (a.head.start, a.head.end, a.label, a.tail.start, a.tail.end),
+            )
+        elif isinstance(annotation.head, LabeledMultiSpan) and isinstance(
+            annotation.tail, LabeledMultiSpan
+        ):
+            return sorted(
+                annotations,
+                key=lambda a: (a.head.slices, a.label, a.tail.slices),
             )
         else:
             raise ValueError(
