@@ -42,7 +42,9 @@ def _merge_spans_via_relation(
         connected_components_sorted = sorted(connected_components, key=lambda span: span.start)
         if create_multi_spans:
             new_span = LabeledMultiSpan(
-                slices=tuple(sorted((span.start, span.end) for span in connected_components_sorted)),
+                slices=tuple(
+                    sorted((span.start, span.end) for span in connected_components_sorted)
+                ),
                 label=label,
             )
         else:
