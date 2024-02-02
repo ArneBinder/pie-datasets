@@ -4,11 +4,13 @@ from typing import List, Optional
 import datasets
 import pytest
 from pie_modules.document.processing import tokenize_document
-from pytorch_ie.core import Document
-from pytorch_ie.documents import (
+from pie_modules.documents import (
+    TextDocumentWithLabeledMultiSpansAndBinaryRelations,
+    TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
+from pytorch_ie.core import Document
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.sciarg.sciarg import SciArg
@@ -480,6 +482,171 @@ def test_dataset_of_text_documents_with_labeled_spans_binary_relations_and_label
     assert doc_with_partitions.binary_relations == doc_without_partitions.binary_relations
 
 
+@pytest.mark.parametrize(
+    "document_type",
+    [
+        TextDocumentWithLabeledMultiSpansAndBinaryRelations,
+        TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
+    ],
+)
+def test_dataset_of_text_documents_with_labeled_multi_spans_and_binary_relations(
+    dataset, dataset_variant, document_type
+):
+    if dataset_variant == "default":
+        with pytest.raises(ValueError) as exc_info:
+            dataset.to_document_type(document_type)
+        # only check the beginning and the end of the error message because the order of the
+        # available keys is not deterministic (it is a set)
+        assert str(exc_info.value).startswith(
+            f"No valid key (either subclass or superclass) was found for the document type '{document_type}' in the document_converters of the dataset."
+        )
+        assert str(exc_info.value).endswith(
+            f"Consider adding a respective converter to the dataset with dataset.register_document_converter(my_converter_method) where my_converter_method should accept <class 'pie_datasets.builders.brat.BratDocumentWithMergedSpans'> as input and return '{document_type}'."
+        )
+    elif dataset_variant == "resolve_parts_of_same":
+        converted_dataset = dataset.to_document_type(document_type)
+        doc = converted_dataset["train"][0]
+        assert isinstance(doc, document_type)
+
+        # check the entities
+        assert len(doc.labeled_multi_spans) == 177
+        # sort the labeled spans by their start position and convert them to tuples
+        sorted_span_tuples = resolve_annotations(doc.labeled_multi_spans)
+        # check the first ten entities
+        assert sorted_span_tuples[:10] == [
+            (
+                (
+                    "complicated 3D character models are widely used in fields of entertainment, virtual reality, medicine etc",
+                ),
+                "background_claim",
+            ),
+            (
+                (
+                    "The range of breathtaking realistic 3D models is only limited by the creativity of artists and resolution of devices",
+                ),
+                "background_claim",
+            ),
+            (
+                ("Driving 3D models in a natural and believable manner is not trivial",),
+                "background_claim",
+            ),
+            (("the model is very detailed",), "data"),
+            (("playback of animation becomes quite heavy and time consuming",), "data"),
+            (("a frame goes wrong",), "data"),
+            (("a production cannot afford major revisions",), "background_claim"),
+            (("resculpting models",), "data"),
+            (("re-rigging skeletons",), "data"),
+            (
+                (
+                    "providing a flexible and efficient solution to animation remains an open problem",
+                ),
+                "own_claim",
+            ),
+        ]
+
+        # this comes out of the 13th relation which is a parts_of_same relation (see above)
+        assert sorted_span_tuples[20] == (
+            (
+                "For those applications that require visual fidelity",
+                "SSD serves only as a basic framework",
+            ),
+            "background_claim",
+        )
+
+        # check the relations
+        assert len(doc.binary_relations) == 110
+        relation_tuples = resolve_annotations(doc.binary_relations)
+        # check the first ten relations
+        assert relation_tuples[:10] == [
+            (
+                (("the model is very detailed",), "data"),
+                "supports",
+                (
+                    ("Driving 3D models in a natural and believable manner is not trivial",),
+                    "background_claim",
+                ),
+            ),
+            (
+                (("playback of animation becomes quite heavy and time consuming",), "data"),
+                "supports",
+                (
+                    ("Driving 3D models in a natural and believable manner is not trivial",),
+                    "background_claim",
+                ),
+            ),
+            (
+                (("a frame goes wrong",), "data"),
+                "supports",
+                (("a production cannot afford major revisions",), "background_claim"),
+            ),
+            (
+                (("a production cannot afford major revisions",), "background_claim"),
+                "supports",
+                (
+                    (
+                        "providing a flexible and efficient solution to animation remains an open problem",
+                    ),
+                    "own_claim",
+                ),
+            ),
+            (
+                (("resculpting models",), "data"),
+                "supports",
+                (("a production cannot afford major revisions",), "background_claim"),
+            ),
+            (
+                (("re-rigging skeletons",), "data"),
+                "supports",
+                (("a production cannot afford major revisions",), "background_claim"),
+            ),
+            (
+                (("1",), "data"),
+                "supports",
+                (("A nice review of SSD is given",), "background_claim"),
+            ),
+            (
+                (
+                    (
+                        "SSD is widely used in games, virtual reality and other realtime applications",
+                    ),
+                    "background_claim",
+                ),
+                "supports",
+                (
+                    (
+                        "Skeleton Subspace Deformation (SSD) is the predominant approach to character skinning at present",
+                    ),
+                    "background_claim",
+                ),
+            ),
+            (
+                (("its ease of implementation",), "data"),
+                "supports",
+                (
+                    (
+                        "SSD is widely used in games, virtual reality and other realtime applications",
+                    ),
+                    "background_claim",
+                ),
+            ),
+            (
+                (("low cost of computing",), "data"),
+                "supports",
+                (
+                    (
+                        "SSD is widely used in games, virtual reality and other realtime applications",
+                    ),
+                    "background_claim",
+                ),
+            ),
+        ]
+        counter = Counter([rt[1] for rt in relation_tuples])
+        assert dict(counter) == {"supports": 93, "contradicts": 8, "semantically_same": 9}
+
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
 @pytest.fixture(scope="module")
 def tokenizer() -> PreTrainedTokenizer:
     return AutoTokenizer.from_pretrained("bert-base-uncased")
@@ -900,6 +1067,8 @@ def test_document_converters(dataset_variant):
         assert set(document_converters) == {
             TextDocumentWithLabeledSpansAndBinaryRelations,
             TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+            TextDocumentWithLabeledMultiSpansAndBinaryRelations,
+            TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
         }
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
