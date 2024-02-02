@@ -1,6 +1,7 @@
 from pie_modules.document.processing import (
     RegexPartitioner,
     RelationArgumentSorter,
+    SpansViaRelationMerger,
     TextSpanTrimmer,
 )
 from pie_modules.documents import (
@@ -15,7 +16,7 @@ from pytorch_ie.core import Document
 from pie_datasets.builders import BratBuilder, BratConfig
 from pie_datasets.builders.brat import BratDocumentWithMergedSpans
 from pie_datasets.core.dataset import DocumentConvertersType
-from pie_datasets.document.processing import Caster, Pipeline, SpansWithRelationsMerger
+from pie_datasets.document.processing import Caster, Pipeline
 
 URL = "http://data.dws.informatik.uni-mannheim.de/sci-arg/compiled_corpus.zip"
 SPLIT_PATHS = {"train": "compiled_corpus"}
@@ -47,7 +48,7 @@ def get_common_converter_pipeline_steps_with_resolve_parts_of_same(
         result_span_layer_name = "labeled_multi_spans"
     else:
         raise ValueError(f"Unsupported document type: {target_document_type}")
-    result["resolve_parts_of_same"] = SpansWithRelationsMerger(
+    result["resolve_parts_of_same"] = SpansViaRelationMerger(
         relation_layer="binary_relations",
         link_relation_label="parts_of_same",
         create_multi_spans=create_multi_spans,
@@ -106,7 +107,9 @@ class SciArg(BratBuilder):
         if not self.config.resolve_parts_of_same:
             return {
                 TextDocumentWithLabeledSpansAndBinaryRelations: Pipeline(
-                    **get_common_converter_pipeline_steps(TextDocumentWithLabeledSpansAndBinaryRelations)
+                    **get_common_converter_pipeline_steps(
+                        TextDocumentWithLabeledSpansAndBinaryRelations
+                    )
                 ),
                 TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions: Pipeline(
                     **get_common_converter_pipeline_steps(
