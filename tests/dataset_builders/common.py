@@ -166,3 +166,20 @@ class TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions(
     TestTokenDocumentWithLabeledSpansAndBinaryRelations, TestTokenDocumentWithLabeledPartitions
 ):
     pass
+
+
+@dataclasses.dataclass
+class TestTokenDocumentWithLabeledMultiSpansAndBinaryRelations(
+    TestTokenDocumentWithLabeledSpansAndBinaryRelations
+):
+    labeled_multi_spans: AnnotationList[LabeledMultiSpan] = annotation_field(
+        target="labeled_spans"
+    )
+
+
+@dataclasses.dataclass
+class TestTokenDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions(
+    TestTokenDocumentWithLabeledMultiSpansAndBinaryRelations,
+    TestTokenDocumentWithLabeledPartitions,
+):
+    pass
