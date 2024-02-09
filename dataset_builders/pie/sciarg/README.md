@@ -30,6 +30,8 @@ can be `BratDocumentWithMergedSpans` (this is easier to handle for most of the t
 spans are conceptually also available in SciArg, but they are marked with the `parts_of_same` relation which are kept
 as they are in the `sciarg` (`default`) dataset.
 
+TODO: integrate description for `resolve_parts_of_same` variant.
+
 ### Data Schema
 
 See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema).
@@ -111,20 +113,22 @@ Subset of relations in `A01`
 
 The dataset provides document converters for the following target document types:
 
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
   - `labeled_spans`: `LabeledSpan` annotations, converted from `BratDocument`'s `spans`
     - labels: `background_claim`, `own_claim`, `data`
     - if `spans` contain whitespace at the beginning and/or the end, the whitespace are trimmed out.
   - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocument`'s `relations`
-    - labels: `supports`, `contradicts`, `semantically_same`, `parts_of_same`
+    - labels: `supports`, `contradicts`, `semantically_same`, and, in the case of `default` dataset variant also,  `parts_of_same`
     - if the `relations` label is `semantically_same` or `parts_of_same`, they are merged if they are the same arguments after sorting.
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
+- `pie_modules.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
   - `labeled_spans`, as above
   - `binary_relations`, as above
   - `labeled_partitions`, `LabeledSpan` annotations, created from splitting `BratDocument`'s `text` at new paragraph in `xml` format.
     - labels: `title`, `abstract`, `H1`
+- `pie_modules.documents.TextDocumentWithLabeledMultiSpansAndBinaryRelations`: TODO
+- `pie_modules.documents.TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions`: TODO
 
-See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
+See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
 definitions.
 
 ## Dataset Creation
