@@ -233,6 +233,70 @@ def example_to_document(
     return doc
 
 
+# currently under construction
+def document_to_example(
+    document: Conll2012OntonotesV5Document,
+    entity_labels: ClassLabel,
+    pos_tag_labels: Optional[ClassLabel] = None,
+) -> Dict[str, Any]:
+    example = {
+        "document_id": document.id,
+        "sentences": [],
+    }
+
+    for idx, sentence in enumerate(document.sentences):
+        # sentence start and end, have to take the previous sentence into account
+        sent_start = sentence.start
+        sent_end = sentence.end
+
+        # handle part(s)
+        # if sentence.parts is None:
+        #    part_id = None
+        # else
+
+        predicate_lemmas = [None] * (sent_end - sent_start)
+        predicate_framenet_ids = [None] * (sent_end - sent_start)
+        word_senses = [None] * (sent_end - sent_start)
+        named_entities = [0] * (sent_end - sent_start)
+
+        # for pred in document.predicates:
+        #    if sent_start < pred.start and pred.end < sent_end:
+        #        predicate_lemmas[pred.start:pred.end] = pred.lemma
+        #        predicate_framenet_ids[pred.start:pred.end] = pred.framenet_id
+
+        # for sense in document.word_senses:
+        #    if sent_start < sense.start and sense.end < sent_end:
+        #        word_senses[sense.start:sense.end] = float(sense.label)
+
+        # for ent in document.entities:
+        #    if sent_start < ent.start and ent.end < sent_end:
+        #        named_entities[ent.start] = entity_labels.str2int('B-'+ent.label)
+        #        named_entities[ent.start+1:ent.end] = entity_labels.str2int('I-'+ent.label)
+
+        example_sentence = {
+            #       "part_id": [], # TODO
+            "words": list(document.tokens[sent_start:sent_end]),  # looks fine
+            #       "pos_tags": [pos_tag_labels.str2int(pos_tag) for pos_tag in document.pos_tags[sent_start:sent_end]], # has bug # items alignment
+            #       "parse_tree": document.parse_trees[idx].label,
+            #       "predicate_lemmas": predicate_lemmas,
+            #       "predicate_framenet_ids": predicate_framenet_ids,
+            #       "word_senses": word_senses,
+            #       "speaker": document.speakers[idx].label,
+            #       "name_entities": named_entities,
+            #       "srl_frames": [
+            #           {
+            #               "verb": [],
+            #               "frames": [],
+            #           }
+            #       ], # TODO
+            #       "coref_spans": [], # TODO # [cluster_id, start_index, end_index]
+        }
+
+        example["sentences"].append(example_sentence)
+
+    return example
+
+
 def convert_to_text_document_with_labeled_spans_and_labeled_partitions(
     doc: Conll2012OntonotesV5Document,
     token_separator: str = " ",
