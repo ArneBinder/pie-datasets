@@ -259,37 +259,48 @@ def document_to_example(
         word_senses = [None] * (sent_end - sent_start)
         named_entities = [0] * (sent_end - sent_start)
 
-        # for pred in document.predicates:
-        #    if sent_start < pred.start and pred.end < sent_end:
-        #        predicate_lemmas[pred.start:pred.end] = pred.lemma
-        #        predicate_framenet_ids[pred.start:pred.end] = pred.framenet_id
+        for pred in document.predicates:
+            if sent_start < pred.start and pred.end < sent_end:
+                pred_len = pred.end - pred.start
+                predicate_lemmas[pred.start : pred.end] = [pred.lemma] * pred_len
+                if pred.framenet_id is not None:
+                    predicate_framenet_ids[pred.start : pred.end] = [pred.framenet_id] * pred_len
 
-        # for sense in document.word_senses:
-        #    if sent_start < sense.start and sense.end < sent_end:
-        #        word_senses[sense.start:sense.end] = float(sense.label)
+        for sense in document.word_senses:
+            if sent_start < sense.start and sense.end < sent_end:
+                word_senses[sense.start : sense.end] = [float(sense.label)] * (
+                    sense.end - sense.start
+                )
 
-        # for ent in document.entities:
-        #    if sent_start < ent.start and ent.end < sent_end:
-        #        named_entities[ent.start] = entity_labels.str2int('B-'+ent.label)
-        #        named_entities[ent.start+1:ent.end] = entity_labels.str2int('I-'+ent.label)
+        for ent in document.entities:
+            if sent_start < ent.start and ent.end < sent_end:
+                ent_len = ent.end - ent.start
+                named_entities[ent.start - sent_start] = entity_labels.str2int("B-" + ent.label)
+                if ent_len > 1:
+                    named_entities[ent.start - sent_start + 1 : ent.end - sent_start] = [
+                        entity_labels.str2int("I-" + ent.label)
+                    ] * (ent_len - 1)
 
         example_sentence = {
-            #       "part_id": [], # TODO
-            "words": list(document.tokens[sent_start:sent_end]),  # looks fine
-            #       "pos_tags": [pos_tag_labels.str2int(pos_tag) for pos_tag in document.pos_tags[sent_start:sent_end]], # has bug # items alignment
-            #       "parse_tree": document.parse_trees[idx].label,
-            #       "predicate_lemmas": predicate_lemmas,
-            #       "predicate_framenet_ids": predicate_framenet_ids,
-            #       "word_senses": word_senses,
-            #       "speaker": document.speakers[idx].label,
-            #       "name_entities": named_entities,
-            #       "srl_frames": [
-            #           {
-            #               "verb": [],
-            #               "frames": [],
-            #           }
-            #       ], # TODO
-            #       "coref_spans": [], # TODO # [cluster_id, start_index, end_index]
+            "part_id": [],  # TODO
+            "words": list(document.tokens[sent_start:sent_end]),
+            "pos_tags": [
+                pos_tag_labels.str2int(pos_tag)
+                for pos_tag in document.pos_tags[sent_start:sent_end]
+            ],
+            "parse_tree": document.parse_trees[idx].label,
+            "predicate_lemmas": predicate_lemmas,
+            "predicate_framenet_ids": predicate_framenet_ids,
+            "word_senses": word_senses,
+            "speaker": document.speakers[idx].label,
+            "name_entities": named_entities,
+            "srl_frames": [
+                {
+                    "verb": [],
+                    "frames": [],
+                }
+            ],  # TODO
+            "coref_spans": [],  # TODO # [cluster_id, start_index, end_index]
         }
 
         example["sentences"].append(example_sentence)
