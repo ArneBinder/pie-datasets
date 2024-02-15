@@ -135,9 +135,12 @@ def test_generate_document(generated_document):
     assert isinstance(generated_document, BUILDER_CLASS.DOCUMENT_TYPE)
 
 
+def test_compare_document_and_generated_document(generated_document, pie_example):
+    assert generated_document == pie_example
+
+
 @pytest.fixture(scope="module")
 def generated_example(generated_document, generate_document_kwargs, dataset_variant):
-    # TODO: implement document_to_example # under construction
     return document_to_example(generated_document, **generate_document_kwargs)
 
 
@@ -146,7 +149,10 @@ def test_generate_example(generated_example):
     assert isinstance(generated_example, dict)
 
 
-# def test_compare_generate_example_and_back
+def test_compare_generate_example_and_back(hf_example, generated_example):
+    assert hf_example == generated_example
+
+
 # def test_compare_generate_example_and_back_all
 
 

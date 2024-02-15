@@ -114,6 +114,7 @@ def example_to_document(
     predicates = []
     coref_mentions = []
     coref_clusters = []
+    coref_cluster_ids = []
     srl_arguments = []
     srl_relations = []
     word_senses = []
@@ -169,7 +170,9 @@ def example_to_document(
         current_coref_clusters = [
             SpanSet(spans=tuple(spans)) for spans in coref_clusters_dict.values()
         ]
+        current_coref_cluster_ids = [cluster_id for cluster_id in coref_clusters_dict.keys()]
         coref_clusters.extend(current_coref_clusters)
+        coref_cluster_ids.extend(current_coref_cluster_ids)
 
         # handle srl_frames
         for frame_dict in sentence_dict["srl_frames"]:
@@ -219,6 +222,7 @@ def example_to_document(
         pos_tags=pos_tags,
     )
     # add the annotations to the document
+    doc.parts.extend(parts)
     doc.sentences.extend(sentences)
     doc.parse_trees.extend(parse_trees)
     doc.speakers.extend(speakers)
@@ -229,11 +233,11 @@ def example_to_document(
     doc.srl_arguments.extend(srl_arguments)
     doc.srl_relations.extend(srl_relations)
     doc.word_senses.extend(word_senses)
+    doc.metadata["coref_cluster_ids"] = coref_cluster_ids
 
     return doc
 
 
-# currently under construction
 def document_to_example(
     document: Conll2012OntonotesV5Document,
     entity_labels: ClassLabel,
@@ -248,32 +252,27 @@ def document_to_example(
         # sentence start and end, have to take the previous sentence into account
         sent_start = sentence.start
         sent_end = sentence.end
+        sent_len = sent_end - sent_start
 
-        # handle part(s)
-        # if sentence.parts is None:
-        #    part_id = None
-        # else
-
-        predicate_lemmas = [None] * (sent_end - sent_start)
-        predicate_framenet_ids = [None] * (sent_end - sent_start)
-        word_senses = [None] * (sent_end - sent_start)
-        named_entities = [0] * (sent_end - sent_start)
-
+        predicate_lemmas = [None] * sent_len
+        predicate_framenet_ids = [None] * sent_len
         for pred in document.predicates:
-            if sent_start < pred.start and pred.end < sent_end:
+            if sent_start <= pred.start and pred.end <= sent_end:
                 pred_len = pred.end - pred.start
                 predicate_lemmas[pred.start : pred.end] = [pred.lemma] * pred_len
                 if pred.framenet_id is not None:
                     predicate_framenet_ids[pred.start : pred.end] = [pred.framenet_id] * pred_len
 
+        word_senses = [None] * sent_len
         for sense in document.word_senses:
-            if sent_start < sense.start and sense.end < sent_end:
+            if sent_start <= sense.start and sense.end <= sent_end:
                 word_senses[sense.start : sense.end] = [float(sense.label)] * (
                     sense.end - sense.start
                 )
 
+        named_entities = [0] * sent_len
         for ent in document.entities:
-            if sent_start < ent.start and ent.end < sent_end:
+            if sent_start <= ent.start and ent.end <= sent_end:
                 ent_len = ent.end - ent.start
                 named_entities[ent.start - sent_start] = entity_labels.str2int("B-" + ent.label)
                 if ent_len > 1:
@@ -281,8 +280,40 @@ def document_to_example(
                         entity_labels.str2int("I-" + ent.label)
                     ] * (ent_len - 1)
 
+        srl_frames = []
+        for srl_rel in document.srl_relations:
+            span_start = min([span.start for span in srl_rel.arguments])
+            span_end = max([span.end for span in srl_rel.arguments])
+            if sent_start <= span_start and span_end <= sent_end:
+                frames = ["O"] * sent_len
+                for arg, role in zip(srl_rel.arguments, srl_rel.roles):
+                    frames[arg.start - sent_start] = "B-" + role
+                    if arg.end - arg.start > 1:
+                        frames[arg.start - sent_start + 1 : arg.end - sent_start - 1] = [
+                            "I-" + role
+                        ] * (arg.end - arg.start - 1)
+                    if role == "V":
+                        verb = document.tokens[arg.start]
+                srl_frames.append({"verb": verb, "frames": frames})
+
+        coref_spans = []
+        for cluster in document.coref_clusters:
+            span_start = min([span.start for span in cluster.spans])
+            span_end = max([span.end for span in cluster.spans])
+            if sent_start <= span_start and span_end <= sent_end:
+                current_coref = [
+                    document.metadata["coref_cluster_ids"].pop(0),
+                    span_start - sent_start,
+                    span_end - sent_start - 1,
+                ]
+                coref_spans.append(current_coref)
+
+        for part in document.parts:
+            if part.start <= sent_start and sent_end <= part.end:
+                part_id = int(part.label)
+
         example_sentence = {
-            "part_id": [],  # TODO
+            "part_id": part_id,
             "words": list(document.tokens[sent_start:sent_end]),
             "pos_tags": [
                 pos_tag_labels.str2int(pos_tag)
@@ -294,13 +325,8 @@ def document_to_example(
             "word_senses": word_senses,
             "speaker": document.speakers[idx].label,
             "name_entities": named_entities,
-            "srl_frames": [
-                {
-                    "verb": [],
-                    "frames": [],
-                }
-            ],  # TODO
-            "coref_spans": [],  # TODO # [cluster_id, start_index, end_index]
+            "srl_frames": srl_frames,
+            "coref_spans": coref_spans,
         }
 
         example["sentences"].append(example_sentence)
