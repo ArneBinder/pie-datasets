@@ -14,7 +14,7 @@ from pie_modules.documents import (
 from pytorch_ie.core import Document
 
 from pie_datasets.builders import BratBuilder, BratConfig
-from pie_datasets.builders.brat import BratDocumentWithMergedSpans
+from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
 from pie_datasets.core.dataset import DocumentConvertersType
 from pie_datasets.document.processing import Caster, Pipeline
 
@@ -39,26 +39,12 @@ def get_common_converter_pipeline_steps(target_document_type: type[Document]) ->
 def get_common_converter_pipeline_steps_with_resolve_parts_of_same(
     target_document_type: type[Document],
 ) -> dict:
-    result = get_common_converter_pipeline_steps(TextDocumentWithLabeledSpansAndBinaryRelations)
-    if issubclass(target_document_type, TextDocumentWithLabeledSpansAndBinaryRelations):
-        create_multi_spans = False
-        result_span_layer_name = "labeled_spans"
-    elif issubclass(target_document_type, TextDocumentWithLabeledMultiSpans):
-        create_multi_spans = True
-        result_span_layer_name = "labeled_multi_spans"
-    else:
-        raise ValueError(f"Unsupported document type: {target_document_type}")
-    result["resolve_parts_of_same"] = SpansViaRelationMerger(
-        relation_layer="binary_relations",
-        link_relation_label="parts_of_same",
-        create_multi_spans=create_multi_spans,
-        result_document_type=target_document_type,
-        result_field_mapping={
-            "labeled_spans": result_span_layer_name,
-            "binary_relations": "binary_relations",
-        },
+    return dict(
+        cast=Caster(
+            document_type=target_document_type,
+            field_mapping={"spans": "labeled_spans", "relations": "binary_relations"},
+        ),
     )
-    return result
 
 
 class SciArgConfig(BratConfig):
@@ -85,7 +71,7 @@ class SciArg(BratBuilder):
     ]
     DOCUMENT_TYPES = {
         BratBuilder.DEFAULT_CONFIG_NAME: BratDocumentWithMergedSpans,
-        "resolve_parts_of_same": BratDocumentWithMergedSpans,
+        "resolve_parts_of_same": BratDocument,
     }
 
     # we need to add None to the list of dataset variants to support the default dataset variant
@@ -93,6 +79,18 @@ class SciArg(BratBuilder):
         dataset_variant: {"url": URL, "split_paths": SPLIT_PATHS}
         for dataset_variant in ["default", "resolve_parts_of_same", None]
     }
+
+    def _generate_document(self, example, **kwargs):
+        document = super()._generate_document(example, **kwargs)
+        if self.config.resolve_parts_of_same:
+            document = SpansViaRelationMerger(
+                relation_layer="relations",
+                link_relation_label="parts_of_same",
+                create_multi_spans=True,
+                result_document_type=BratDocument,
+                result_field_mapping={"spans": "spans", "relations": "relations"},
+            )(document)
+        return document
 
     @property
     def document_converters(self) -> DocumentConvertersType:
@@ -120,17 +118,17 @@ class SciArg(BratBuilder):
             }
         else:
             return {
-                TextDocumentWithLabeledSpansAndBinaryRelations: Pipeline(
-                    **get_common_converter_pipeline_steps_with_resolve_parts_of_same(
-                        TextDocumentWithLabeledSpansAndBinaryRelations
-                    )
-                ),
-                TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions: Pipeline(
-                    **get_common_converter_pipeline_steps_with_resolve_parts_of_same(
-                        TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
-                    ),
-                    add_partitions=regex_partitioner,
-                ),
+                #        TextDocumentWithLabeledSpansAndBinaryRelations: Pipeline(
+                #            **get_common_converter_pipeline_steps_with_resolve_parts_of_same(
+                #                TextDocumentWithLabeledSpansAndBinaryRelations
+                #            )
+                #        ),
+                #        TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions: Pipeline(
+                #            **get_common_converter_pipeline_steps_with_resolve_parts_of_same(
+                #                TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+                #            ),
+                #            add_partitions=regex_partitioner,
+                #        ),
                 TextDocumentWithLabeledMultiSpansAndBinaryRelations: Pipeline(
                     **get_common_converter_pipeline_steps_with_resolve_parts_of_same(
                         TextDocumentWithLabeledMultiSpansAndBinaryRelations

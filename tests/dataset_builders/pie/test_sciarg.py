@@ -16,7 +16,7 @@ from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.sciarg.sciarg import SciArg
 from pie_datasets import DatasetDict
-from pie_datasets.builders.brat import BratDocumentWithMergedSpans
+from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
     PIE_DS_FIXTURE_DATA_PATH,
@@ -68,7 +68,7 @@ def test_builder(builder, dataset_variant):
     assert builder is not None
     assert builder.config_id == dataset_variant
     assert builder.dataset_name == DATASET_NAME
-    assert builder.document_type == BratDocumentWithMergedSpans
+    # assert builder.document_type == BratDocumentWithMergedSpans
 
 
 @pytest.fixture(scope="module")
@@ -97,12 +97,29 @@ def document(dataset) -> BratDocumentWithMergedSpans:
     return result
 
 
-def test_document(document):
+def test_document(document, dataset_variant):
     assert document is not None
     assert document.text.startswith(
         '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<Document xmlns:gate="http://www.gate.ac.uk" '
         'name="A01_S01_A_Powell_Optimization_Approach__for_Example-Based_Skinning_CITATION_PURPOSE_M_v1.xml">'
     )
+    if dataset_variant == "default":
+        assert isinstance(document, BratDocumentWithMergedSpans)
+        assert len(document.spans) == 183
+        counter = Counter([i.label for i in document.relations])
+        assert dict(counter) == {
+            "supports": 93,
+            "semantically_same": 9,
+            "contradicts": 8,
+            "parts_of_same": 6,
+        }
+    elif dataset_variant == "resolve_parts_of_same":
+        assert isinstance(document, BratDocument)
+        assert len(document.spans) == 177
+        counter = Counter([i.label for i in document.relations])
+        assert dict(counter) == {"supports": 93, "semantically_same": 9, "contradicts": 8}
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
 
 @pytest.fixture(
@@ -671,8 +688,8 @@ def test_document_converters(dataset_variant):
         }
     elif dataset_variant == "resolve_parts_of_same":
         assert set(document_converters) == {
-            TextDocumentWithLabeledSpansAndBinaryRelations,
-            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+            # TextDocumentWithLabeledSpansAndBinaryRelations,
+            # TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
             TextDocumentWithLabeledMultiSpansAndBinaryRelations,
             TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
         }
