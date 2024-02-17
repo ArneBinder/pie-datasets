@@ -42,7 +42,7 @@ def get_common_converter_pipeline_steps_with_resolve_parts_of_same(
     return dict(
         cast=Caster(
             document_type=target_document_type,
-            field_mapping={"spans": "labeled_spans", "relations": "binary_relations"},
+            field_mapping={"spans": "labeled_multi_spans", "relations": "binary_relations"},
         ),
     )
 
