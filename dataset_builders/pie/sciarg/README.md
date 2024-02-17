@@ -22,15 +22,18 @@ The language in the dataset is English (scientific academic publications on comp
 
 ### Dataset Variants
 
-The `sciarg` dataset comes in a single version (`default`) with `BratDocumentWithMergedSpans` as document type. Note,
-that this in contrast to the base `brat` dataset, where the document type for the `default` variant is `BratDocument`.
-The reason is that the SciArg dataset was published with spans that are just fragmented by whitespace which seems
-to be because of the annotation tool used. In the `sciarg` dataset, we merge these fragments, so that the document type
-can be `BratDocumentWithMergedSpans` (this is easier to handle for most of the task modules). However, fragmented
-spans are conceptually also available in SciArg, but they are marked with the `parts_of_same` relation which are kept
-as they are in the `sciarg` (`default`) dataset.
+The `sciarg` dataset comes in two versions: `default` and `resolve_parts_of_same`.
 
-TODO: integrate description for `resolve_parts_of_same` variant.
+First, the `default` version with `BratDocumentWithMergedSpans` as document type.
+In contrast to the base `brat` dataset, where the document type for the `default` variant is `BratDocument`,
+the SciArg dataset was published with spans that are just fragmented by whitespace which seems
+to be because of the annotation tool used. In the `sciarg` dataset, we merge these fragments, so that the document type
+can be `BratDocumentWithMergedSpans` (this is easier to handle for most of the task modules).
+Fragmented spans, which belong to the same argumentative unit, are marked with `parts_of_same` relations.
+
+Second, the `resolve_parts_of_same` version with `BratDocument` as document type.
+In this version, all fragmented spans which were separated by non-argumentative spans and
+are connected via the `parts_of_same` relations are nested as slices in one argumentative unit.
 
 ### Data Schema
 
@@ -45,6 +48,11 @@ from pie_datasets import load_dataset, builders
 datasets = load_dataset("pie/sciarg")
 doc = datasets["train"][0]
 assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
+
+# load version with resolved parts_of_same relations
+datasets = load_dataset("pie/sciarg", name='resolve_parts_of_same')
+doc = datasets["train"][0]
+assert isinstance(doc, builders.brat.BratDocument)
 ```
 
 ### Data Splits
@@ -58,7 +66,7 @@ For detailed statistics on the corpus, see Lauscher et al. ([2018](<(https://acl
 In this section, we report our own corpus' statistics; however, there are currently discrepancies in label counts between our report and:
 
 - previous report in [Lauscher et al., 2018](https://aclanthology.org/W18-5206/), p. 43),
-- current report above here (labels counted in `BratDocument`'s);
+- current report above here (labels counted in `BratDocumentWithMergedSpans`'s);
 
 possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) presents the numbers of the real argumentative components, whereas here discontinuous components are still split (marked with the `parts_of_same` helper relation) and, thus, count per fragment.
 
@@ -105,7 +113,9 @@ possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) prese
 
 ![sample1](img/leaannof3.png)
 
-Subset of relations in `A01`
+Above: Diagram from *Annotation Guildelines* (p.6)
+
+Below: Subset of relations in `A01`
 
 ![sample2](img/sciarg-sam.png)
 
@@ -113,20 +123,34 @@ Subset of relations in `A01`
 
 The dataset provides document converters for the following target document types:
 
+From `default` version:
+
 - `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
-  - `labeled_spans`: `LabeledSpan` annotations, converted from `BratDocument`'s `spans`
+  - `labeled_spans`: `LabeledSpan` annotations, converted from `BratDocumentWithMergedSpans`'s `spans`
     - labels: `background_claim`, `own_claim`, `data`
     - if `spans` contain whitespace at the beginning and/or the end, the whitespace are trimmed out.
-  - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocument`'s `relations`
-    - labels: `supports`, `contradicts`, `semantically_same`, and, in the case of `default` dataset variant also,  `parts_of_same`
+  - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocumentWithMergedSpans`'s `relations`
+    - labels: `supports`, `contradicts`, `semantically_same`, `parts_of_same`
     - if the `relations` label is `semantically_same` or `parts_of_same`, they are merged if they are the same arguments after sorting.
 - `pie_modules.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
   - `labeled_spans`, as above
   - `binary_relations`, as above
+  - `labeled_partitions`, `LabeledSpan` annotations, created from splitting `BratDocumentWithMergedSpans`'s `text` at new paragraph in `xml` format.
+    - labels: `title`, `abstract`, `H1`
+
+From `resolve_parts_of_same` version:
+
+- `pie_modules.documents.TextDocumentWithLabeledMultiSpansAndBinaryRelations`:
+  - `labeled_multi_spans`: `LabeledMultiSpan` annotations, converted from `BratDocument`'s `spans`
+    - labels: as above
+  - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocument`'s `relations`
+    - labels: `supports`, `contradicts`, `semantically_same`
+    - in contrast to the `default` version, spans connected with `parts_of_same` relation are stored as one labeled multi-span
+- `pie_modules.documents.TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions`:
+  - `labeled_multi_spans`, as above
+  - `binary_relations`, as above
   - `labeled_partitions`, `LabeledSpan` annotations, created from splitting `BratDocument`'s `text` at new paragraph in `xml` format.
     - labels: `title`, `abstract`, `H1`
-- `pie_modules.documents.TextDocumentWithLabeledMultiSpansAndBinaryRelations`: TODO
-- `pie_modules.documents.TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions`: TODO
 
 See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
 definitions.
