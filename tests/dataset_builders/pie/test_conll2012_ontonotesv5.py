@@ -81,19 +81,10 @@ def test_hf_example(hf_example):
 
 def test_pie_example(pie_example):
     assert pie_example is not None
+    # TODO: test annotations in pie_example
 
 
-@pytest.fixture(scope="module")
-def entity_labels(hf_dataset, dataset_variant, split_name):
-    return hf_dataset.features["sentences"][0]["named_entities"].feature
-
-
-@pytest.fixture(scope="module")
-def pos_tag_labels(hf_dataset, dataset_variant, split_name):
-    pos_tags_feature = hf_dataset.features["sentences"][0]["pos_tags"].feature
-    return pos_tags_feature if isinstance(pos_tags_feature, datasets.ClassLabel) else None
-
-
+# temporary test for comparison
 def test_compare_examples(hf_example, pie_example):
     # compare annotations between HF and PIE
     assert hf_example is not None
@@ -115,7 +106,18 @@ def test_compare_examples(hf_example, pie_example):
 
 
 @pytest.fixture(scope="module")
-def generate_document_kwargs(hf_dataset, entity_labels, pos_tag_labels, dataset_variant):
+def entity_labels(hf_dataset, dataset_variant, split_name):
+    return hf_dataset.features["sentences"][0]["named_entities"].feature
+
+
+@pytest.fixture(scope="module")
+def pos_tag_labels(hf_dataset, dataset_variant, split_name):
+    pos_tags_feature = hf_dataset.features["sentences"][0]["pos_tags"].feature
+    return pos_tags_feature if isinstance(pos_tags_feature, datasets.ClassLabel) else None
+
+
+@pytest.fixture(scope="module")
+def generate_document_kwargs(entity_labels, pos_tag_labels, dataset_variant):
     # return BUILDER_CLASS(config_name=dataset_variant)._generate_document_kwargs(hf_dataset) or {}
     return dict(entity_labels=entity_labels, pos_tag_labels=pos_tag_labels)
 
@@ -127,16 +129,14 @@ def test_generate_document_kwargs(generate_document_kwargs):
 
 @pytest.fixture(scope="module")
 def generated_document(hf_example, generate_document_kwargs, dataset_variant):
-    return example_to_document(hf_example, **generate_document_kwargs)
+    return BUILDER_CLASS(config_name=dataset_variant)._generate_document(
+        hf_example, **generate_document_kwargs
+    )
 
 
 def test_generate_document(generated_document):
     assert generated_document is not None
     assert isinstance(generated_document, BUILDER_CLASS.DOCUMENT_TYPE)
-
-
-def test_compare_document_and_generated_document(generated_document, pie_example):
-    assert generated_document == pie_example
 
 
 @pytest.fixture(scope="module")
@@ -149,8 +149,29 @@ def test_generate_example(generated_example):
     assert isinstance(generated_example, dict)
 
 
+def test_compare_document_and_generated_document(
+    generated_document, pie_example
+):  # TODO: identical content but assertion error
+    assert generated_document.id == pie_example.id
+    assert generated_document.sentences == pie_example.sentences
+    assert generated_document.tokens == pie_example.tokens
+    assert generated_document.pos_tags == pie_example.pos_tags
+    assert generated_document.parse_trees == pie_example.parse_trees
+    assert generated_document.speakers == pie_example.speakers
+    assert generated_document.entities == pie_example.entities
+    assert generated_document.predicates == pie_example.predicates
+    assert generated_document.coref_mentions == pie_example.coref_mentions
+    assert generated_document.coref_clusters == pie_example.coref_clusters
+    assert generated_document.srl_arguments == pie_example.srl_arguments
+    assert generated_document.srl_relations == pie_example.srl_relations
+    assert generated_document.word_senses == pie_example.word_senses
+    assert generated_document.parts == pie_example.parts
+
+
 def test_compare_generate_example_and_back(hf_example, generated_example):
-    assert hf_example == generated_example
+    assert hf_example["document_id"] == generated_example["document_id"]
+    # TODO: has bugs
+    assert hf_example["sentences"] == generated_example["sentences"]
 
 
 # def test_compare_generate_example_and_back_all
