@@ -105,6 +105,10 @@ Morio et al. ([2022](https://aclanthology.org/2022.tacl-1.37.pdf); p. 642, Table
 
 (Mayer et al. 2020, p.2110)
 
+#### Example
+
+![abstr-sam.png](img%2Fabstr-sam.png)
+
 ### Collected Statistics after Document Conversion
 
 In this section, we collect further statistics of the dataset after the conversion to `TextDocumentWithLabeledSpansAndBinaryRelations`.
