@@ -41,6 +41,19 @@ doc = datasets["neoplasm_train"][0]
 assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
 ```
 
+### Document Converters
+
+The dataset provides document converters for the following target document types:
+
+- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+  - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
+    - labels: `MajorClaim`, `Claim`, `Premise`
+  - `BinraryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
+    - labels:  `Support`, `Partial-Attack`, `Attack`
+
+See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
+definitions.
+
 ### Data Splits
 
 | Diseease-based Split                                      |              `neoplasm` |           `glaucoma` |              `mixed` |
@@ -52,7 +65,7 @@ assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
 - `mixed_test` contains 20 abstracts on the following diseases: glaucoma, neoplasm, diabetes, hypertension, hepatitis.
 - 31 out of 40 abstracts in `mixed_test` overlap with abstracts in `neoplasm_test` and `glaucoma_test`.
 
-### Label Descriptions and Statistics
+### Label Descriptions
 
 In this section, we describe labels according to [Mayer et al. (2020)](https://ebooks.iospress.nl/publication/55129), as well as our label counts on 669 abstracts.
 
@@ -92,22 +105,232 @@ Morio et al. ([2022](https://aclanthology.org/2022.tacl-1.37.pdf); p. 642, Table
 
 (Mayer et al. 2020, p.2110)
 
-#### Examples
+### Collected Statistics after Document Conversion
 
-![Examples](img/abstr-sam.png)
+In this section, we collect further statistics of the dataset after the conversion to `TextDocumentWithLabeledSpansAndBinaryRelations`.
+In the commands, we used the following dataset config: `configs/dataset/abstrct_base.yaml`:
 
-### Document Converters
+```commandline
+_target_: src.utils.execute_pipeline
+input:
+  _target_: pie_datasets.DatasetDict.load_dataset
+  path: pie/abstrct
+  revision: 277dc703fd78614635e86fe57c636b54931538b2
+```
 
-The dataset provides document converters for the following target document types:
+The script `evaluate_documents.py` comes from [PyTorch-IE-Hydra-Template](https://github.com/ArneBinder/pytorch-ie-hydra-template-1).
 
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
-  - `labeled_spans`: `LabeledSpan` annotations, converted from `BratDocumentWithMergedSpans`'s `spans`
-    - labels: `MajorClaim`, `Claim`, `Premise`
-  - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocumentWithMergedSpans`'s `relations`
-    - labels:  `Support`, `Partial-Attack`, `Attack`
+For the tokenization, we use `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased))
+to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py)).
 
-See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
-definitions.
+#### Relation argument (outer) token distance per label
+
+The distance is measured from the first token of the first argumentative unit to the last token of the last unit, a.k.a. outer distance.
+
+We collect the following statistics: number of documents in the split (*no. doc*), no. of relations (*len*), mean of token distance (*mean*), standard deviation of the distance (*std*), minimum outer distance (*min*), and maximum outer distance (*max*).
+We also present histograms in the collasible, showing the distribution of these relation distances (x-axis; and unit-counts in y-axis), accordingly.
+
+*Note that*: to collect the relation argument distance by tokens, the [respective branch](https://github.com/ArneBinder/pytorch-ie-hydra-template-1/pull/135) must be checked out instead of the `main` branch.
+
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=abstrct_base metric=count_relation_argument_distances
+```
+
+</details>
+
+##### neoplasm_train (350 documents)
+
+|                |  len | max |    mean | min |    std |
+| :------------- | ---: | --: | ------: | --: | -----: |
+| ALL            | 2836 | 511 | 132.903 |  17 | 80.869 |
+| Attack         |   72 | 346 |  89.639 |  29 | 75.554 |
+| Partial-Attack |  338 | 324 |  59.024 |  17 | 42.773 |
+| Support        | 2426 | 511 | 144.481 |  26 | 79.187 |
+
+<details>
+  <summary>Histogram (split: neoplasm_train, 350 documents)</summary>
+
+![img_2.png](img/rtd-label_abs-neo_train.png)
+
+</details>
+
+##### neoplasm_dev (50 documents)
+
+|                | len | max |    mean | min |    std |
+| :------------- | --: | --: | ------: | --: | -----: |
+| ALL            | 438 | 625 | 146.393 |  24 | 98.788 |
+| Attack         |  16 | 200 |  90.375 |  26 | 62.628 |
+| Partial-Attack |  50 | 240 |   72.04 |  24 | 47.685 |
+| Support        | 372 | 625 | 158.796 |  34 | 99.922 |
+
+<details>
+  <summary>Histogram (split: neoplasm_dev, 50 documents)</summary>
+
+![img_3.png](img/rtd-label_abs-neo_dev.png)
+
+</details>
+
+##### neoplasm_test (100 documents)
+
+|                | len | max |    mean | min |    std |
+| :------------- | --: | --: | ------: | --: | -----: |
+| ALL            | 848 | 459 | 126.731 |  22 | 75.363 |
+| Attack         |  32 | 390 | 115.688 |  22 | 97.262 |
+| Partial-Attack |  88 | 205 |  56.955 |  24 | 34.534 |
+| Support        | 728 | 459 | 135.651 |  33 | 73.365 |
+
+<details>
+  <summary>Histogram (split: neoplasm_test, 100 documents)</summary>
+
+![img_4.png](img/rtd-label_abs-neo_test.png)
+
+</details>
+
+##### glaucoma_test (100 documents)
+
+|                | len | max |    mean | min |    std |
+| :------------- | --: | --: | ------: | --: | -----: |
+| ALL            | 734 | 488 | 159.166 |  26 | 83.885 |
+| Attack         |  14 | 177 |      89 |  47 | 40.171 |
+| Partial-Attack |  52 | 259 |      74 |  26 | 51.239 |
+| Support        | 668 | 488 | 167.266 |  38 | 82.222 |
+
+<details>
+  <summary>Histogram (split: glaucoma_test, 100 documents)</summary>
+
+![img_5.png](img/rtd-label_abs-glu_test.png)
+
+</details>
+
+##### mixed_test (100 documents)
+
+|                | len | max |    mean | min |     std |
+| :------------- | --: | --: | ------: | --: | ------: |
+| ALL            | 658 | 459 | 145.067 |  23 |  77.921 |
+| Attack         |   6 | 411 |     164 |  34 | 174.736 |
+| Partial-Attack |  42 | 259 |  65.762 |  23 |  62.426 |
+| Support        | 610 | 459 | 150.341 |  35 |  74.273 |
+
+<details>
+  <summary>Histogram (split: mixed_test, 100 documents)</summary>
+
+![img_6.png](img/rtd-label_abs-mix_test.png)
+
+</details>
+
+#### Span lengths (tokens)
+
+The span length is measured from the first token of the first argumentative unit to the last token of the particular unit.
+
+We collect the following statistics: number of documents in the split (*no. doc*), no. of spans (*len*), mean of number of tokens in a span (*mean*), standard deviation of the number of tokens (*std*), minimum tokens in a span (*min*), and maximum tokens in a span (*max*).
+We also present histograms in the collasible, showing the distribution of these token-numbers (x-axis; and unit-counts in y-axis), accordingly.
+
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=abstrct_base metric=span_lengths_tokens
+```
+
+</details>
+
+| statistics | neoplasm_train | neoplasm_dev | neoplasm_test | glaucoma_test | mixed_test |
+| :--------- | -------------: | -----------: | ------------: | ------------: | ---------: |
+| no. doc    |            350 |           50 |           100 |           100 |        100 |
+| len        |           2267 |          326 |           686 |           594 |        600 |
+| mean       |         34.303 |       37.135 |        32.566 |        38.997 |     38.507 |
+| std        |         22.425 |       29.941 |        20.264 |        22.604 |     24.036 |
+| min        |              5 |            5 |             6 |             6 |          7 |
+| max        |            250 |          288 |           182 |           169 |        159 |
+
+<details>
+  <summary>Histogram (split: neoplasm_train, 350 documents)</summary>
+
+![slt_abs-neo_train.png](img%2Fspan_len_token%2Fslt_abs-neo_train.png)
+
+</details>
+  <details>
+  <summary>Histogram (split: neoplasm_dev, 50 documents)</summary>
+
+![slt_abs-neo_dev.png](img%2Fspan_len_token%2Fslt_abs-neo_dev.png)
+
+</details>
+  <details>
+  <summary>Histogram (split: neoplasm_test, 100 documents)</summary>
+
+![slt_abs-neo_test.png](img%2Fspan_len_token%2Fslt_abs-neo_test.png)
+
+</details>
+  <details>
+  <summary>Histogram (split: glucoma_test, 100 documents)</summary>
+
+![slt_abs-glu_test.png](img%2Fspan_len_token%2Fslt_abs-glu_test.png)
+
+</details>
+  <details>
+  <summary>Histogram (split: mixed_test, 100 documents)</summary>
+
+![slt_abs-mix_test.png](img%2Fspan_len_token%2Fslt_abs-mix_test.png)
+
+</details>
+
+#### Text length (tokens)
+
+The text (document) length is measured from the first token of the document to the last one.
+
+We collect the following statistics: number of documents in the split (*no. doc*), mean of document token-length (*mean*), standard deviation of the length (*std*), minimum number of tokens in a document (*min*), and maximum number of tokens in a document (*max*).
+We also present histograms in the collasible, showing the distribution of these text lengths (x-axis; and unit-counts in y-axis), accordingly.
+
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=abstrct_base metric=count_text_tokens
+```
+
+</details>
+
+| statistics | neoplasm_train | neoplasm_dev | neoplasm_test | glaucoma_test | mixed_test |
+| :--------- | -------------: | -----------: | ------------: | ------------: | ---------: |
+| no. doc    |            350 |           50 |           100 |           100 |        100 |
+| mean       |        447.291 |       481.66 |        442.79 |        456.78 |     450.29 |
+| std        |         91.266 |      116.239 |        89.692 |       115.535 |     87.002 |
+| min        |            301 |          329 |           292 |           212 |        268 |
+| max        |            843 |          952 |           776 |          1022 |        776 |
+
+<details>
+  <summary>Histogram (split: neoplasm_train, 350 documents)</summary>
+
+![tl_abs-neo_train.png](img%2Ftoken_len%2Ftl_abs-neo_train.png)
+
+</details>
+  <details>
+  <summary>Histogram (split: neoplasm_dev, 50 documents)</summary>
+
+![tl_abs-neo_dev.png](img%2Ftoken_len%2Ftl_abs-neo_dev.png)
+
+</details>
+  <details>
+  <summary>Histogram (split: neoplasm_test, 100 documents)</summary>
+
+![tl_abs-neo_test.png](img%2Ftoken_len%2Ftl_abs-neo_test.png)
+
+</details>
+  <details>
+  <summary>Histogram (split: glucoma_test, 100 documents)</summary>
+
+![tl_abs-glu_test.png](img%2Ftoken_len%2Ftl_abs-glu_test.png)
+
+</details>
+  <details>
+  <summary>Histogram (split: mixed_test, 100 documents)</summary>
+
+![tl_abs-mix_test.png](img%2Ftoken_len%2Ftl_abs-mix_test.png)
+
+</details>
 
 ## Dataset Creation
 
