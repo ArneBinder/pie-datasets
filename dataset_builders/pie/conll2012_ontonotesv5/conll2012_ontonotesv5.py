@@ -312,19 +312,29 @@ def document_to_example(
             if part.start <= sent_start and sent_end <= part.end:
                 part_id = int(part.label)
 
+        pos_tags = []
+        if pos_tag_labels is not None:
+            pos_tags.extend(
+                [
+                    pos_tag_labels.str2int(pos_tag)
+                    for pos_tag in document.pos_tags[sent_start:sent_end]
+                ]
+            )
+            if pos_tag_labels.int2str is None:
+                raise ValueError("pos_tag_labels.str2int is None.")
+        else:
+            pos_tags = document.pos_tags[sent_start:sent_end]
+
         example_sentence = {
             "part_id": part_id,
             "words": list(document.tokens[sent_start:sent_end]),
-            "pos_tags": [
-                pos_tag_labels.str2int(pos_tag)
-                for pos_tag in document.pos_tags[sent_start:sent_end]
-            ],
+            "pos_tags": pos_tags,
             "parse_tree": document.parse_trees[idx].label,
             "predicate_lemmas": predicate_lemmas,
             "predicate_framenet_ids": predicate_framenet_ids,
             "word_senses": word_senses,
             "speaker": document.speakers[idx].label,
-            "name_entities": named_entities,
+            "named_entities": named_entities,
             "srl_frames": srl_frames,
             "coref_spans": coref_spans,
         }
