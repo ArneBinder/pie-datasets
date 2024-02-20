@@ -5,7 +5,6 @@ from pie_modules.document.processing import (
     TextSpanTrimmer,
 )
 from pie_modules.documents import (
-    TextDocumentWithLabeledMultiSpans,
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
     TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
     TextDocumentWithLabeledSpansAndBinaryRelations,
