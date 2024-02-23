@@ -86,23 +86,10 @@ def test_pie_example(pie_example):
 
 # temporary test for comparison
 def test_compare_examples(hf_example, pie_example):
-    # compare annotations between HF and PIE
+    # compare some annotations between HF and PIE
     assert hf_example is not None
     assert pie_example is not None
     assert hf_example["document_id"] == pie_example.id
-    # pie_example.sentences
-    # pie_example.tokens
-    # pie_example.pos_tags
-    # pie_example.parse_trees
-    # pie_example.speakers
-    # pie_example.entities
-    # pie_example.predicates
-    # pie_example.coref_mentions
-    # pie_example.coref_clusters
-    # pie_example.srl_arguments
-    # pie_example.srl_relations
-    # pie_example.word_senses
-    # pie_example.parts
 
 
 @pytest.fixture(scope="module")
@@ -170,7 +157,7 @@ def test_compare_document_and_generated_document(
 
 def test_compare_generate_example_and_back(hf_example, generated_example):
     assert hf_example["document_id"] == generated_example["document_id"]
-    # TODO: has bugs
+    # TODO: debugging
     assert hf_example["sentences"] == generated_example["sentences"]
 
 
