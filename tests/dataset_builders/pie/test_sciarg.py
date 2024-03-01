@@ -30,7 +30,7 @@ from tests.dataset_builders.common import (
 
 datasets.disable_caching()
 
-TEST_FULL_DATASET = False
+TEST_FULL_DATASET = True
 
 DATASET_NAME = "sciarg"
 BUILDER_CLASS = SciArg
