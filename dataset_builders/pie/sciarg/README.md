@@ -128,10 +128,10 @@ From `default` version:
 - `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
   - `labeled_spans`: `LabeledSpan` annotations, converted from `BratDocumentWithMergedSpans`'s `spans`
     - labels: `background_claim`, `own_claim`, `data`
-    - if `spans` contain whitespace at the beginning and/or the end, the whitespace are trimmed out.
+    - if `spans` contain whitespace at the beginning and/or the end, that whitespace is trimmed out.
   - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocumentWithMergedSpans`'s `relations`
     - labels: `supports`, `contradicts`, `semantically_same`, `parts_of_same`
-    - if the `relations` label is `semantically_same` or `parts_of_same`, they are merged if they are the same arguments after sorting.
+    - if the `relations` label is `semantically_same` or `parts_of_same` (i.e. it is a symmetric relation), their arguments are sorted by their start and end indices.
 - `pie_modules.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
   - `labeled_spans`, as above
   - `binary_relations`, as above
@@ -143,9 +143,11 @@ From `resolve_parts_of_same` version:
 - `pie_modules.documents.TextDocumentWithLabeledMultiSpansAndBinaryRelations`:
   - `labeled_multi_spans`: `LabeledMultiSpan` annotations, converted from `BratDocument`'s `spans`
     - labels: as above
+    - if spans contain whitespace at the beginning and/or the end, that whitespace is trimmed out.
   - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocument`'s `relations`
     - labels: `supports`, `contradicts`, `semantically_same`
     - in contrast to the `default` version, spans connected with `parts_of_same` relation are stored as one labeled multi-span
+    - if the `relations` label is `semantically_same` (i.e. it is a symmetric relation), their arguments are sorted by their start and end indices.
 - `pie_modules.documents.TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions`:
   - `labeled_multi_spans`, as above
   - `binary_relations`, as above
