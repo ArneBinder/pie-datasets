@@ -43,6 +43,11 @@ def get_common_converter_pipeline_steps_with_resolve_parts_of_same(
             document_type=target_document_type,
             field_mapping={"spans": "labeled_multi_spans", "relations": "binary_relations"},
         ),
+        trim_adus=TextSpanTrimmer(layer="labeled_multi_spans"),
+        sort_symmetric_relation_arguments=RelationArgumentSorter(
+            relation_layer="binary_relations",
+            label_whitelist=["semantically_same"],
+        ),
     )
 
 
