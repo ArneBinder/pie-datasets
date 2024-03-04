@@ -32,8 +32,8 @@ can be `BratDocumentWithMergedSpans` (this is easier to handle for most of the t
 Fragmented spans, which belong to the same argumentative unit, are marked with `parts_of_same` relations.
 
 Second, the `resolve_parts_of_same` version with `BratDocument` as document type.
-In this version, all fragmented spans which were separated by non-argumentative spans and
-are connected via the `parts_of_same` relations are nested as slices in one argumentative unit.
+In this version, all fragmented spans which were separated by other argumentative or non-argumentative spans and
+are connected via the `parts_of_same` relations are converted to `LabeledMultiSpans`.
 
 ### Data Schema
 
@@ -105,7 +105,7 @@ possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) prese
 
 - `semantically_same`: between two mentions of effectively the same claim or data component. Can be seen as *argument coreference*, analogous to entity, and *event coreference*. This relation is considered symmetric (i.e., **bidirectional**) and non-argumentative.
   (Lauscher et al. 2018, p.41; following [Dung, 1995](https://www.sciencedirect.com/science/article/pii/000437029400041X?via%3Dihub))
-- `parts_of_same`: when a single component is split up in several parts. It is **non-argumentative**, **bidirectional**, but also **intra-component**
+- `parts_of_same` (only in the `default` dataset variant): when a single component is split up in several parts. It is **non-argumentative**, **bidirectional**, but also **intra-component**
 
 (*Annotation Guidelines*, pp. 4-6)
 
