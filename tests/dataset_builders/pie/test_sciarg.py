@@ -656,8 +656,18 @@ TOKENIZED_DOCUMENT_TYPE_MAPPING = {
 def test_tokenize_documents_all(converted_dataset, tokenizer, dataset_variant):
     if converted_dataset is None:
         return
+    # docs that cause errors when using strict_span_conversion (and the spans that can not be converted):
+    # - A11: "́ Ø 1⁄2 μ 3⁄4È and  ́ Ø 3⁄4 μ 3⁄4Ç"
+    # - A19: "̃ l CE is the normalized muscle fiber length"
+    # - A20: "̇ to generalized forces (u)" / "('a force field function u = g(q, q)  ̇ maps kinematic states', '̇ to generalized forces (u)')"
+    # - A24: "φ n = φ  ̄"
+    # - A25: " M 0 −1 I −1 0 A 1 b T 1 ··· A k b T k b k" and " b 1  R = " / "('\uf8ee b 1 \uf8f9 R = \uf8f0',)" and "('\uf8fb M 0 −1 I −1 0 A 1 b T 1 ··· A k b T k b k',)"
+    docs_with_span_errors = {"A11", "A19", "A20", "A24", "A25"}
     for split, docs in converted_dataset.items():
         for doc in docs:
+            strict_span_conversion = doc.id not in docs_with_span_errors and not isinstance(
+                doc, TextDocumentWithLabeledPartitions
+            )
             # Note, that this is a list of documents, because the document may be split into chunks
             # if the input text is too long.
             tokenized_docs = tokenize_document(
@@ -668,9 +678,7 @@ def test_tokenize_documents_all(converted_dataset, tokenizer, dataset_variant):
                 partition_layer="labeled_partitions"
                 if isinstance(doc, TextDocumentWithLabeledPartitions)
                 else None,
-                strict_span_conversion=False
-                if isinstance(doc, TextDocumentWithLabeledPartitions)
-                else True,
+                strict_span_conversion=strict_span_conversion,
                 verbose=True,
             )
             # we just ensure that we get at least one tokenized document
