@@ -70,6 +70,19 @@ def test_builder(builder, dataset_variant):
     assert builder.dataset_name == DATASET_NAME
 
 
+def test_generate_document(builder, hf_dataset, dataset_variant):
+    hf_example = hf_dataset["train"][0]
+    document = builder._generate_document(hf_example)
+    if dataset_variant == "default":
+        assert isinstance(document, BratDocumentWithMergedSpans)
+        assert len(document.spans) == 183
+    elif dataset_variant == "resolve_parts_of_same":
+        assert isinstance(document, BratDocument)
+        assert len(document.spans) == 177
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
 @pytest.fixture(scope="module")
 def dataset(dataset_variant) -> DatasetDict:
     if TEST_FULL_DATASET:
