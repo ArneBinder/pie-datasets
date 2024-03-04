@@ -72,11 +72,23 @@ possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) prese
 
 #### Components
 
+`default` version:
+
 | Components         | Count | Percentage |
 | ------------------ | ----: | ---------: |
 | `background_claim` |  3291 |     24.2 % |
 | `own_claim`        |  6004 |     44.2 % |
 | `data`             |  4297 |     31.6 % |
+| total              | 13592 |    100.0 % |
+
+`resolve_parts_of_same` version:
+
+| Components         | Count | Percentage |
+| ------------------ | ----: | ---------: |
+| `background_claim` |  2752 |     22.4 % |
+| `own_claim`        |  5450 |     44.3 % |
+| `data`             |  4093 |     33.3 % |
+| total              | 12295 |    100.0 % |
 
 - `own_claim` is an argumentative statement that closely relates to the authors’ own work.
 - `background_claim` an argumentative statement relating to the background of authors’ work, e.g., about related work or common practices.
@@ -85,12 +97,24 @@ possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) prese
 
 #### Relations
 
+`default` version:
+
 | Relations                  | Count | Percentage |
 | -------------------------- | ----: | ---------: |
-| support: `support`         |  5791 |     74.0 % |
-| attack: `contradict`       |   697 |      8.9 % |
+| support: `support`         |  5789 |     74.0 % |
+| attack: `contradict`       |   696 |      8.9 % |
 | other: `semantically_same` |    44 |      0.6 % |
 | other: `parts_of_same`     |  1298 |     16.6 % |
+| total                      |  7827 |    100.0 % |
+
+`resolve_parts_of_same` version:
+
+| Relations                  | Count | Percentage |
+| -------------------------- | ----: | ---------: |
+| support: `support`         |  5788 |     88.7 % |
+| attack: `contradict`       |   696 |     10.7 % |
+| other: `semantically_same` |    44 |      0.7 % |
+| total                      |  6528 |    100.0 % |
 
 ##### Argumentative relations
 
