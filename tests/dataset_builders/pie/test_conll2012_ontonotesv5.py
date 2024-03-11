@@ -155,7 +155,7 @@ def test_compare_document_and_generated_document(
     assert generated_document.parts == pie_example.parts
 
 
-def test_compare_generate_example_and_back(hf_example, generated_example):
+def test_compare_generate_example_and_back(hf_example, generated_example, generated_document):
     assert hf_example["document_id"] == generated_example["document_id"]
     # TODO: debugging
     assert hf_example["sentences"] == generated_example["sentences"]
