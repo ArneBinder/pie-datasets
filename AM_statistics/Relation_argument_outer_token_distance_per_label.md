@@ -28,7 +28,7 @@ The script `evaluate_documents.py` comes from [PyTorch-IE-Hydra-Template](https:
 <details>
   <summary>Histogram (split: train, 322 documents)</summary>
 
-![img_1.png](img/relation_token_distance_per_label/rtd-label_aae2_train.png)
+![img_1.png](../dataset_builders/pie/aae2/img/rtd-label_aae2_train.png)
 
 </details>
 
@@ -44,7 +44,7 @@ The script `evaluate_documents.py` comes from [PyTorch-IE-Hydra-Template](https:
 <details>
   <summary>Histogram (split: test, 80 documents)</summary>
 
-![img.png](img/relation_token_distance_per_label/rtd-label_aae2_test.png)
+![img.png](../dataset_builders/pie/aae2/img/rtd-label_aae2_test.png)
 
 </details>
 
