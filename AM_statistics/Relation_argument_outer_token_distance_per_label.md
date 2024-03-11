@@ -255,7 +255,7 @@ python src/evaluate_documents.py dataset=sciarg_base metric=count_relation_argum
 <details>
   <summary>Histogram (split: train, 60 documents)</summary>
 
-![img_11.png](img/relation_token_distance_per_label/rtd-label_scitdb-argmin.png)
+![img_11.png](../dataset_builders/pie/scidtb_argmin/img/rtd-label_scitdb-argmin.png)
 
 </details>
 
