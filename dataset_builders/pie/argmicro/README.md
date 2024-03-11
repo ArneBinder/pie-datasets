@@ -74,8 +74,6 @@ input:
   path: pie/argmicro
   revision: 28ef031d2a2c97be7e9ed360e1a5b20bd55b57b2
   name: en
-  base_dataset_kwargs:
-    data_dir: data/datasets/arg-microtexts-master.zip
 ```
 
 For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py)).
