@@ -46,8 +46,6 @@ input:
   _target_: pie_datasets.DatasetDict.load_dataset
   path: pie/scidtb_argmin
   revision: 335a8e6168919d7f204c6920eceb96745dbd161b
-  base_dataset_kwargs:
-    data_dir: data/datasets/scidtb_argmin_annotations.tgz
 ```
 
 For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py)).

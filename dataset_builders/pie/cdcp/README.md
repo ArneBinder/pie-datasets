@@ -52,8 +52,6 @@ input:
   _target_: pie_datasets.DatasetDict.load_dataset
   path: pie/cdcp
   revision: 001722894bdca6df6a472d0d186a3af103e392c5
-  base_dataset_kwargs:
-    data_dir: data/datasets/cdcp_acl17.zip
 ```
 
 For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py)).
