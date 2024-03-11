@@ -139,7 +139,7 @@ python src/evaluate_documents.py dataset=aae2_base metric=METRIC
 
 where a `METRIC` is called according to the available metric configs in `config/metric/METRIC` (see [metrics](https://github.com/ArneBinder/pytorch-ie-hydra-template-1/tree/main/configs/metric)).
 
-This also requires to have the following dataset config in `configs/dataset/abstrct_base.yaml` of this dataset within the repo directory:
+This also requires to have the following dataset config in `configs/dataset/aae2_base.yaml` of this dataset within the repo directory:
 
 ```commandline
 _target_: src.utils.execute_pipeline
