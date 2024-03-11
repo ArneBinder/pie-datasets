@@ -96,8 +96,6 @@ python src/evaluate_documents.py dataset=argmicro_base metric=relation_argument_
 
 </details>
 
-##### train (112 documents)
-
 |       |  len | max |   mean | min |    std |
 | :---- | ---: | --: | -----: | --: | -----: |
 | ALL   | 1018 | 127 | 44.434 |  14 | 21.501 |
