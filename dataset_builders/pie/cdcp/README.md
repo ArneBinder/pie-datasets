@@ -61,7 +61,7 @@ For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTok
 The distance is measured from the first token of the first argumentative unit to the last token of the last unit, a.k.a. outer distance.
 
 We collect the following statistics: number of documents in the split (*no. doc*), no. of relations (*len*), mean of token distance (*mean*), standard deviation of the distance (*std*), minimum outer distance (*min*), and maximum outer distance (*max*).
-We also present histograms in the collasible, showing the distribution of these relation distances (x-axis; and unit-counts in y-axis), accordingly.
+We also present histograms in the collapsible, showing the distribution of these relation distances (x-axis; and unit-counts in y-axis), accordingly.
 
 <details>
 <summary>Command</summary>
@@ -107,7 +107,7 @@ python src/evaluate_documents.py dataset=cdcp_base metric=relation_argument_toke
 The span length is measured from the first token of the first argumentative unit to the last token of the particular unit.
 
 We collect the following statistics: number of documents in the split (*no. doc*), no. of spans (*len*), mean of number of tokens in a span (*mean*), standard deviation of the number of tokens (*std*), minimum tokens in a span (*min*), and maximum tokens in a span (*max*).
-We also present histograms in the collasible, showing the distribution of these token-numbers (x-axis; and unit-counts in y-axis), accordingly.
+We also present histograms in the collapsible, showing the distribution of these token-numbers (x-axis; and unit-counts in y-axis), accordingly.
 
 <details>
 <summary>Command</summary>
@@ -145,7 +145,7 @@ python src/evaluate_documents.py dataset=cdcp_base metric=span_lengths_tokens
 The token length is measured from the first token of the document to the last one.
 
 We collect the following statistics: number of documents in the split (*no. doc*), mean of document token-length (*mean*), standard deviation of the length (*std*), minimum number of tokens in a document (*min*), and maximum number of tokens in a document (*max*).
-We also present histograms in the collasible, showing the distribution of these token lengths (x-axis; and unit-counts in y-axis), accordingly.
+We also present histograms in the collapsible, showing the distribution of these token lengths (x-axis; and unit-counts in y-axis), accordingly.
 
 <details>
 <summary>Command</summary>
