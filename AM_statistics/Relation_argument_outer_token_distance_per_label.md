@@ -188,7 +188,7 @@ python src/evaluate_documents.py dataset=argmicro_base metric=count_relation_arg
 <details>
   <summary>Histogram (split: train, 580 documents)</summary>
 
-![img_8.png](img/relation_token_distance_per_label/rtd-label_cdcp_train.png)
+![img_8.png](../dataset_builders/pie/cdcp/img/rtd-label_cdcp_train.png)
 
 </details>
 
@@ -203,7 +203,7 @@ python src/evaluate_documents.py dataset=argmicro_base metric=count_relation_arg
 <details>
   <summary>Histogram (split: test, 150 documents)</summary>
 
-![img_9.png](img/relation_token_distance_per_label/rtd-label_cdcp_test.png)
+![img_9.png](../dataset_builders/pie/cdcp/img/rtd-label_cdcp_test.png)
 
 </details>
 
