@@ -139,13 +139,11 @@ The distance is measured from the first token of the first argumentative unit to
 We collect the following statistics: number of documents in the split (*no. doc*), no. of relations (*len*), mean of token distance (*mean*), standard deviation of the distance (*std*), minimum outer distance (*min*), and maximum outer distance (*max*).
 We also present histograms in the collasible, showing the distribution of these relation distances (x-axis; and unit-counts in y-axis), accordingly.
 
-**Important**: To reproduce the statistics and figures for this metric by yourself, the [`relation_argument_distance_collector` branch](https://github.com/ArneBinder/pytorch-ie-hydra-template-1/pull/135) of `pytorch-ie-hydra-template` needs to be checked out instead of the `main` branch!
-
 <details>
 <summary>Command</summary>
 
 ```
-python src/evaluate_documents.py dataset=abstrct_base metric=count_relation_argument_distances
+python src/evaluate_documents.py dataset=abstrct_base metric=relation_argument_token_distances
 ```
 
 </details>
@@ -258,40 +256,40 @@ python src/evaluate_documents.py dataset=abstrct_base metric=span_lengths_tokens
 <details>
   <summary>Histogram (split: neoplasm_train, 350 documents)</summary>
 
-![slt_abs-neo_train.png](img%2Fspan_len_token%2Fslt_abs-neo_train.png)
+![slt_abs-neo_train.png](img%2Fslt_abs-neo_train.png)
 
 </details>
   <details>
   <summary>Histogram (split: neoplasm_dev, 50 documents)</summary>
 
-![slt_abs-neo_dev.png](img%2Fspan_len_token%2Fslt_abs-neo_dev.png)
+![slt_abs-neo_dev.png](img%2Fslt_abs-neo_dev.png)
 
 </details>
   <details>
   <summary>Histogram (split: neoplasm_test, 100 documents)</summary>
 
-![slt_abs-neo_test.png](img%2Fspan_len_token%2Fslt_abs-neo_test.png)
+![slt_abs-neo_test.png](img%2Fslt_abs-neo_test.png)
 
 </details>
   <details>
   <summary>Histogram (split: glucoma_test, 100 documents)</summary>
 
-![slt_abs-glu_test.png](img%2Fspan_len_token%2Fslt_abs-glu_test.png)
+![slt_abs-glu_test.png](img%2Fslt_abs-glu_test.png)
 
 </details>
   <details>
   <summary>Histogram (split: mixed_test, 100 documents)</summary>
 
-![slt_abs-mix_test.png](img%2Fspan_len_token%2Fslt_abs-mix_test.png)
+![slt_abs-mix_test.png](img%2Fslt_abs-mix_test.png)
 
 </details>
 
-#### Text length (tokens)
+#### Token length (tokens)
 
-The text (document) length is measured from the first token of the document to the last one.
+The token length is measured from the first token of the document to the last one.
 
 We collect the following statistics: number of documents in the split (*no. doc*), mean of document token-length (*mean*), standard deviation of the length (*std*), minimum number of tokens in a document (*min*), and maximum number of tokens in a document (*max*).
-We also present histograms in the collasible, showing the distribution of these text lengths (x-axis; and unit-counts in y-axis), accordingly.
+We also present histograms in the collasible, showing the distribution of these token lengths (x-axis; and unit-counts in y-axis), accordingly.
 
 <details>
 <summary>Command</summary>
@@ -313,31 +311,31 @@ python src/evaluate_documents.py dataset=abstrct_base metric=count_text_tokens
 <details>
   <summary>Histogram (split: neoplasm_train, 350 documents)</summary>
 
-![tl_abs-neo_train.png](img%2Ftoken_len%2Ftl_abs-neo_train.png)
+![tl_abs-neo_train.png](img%2Ftl_abs-neo_train.png)
 
 </details>
   <details>
   <summary>Histogram (split: neoplasm_dev, 50 documents)</summary>
 
-![tl_abs-neo_dev.png](img%2Ftoken_len%2Ftl_abs-neo_dev.png)
+![tl_abs-neo_dev.png](img%2Ftl_abs-neo_dev.png)
 
 </details>
   <details>
   <summary>Histogram (split: neoplasm_test, 100 documents)</summary>
 
-![tl_abs-neo_test.png](img%2Ftoken_len%2Ftl_abs-neo_test.png)
+![tl_abs-neo_test.png](img%2Ftl_abs-neo_test.png)
 
 </details>
   <details>
   <summary>Histogram (split: glucoma_test, 100 documents)</summary>
 
-![tl_abs-glu_test.png](img%2Ftoken_len%2Ftl_abs-glu_test.png)
+![tl_abs-glu_test.png](img%2Ftl_abs-glu_test.png)
 
 </details>
   <details>
   <summary>Histogram (split: mixed_test, 100 documents)</summary>
 
-![tl_abs-mix_test.png](img%2Ftoken_len%2Ftl_abs-mix_test.png)
+![tl_abs-mix_test.png](img%2Ftl_abs-mix_test.png)
 
 </details>
 
