@@ -196,7 +196,8 @@ def example_to_document(
             token_idx = sentence_offset + idx
             if word_sense is not None:
                 word_senses.append(
-                    LabeledSpan(start=token_idx, end=token_idx + 1, label=str(int(word_sense)))
+                    # LabeledSpan(start=token_idx, end=token_idx + 1, label=str(int(word_sense)))
+                    LabeledSpan(start=token_idx, end=token_idx + 1, label=str(word_sense))
                 )
 
         # handle parts
@@ -259,16 +260,20 @@ def document_to_example(
         for pred in document.predicates:
             if sent_start <= pred.start and pred.end <= sent_end:
                 pred_len = pred.end - pred.start
-                predicate_lemmas[pred.start : pred.end] = [pred.lemma] * pred_len
+                predicate_lemmas[pred.start - sent_start : pred.end - sent_start] = [
+                    pred.lemma
+                ] * pred_len
                 if pred.framenet_id is not None:
-                    predicate_framenet_ids[pred.start : pred.end] = [pred.framenet_id] * pred_len
+                    predicate_framenet_ids[pred.start - sent_start : pred.end - sent_start] = [
+                        pred.framenet_id
+                    ] * pred_len
 
         word_senses = [None] * sent_len
         for sense in document.word_senses:
             if sent_start <= sense.start and sense.end <= sent_end:
-                word_senses[sense.start : sense.end] = [float(sense.label)] * (
-                    sense.end - sense.start
-                )
+                word_senses[sense.start - sent_start : sense.end - sent_start] = [
+                    float(sense.label)
+                ] * sense.end - sense.start
 
         named_entities = [0] * sent_len
         for ent in document.entities:
@@ -289,7 +294,7 @@ def document_to_example(
                 for arg, role in zip(srl_rel.arguments, srl_rel.roles):
                     frames[arg.start - sent_start] = "B-" + role
                     if arg.end - arg.start > 1:
-                        frames[arg.start - sent_start + 1 : arg.end - sent_start - 1] = [
+                        frames[arg.start - sent_start + 1 : arg.end - sent_start] = [
                             "I-" + role
                         ] * (arg.end - arg.start - 1)
                     if role == "V":
@@ -336,7 +341,7 @@ def document_to_example(
             "speaker": document.speakers[idx].label,
             "named_entities": named_entities,
             "srl_frames": srl_frames,
-            "coref_spans": coref_spans,
+            "coref_spans": coref_spans,  # TODO: debug
         }
 
         example["sentences"].append(example_sentence)
