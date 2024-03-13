@@ -21,8 +21,8 @@ BUILDER_CLASS = Conll2012Ontonotesv5
 DOCUMENT_TYPE = BUILDER_CLASS.DOCUMENT_TYPE
 HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
-STREAM_SIZE = 2  # 5
-SPLIT_NAMES = {"train"}  # , "validation", "test"}
+STREAM_SIZE = 3
+SPLIT_NAMES = {"train", "validation", "test"}
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
@@ -41,8 +41,6 @@ def hf_dataset(dataset_variant, split_name):
         BUILDER_CLASS.BASE_DATASET_PATH, name=dataset_variant, split=split_name, streaming=True
     )
     return dataset.take(STREAM_SIZE)
-    # dataset_head = dataset.take(STREAM_SIZE)
-    # return list(dataset_head)
 
 
 def test_hf_dataset(hf_dataset, dataset_variant, split_name):
@@ -55,8 +53,6 @@ def pie_dataset(dataset_variant, split_name):
         str(PIE_DATASET_PATH), name=dataset_variant, split=split_name, streaming=True
     )
     return dataset.take(STREAM_SIZE)
-    # dataset_head = dataset.take(STREAM_SIZE)
-    # return list(dataset_head)
 
 
 def test_pie_dataset(pie_dataset, dataset_variant, split_name):
@@ -79,14 +75,6 @@ def test_hf_example(hf_example):
 
 def test_pie_example(pie_example):
     assert pie_example is not None
-
-
-# temporary test for comparison
-def test_compare_examples(hf_example, pie_example):
-    # compare some annotations between HF and PIE
-    assert hf_example is not None
-    assert pie_example is not None
-    assert hf_example["document_id"] == pie_example.id
 
 
 @pytest.fixture(scope="module")
@@ -117,11 +105,30 @@ def generated_document(hf_example, generate_document_kwargs, dataset_variant):
     )
 
 
-def test_generate_document(generated_document, dataset_variant):
+def test_generate_document(generated_document, dataset_variant, split_name):
     assert generated_document is not None
     assert isinstance(generated_document, BUILDER_CLASS.DOCUMENT_TYPE)
-    # TODO: test annotations in pie_example
-    # if dataset_variant == 'english_v4-train':
+    # check actual annotations
+    if dataset_variant == "english_v4" and split_name == "train":
+        assert generated_document.speakers[0].label == "Speaker#1"
+        assert generated_document.parts[0].label == "0"
+        assert generated_document.entities[0].label == "ORG"
+        assert generated_document.predicates[0].lemma == "memory"
+        assert generated_document.srl_relations[0].roles == (
+            "ARG0",
+            "ARGM-MNR",
+            "V",
+            "ARG1",
+            "ARG2",
+        )
+        assert (
+            generated_document.parse_trees[0].label
+            == "(TOP(SBARQ(WHNP(WHNP (WP What)  (NN kind) )(PP (IN of) (NP (NN memory) ))) (. ?) ))"
+        )
+        assert generated_document.tokens[
+            generated_document.sentences[0].start : generated_document.sentences[0].end
+        ] == ("What", "kind", "of", "memory", "?")
+        assert generated_document.word_senses[0].label == "1.0"
 
 
 @pytest.fixture(scope="module")
@@ -129,15 +136,10 @@ def generated_example(generated_document, generate_document_kwargs, dataset_vari
     return document_to_example(generated_document, **generate_document_kwargs)
 
 
-def test_generate_example(generated_example):
-    assert generated_example is not None
-    assert isinstance(generated_example, dict)
-
-
 @pytest.mark.slow
 def test_compare_document_and_generated_document(
     generated_document, pie_example
-):  # TODO: identical content but assertion error
+):  # TODO: identical content but get assertion error
     assert generated_document.id == pie_example.id
     assert generated_document.sentences == pie_example.sentences
     assert generated_document.tokens == pie_example.tokens
@@ -159,6 +161,7 @@ def test_compare_generate_example_and_back(hf_example, generated_example):
     for hf, gen in zip(hf_example["sentences"], generated_example["sentences"]):
         for key in hf.keys():
             if key == "coref_spans":
+                # 'coref_spans' must be sorted before compare
                 assert sorted(hf[key]) == sorted(gen[key])
             else:
                 assert hf[key] == gen[key]
