@@ -78,19 +78,8 @@ def test_pie_example(pie_example):
 
 
 @pytest.fixture(scope="module")
-def entity_labels(hf_dataset, dataset_variant, split_name):
-    return hf_dataset.features["sentences"][0]["named_entities"].feature
-
-
-@pytest.fixture(scope="module")
-def pos_tag_labels(hf_dataset, dataset_variant, split_name):
-    pos_tags_feature = hf_dataset.features["sentences"][0]["pos_tags"].feature
-    return pos_tags_feature if isinstance(pos_tags_feature, datasets.ClassLabel) else None
-
-
-@pytest.fixture(scope="module")
-def generate_document_kwargs(entity_labels, pos_tag_labels, dataset_variant):
-    return dict(entity_labels=entity_labels, pos_tag_labels=pos_tag_labels)
+def generate_document_kwargs(hf_dataset, dataset_variant):
+    return BUILDER_CLASS(config_name=dataset_variant)._generate_document_kwargs(hf_dataset)
 
 
 def test_generate_document_kwargs(generate_document_kwargs):
