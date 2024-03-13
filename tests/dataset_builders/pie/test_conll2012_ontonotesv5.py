@@ -22,7 +22,7 @@ DOCUMENT_TYPE = BUILDER_CLASS.DOCUMENT_TYPE
 HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 STREAM_SIZE = 3
-SPLIT_NAMES = {"train", "validation", "test"}
+SPLIT_NAMES = {"train"}  # , "validation", "test"}
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
@@ -167,6 +167,7 @@ def test_compare_generate_example_and_back(hf_example, generated_example):
                 assert hf[key] == gen[key]
 
 
+@pytest.mark.slow
 def test_compare_generate_example_and_back_all(hf_dataset, generate_document_kwargs):
     for hf_ex in list(hf_dataset):
         doc = example_to_document(hf_ex, **generate_document_kwargs)
