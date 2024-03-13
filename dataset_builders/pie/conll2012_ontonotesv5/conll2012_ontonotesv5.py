@@ -250,7 +250,6 @@ def document_to_example(
     }
 
     for idx, sentence in enumerate(document.sentences):
-        # sentence start and end, have to take the previous sentence into account
         sent_start = sentence.start
         sent_end = sentence.end
         sent_len = sent_end - sent_start
@@ -424,7 +423,6 @@ class Conll2012Ontonotesv5(GeneratorBasedBuilder):
             language=lang,
             conll_version="v4",
         )
-        # for lang in ['chinese']
         for lang in ["english", "chinese", "arabic"]
     ] + [
         Conll2012OntonotesV5Config(
