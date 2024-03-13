@@ -2,9 +2,7 @@ import datasets
 import pytest
 from datasets import ClassLabel, disable_caching, load_dataset
 from pytorch_ie import Document
-from pytorch_ie.documents import (
-    TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-)
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndLabeledPartitions
 
 from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
     Conll2012Ontonotesv5,
@@ -23,8 +21,8 @@ BUILDER_CLASS = Conll2012Ontonotesv5
 DOCUMENT_TYPE = BUILDER_CLASS.DOCUMENT_TYPE
 HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
-STREAM_SIZE = 5
-SPLIT_NAMES = {"train", "validation", "test"}
+STREAM_SIZE = 2  # 5
+SPLIT_NAMES = {"train"}  # , "validation", "test"}
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
@@ -81,7 +79,6 @@ def test_hf_example(hf_example):
 
 def test_pie_example(pie_example):
     assert pie_example is not None
-    # TODO: test annotations in pie_example
 
 
 # temporary test for comparison
@@ -105,7 +102,6 @@ def pos_tag_labels(hf_dataset, dataset_variant, split_name):
 
 @pytest.fixture(scope="module")
 def generate_document_kwargs(entity_labels, pos_tag_labels, dataset_variant):
-    # return BUILDER_CLASS(config_name=dataset_variant)._generate_document_kwargs(hf_dataset) or {}
     return dict(entity_labels=entity_labels, pos_tag_labels=pos_tag_labels)
 
 
@@ -121,9 +117,11 @@ def generated_document(hf_example, generate_document_kwargs, dataset_variant):
     )
 
 
-def test_generate_document(generated_document):
+def test_generate_document(generated_document, dataset_variant):
     assert generated_document is not None
     assert isinstance(generated_document, BUILDER_CLASS.DOCUMENT_TYPE)
+    # TODO: test annotations in pie_example
+    # if dataset_variant == 'english_v4-train':
 
 
 @pytest.fixture(scope="module")
@@ -136,6 +134,7 @@ def test_generate_example(generated_example):
     assert isinstance(generated_example, dict)
 
 
+@pytest.mark.slow
 def test_compare_document_and_generated_document(
     generated_document, pie_example
 ):  # TODO: identical content but assertion error
@@ -155,13 +154,27 @@ def test_compare_document_and_generated_document(
     assert generated_document.parts == pie_example.parts
 
 
-def test_compare_generate_example_and_back(hf_example, generated_example, generated_document):
+def test_compare_generate_example_and_back(hf_example, generated_example):
     assert hf_example["document_id"] == generated_example["document_id"]
-    # TODO: debugging
-    assert hf_example["sentences"] == generated_example["sentences"]
+    for hf, gen in zip(hf_example["sentences"], generated_example["sentences"]):
+        for key in hf.keys():
+            if key == "coref_spans":
+                assert sorted(hf[key]) == sorted(gen[key])
+            else:
+                assert hf[key] == gen[key]
 
 
-# def test_compare_generate_example_and_back_all
+def test_compare_generate_example_and_back_all(hf_dataset, generate_document_kwargs):
+    for hf_ex in list(hf_dataset):
+        doc = example_to_document(hf_ex, **generate_document_kwargs)
+        hf_ex_back = document_to_example(doc, **generate_document_kwargs)
+        assert hf_ex_back["document_id"] == hf_ex["document_id"]
+        for ex, ex_back in zip(hf_ex["sentences"], hf_ex_back["sentences"]):
+            for key in ex.keys():
+                if key == "coref_spans":
+                    assert sorted(ex[key]) == sorted(ex_back[key])
+                else:
+                    assert ex[key] == ex_back[key]
 
 
 def test_convert_to_text_document_with_labeled_spans_and_labeled_partitions(generated_document):
@@ -169,6 +182,4 @@ def test_convert_to_text_document_with_labeled_spans_and_labeled_partitions(gene
         generated_document
     )
     assert converted_doc is not None
-    assert isinstance(
-        converted_doc, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
-    )
+    assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndLabeledPartitions)

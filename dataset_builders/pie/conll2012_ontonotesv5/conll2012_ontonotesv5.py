@@ -151,7 +151,7 @@ def example_to_document(
             zip(sentence_dict["predicate_lemmas"], sentence_dict["predicate_framenet_ids"])
         ):
             token_idx = sentence_offset + idx
-            if predicate_lemma_value is not None:
+            if predicate_lemma_value is not None or predicate_framenet_id is not None:
                 predicate = Predicate(
                     start=token_idx,
                     end=token_idx + 1,
@@ -273,7 +273,7 @@ def document_to_example(
             if sent_start <= sense.start and sense.end <= sent_end:
                 word_senses[sense.start - sent_start : sense.end - sent_start] = [
                     float(sense.label)
-                ] * sense.end - sense.start
+                ] * (sense.end - sense.start)
 
         named_entities = [0] * sent_len
         for ent in document.entities:
@@ -302,16 +302,15 @@ def document_to_example(
                 srl_frames.append({"verb": verb, "frames": frames})
 
         coref_spans = []
-        for cluster in document.coref_clusters:
+        for cluster, id in zip(document.coref_clusters, document.metadata["coref_cluster_ids"]):
             span_start = min([span.start for span in cluster.spans])
             span_end = max([span.end for span in cluster.spans])
             if sent_start <= span_start and span_end <= sent_end:
                 current_coref = [
-                    document.metadata["coref_cluster_ids"].pop(0),
-                    span_start - sent_start,
-                    span_end - sent_start - 1,
+                    [id, span.start - sent_start, span.end - sent_start - 1]
+                    for span in cluster.spans
                 ]
-                coref_spans.append(current_coref)
+                coref_spans.extend(current_coref)
 
         for part in document.parts:
             if part.start <= sent_start and sent_end <= part.end:
@@ -341,7 +340,7 @@ def document_to_example(
             "speaker": document.speakers[idx].label,
             "named_entities": named_entities,
             "srl_frames": srl_frames,
-            "coref_spans": coref_spans,  # TODO: debug
+            "coref_spans": coref_spans,
         }
 
         example["sentences"].append(example_sentence)
@@ -425,6 +424,7 @@ class Conll2012Ontonotesv5(GeneratorBasedBuilder):
             language=lang,
             conll_version="v4",
         )
+        # for lang in ['chinese']
         for lang in ["english", "chinese", "arabic"]
     ] + [
         Conll2012OntonotesV5Config(
