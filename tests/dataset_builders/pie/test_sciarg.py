@@ -94,9 +94,25 @@ def dataset(dataset_variant) -> DatasetDict:
     )
 
 
-def test_dataset(dataset):
+def test_dataset(dataset, dataset_variant):
     assert dataset is not None
     assert {name: len(ds) for name, ds in dataset.items()} == SPLIT_SIZES
+
+    if TEST_FULL_DATASET:
+        span_label_counts = Counter(span.label for doc in dataset["train"] for span in doc.spans)
+        relation_label_counts = Counter(
+            relation.label for doc in dataset["train"] for relation in doc.relations
+        )
+        if dataset_variant == "default":
+            # TODO
+            assert span_label_counts
+            assert relation_label_counts
+        elif dataset_variant == "resolve_parts_of_same":
+            # TODO
+            assert span_label_counts
+            assert relation_label_counts
+        else:
+            raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
 
 @pytest.fixture(scope="module")
