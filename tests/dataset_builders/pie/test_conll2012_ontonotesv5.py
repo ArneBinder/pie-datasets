@@ -74,7 +74,7 @@ def pie_dataset():
 
 
 @pytest.fixture(scope="module")
-def pie_dataset_slow(dataset_variant, split_name):
+def pie_dataset_slow(dataset_variants, split_names):
     dataset = load_pie_dataset(
         str(PIE_DATASET_PATH), name=dataset_variants, split=split_names, streaming=True
     )
@@ -86,8 +86,8 @@ def test_pie_dataset(pie_dataset):
 
 
 @pytest.mark.slow
-def test_pie_dataset_slow(pie_dataset, dataset_variants, split_names):
-    assert pie_dataset is not None
+def test_pie_dataset_slow(pie_dataset_slow, dataset_variants, split_names):
+    assert pie_dataset_slow is not None
 
 
 @pytest.fixture(scope="module")
