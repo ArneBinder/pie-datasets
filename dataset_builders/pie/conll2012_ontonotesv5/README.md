@@ -1,8 +1,7 @@
-# PIE Dataset Card for "conll2012_ontonotesv5"
+# PIE Dataset Card for CoNLL2012 shared task data based on OntoNotes 5.0
 
-This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for the
-[CoNLL 2012 OntoNotes v.5.0 Huggingface dataset loading script](https://huggingface.co/datasets/DFKI-SLT/conll2012_ontonotesv5)
-(see [dataset card](https://huggingface.co/datasets/conll2012_ontonotesv5)).
+This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) (PIE) wrapper for the
+[CoNLL 2012 OntoNotes v.5.0 Huggingface dataset loading script](https://huggingface.co/datasets/conll2012_ontonotesv5).
 
 ## Dataset Variants
 
