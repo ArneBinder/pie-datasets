@@ -1,13 +1,13 @@
+import datasets
 import pytest
-from datasets import disable_caching, load_dataset
 from pie_modules.documents import ExtractiveQADocument
 from pytorch_ie.core import Document
 
 from dataset_builders.pie.squad_v2.squad_v2 import SquadV2
-from pie_datasets import DatasetDict
+from pie_datasets import Dataset, load_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
-disable_caching()
+datasets.disable_caching()
 
 DATASET_NAME = "squad_v2"
 BUILDER_CLASS = SquadV2
@@ -16,6 +16,10 @@ SPLIT_SIZES = {"train": 130319, "validation": 11873}
 HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 
+# Faste testing parameters TODO: use them
+SPLIT = "train"
+STREAM_SIZE = 3
+
 
 @pytest.fixture(scope="module", params=list(SPLIT_SIZES))
 def split(request):
@@ -23,18 +27,18 @@ def split(request):
 
 
 @pytest.fixture(scope="module")
-def hf_dataset():
-    return load_dataset(str(HF_DATASET_PATH))
+def hf_dataset(split):
+    return datasets.load_dataset(str(HF_DATASET_PATH), split=split)
 
 
-def test_hf_dataset(hf_dataset):
+def test_hf_dataset(hf_dataset, split):
     assert hf_dataset is not None
-    assert {name: len(ds) for name, ds in hf_dataset.items()} == SPLIT_SIZES
+    assert len(hf_dataset) == SPLIT_SIZES[split]
 
 
 @pytest.fixture(scope="module")
-def hf_example(hf_dataset, split):
-    return hf_dataset[split][0]
+def hf_example(hf_dataset):
+    return hf_dataset[0]
 
 
 def test_hf_example(hf_example, split):
@@ -78,18 +82,8 @@ def test_hf_example(hf_example, split):
 
 
 @pytest.fixture(scope="module")
-def generate_document_kwargs(hf_dataset, split) -> dict:
-    return BUILDER_CLASS()._generate_document_kwargs(hf_dataset[split]) or {}
-
-
-@pytest.fixture(scope="module")
-def generate_example_kwargs(hf_dataset, split) -> dict:
-    return BUILDER_CLASS()._generate_example_kwargs(hf_dataset[split]) or {}
-
-
-@pytest.fixture(scope="module")
-def generated_document(hf_example, generate_document_kwargs) -> DOCUMENT_TYPE:
-    return BUILDER_CLASS()._generate_document(hf_example, **generate_document_kwargs)
+def generated_document(hf_example) -> DOCUMENT_TYPE:
+    return BUILDER_CLASS()._generate_document(hf_example)
 
 
 def test_generated_document(generated_document, split):
@@ -127,8 +121,8 @@ def test_generated_document(generated_document, split):
 
 
 @pytest.fixture(scope="module")
-def hf_example_back(generated_document, generate_document_kwargs):
-    return BUILDER_CLASS()._generate_example(generated_document, **generate_document_kwargs)
+def hf_example_back(generated_document):
+    return BUILDER_CLASS()._generate_example(generated_document)
 
 
 def test_example_to_document_and_back(hf_example, hf_example_back):
@@ -136,29 +130,27 @@ def test_example_to_document_and_back(hf_example, hf_example_back):
 
 
 @pytest.mark.slow
-def test_example_to_document_and_back_all(
-    hf_dataset, generate_document_kwargs, generate_example_kwargs, split
-):
+def test_example_to_document_and_back_all(hf_dataset):
     builder = BUILDER_CLASS()
-    for hf_ex in hf_dataset[split]:
-        doc = builder._generate_example(hf_ex, **generate_document_kwargs)
-        hf_ex_back = builder._generate_example(doc, **generate_example_kwargs)
+    for hf_ex in hf_dataset:
+        doc = builder._generate_document(hf_ex)
+        hf_ex_back = builder._generate_example(doc)
         assert hf_ex_back == hf_ex
 
 
 @pytest.fixture(scope="module")
-def dataset() -> DatasetDict:
-    return DatasetDict.load_dataset(str(PIE_DATASET_PATH))
+def dataset(split) -> Dataset:
+    return load_dataset(str(PIE_DATASET_PATH), split=split)
 
 
-def test_pie_dataset(dataset):
+def test_pie_dataset(dataset, split):
     assert dataset is not None
-    assert {name: len(ds) for name, ds in dataset.items()} == SPLIT_SIZES
+    assert len(dataset) == SPLIT_SIZES[split]
 
 
 @pytest.fixture(scope="module")
-def document(dataset, split) -> DOCUMENT_TYPE:
-    doc = dataset[split][0]
+def document(dataset) -> DOCUMENT_TYPE:
+    doc = dataset[0]
     # we can not assert the real document type because it may come from a dataset loading script
     # downloaded to a temporary directory and thus have a different type object, although it is
     # semantically the same
@@ -172,15 +164,13 @@ def test_compare_document_and_generated_document(document, generated_document):
 
 
 @pytest.fixture(scope="module")
-def dataset_with_extractive_qa_documents(dataset) -> DatasetDict:
+def dataset_with_extractive_qa_documents(dataset) -> Dataset:
     return dataset.to_document_type(ExtractiveQADocument)
 
 
-def test_dataset_with_extractive_qa_documents(
-    dataset_with_extractive_qa_documents, document, split
-):
+def test_dataset_with_extractive_qa_documents(dataset_with_extractive_qa_documents, document):
     assert dataset_with_extractive_qa_documents is not None
-    doc = dataset_with_extractive_qa_documents[split][0]
+    doc = dataset_with_extractive_qa_documents[0]
     assert isinstance(doc, ExtractiveQADocument)
     doc_casted = document.as_type(ExtractiveQADocument)
     assert doc == doc_casted
