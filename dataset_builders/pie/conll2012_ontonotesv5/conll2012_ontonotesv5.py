@@ -1,11 +1,11 @@
 import dataclasses
 from collections import defaultdict
-from typing import Any, Callable, Dict, List, Optional, Tuple
+from typing import Any, Dict, List, Optional, Tuple
 
 import datasets
 from datasets import ClassLabel
 from pytorch_ie.annotations import LabeledSpan, NaryRelation, Span
-from pytorch_ie.core import Annotation, AnnotationList, Document, annotation_field
+from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndLabeledPartitions,
     TokenBasedDocument,
