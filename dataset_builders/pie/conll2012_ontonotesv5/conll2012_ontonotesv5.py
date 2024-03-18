@@ -289,6 +289,7 @@ def document_to_example(
             span_start = min([span.start for span in srl_rel.arguments])
             span_end = max([span.end for span in srl_rel.arguments])
             if sent_start <= span_start and span_end <= sent_end:
+                verb = None
                 frames = ["O"] * sent_len
                 for arg, role in zip(srl_rel.arguments, srl_rel.roles):
                     frames[arg.start - sent_start] = "B-" + role
@@ -296,8 +297,11 @@ def document_to_example(
                         frames[arg.start - sent_start + 1 : arg.end - sent_start] = [
                             "I-" + role
                         ] * (arg.end - arg.start - 1)
-                    if role == "V":
+                    # english_v4 and arabic_v4 contain some weird role names (in addition to "V") for the verb
+                    if role in ["V", "ARG1(V", "C-ARG0(V", "C-ARG1(V", "C-ARG2(V", "R-ARG1(V"]:
                         verb = document.tokens[arg.start]
+                if verb is None:
+                    raise ValueError(f"Verb not found for SRL relation: {srl_rel}")
                 srl_frames.append({"verb": verb, "frames": frames})
 
         coref_spans = []
