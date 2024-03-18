@@ -10,11 +10,12 @@ from pie_modules.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import Document
 from pytorch_ie.documents import TextDocumentWithLabeledPartitions
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
-from dataset_builders.pie.sciarg.sciarg import SciArg
+from dataset_builders.pie.sciarg.sciarg import SciArg, remove_duplicate_relations
 from pie_datasets import DatasetDict
 from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
 from tests.dataset_builders.common import (
@@ -776,3 +777,32 @@ def test_document_converters(dataset_variant):
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
     assert all(callable(v) for k, v in document_converters.items())
+
+
+def test_remove_duplicate_relations():
+    doc = BratDocumentWithMergedSpans(id="test", text="This is a test sentence.")
+    doc.spans.append(LabeledSpan(start=0, end=4, label="test"))
+    assert str(doc.spans[0]) == "This"
+    doc.spans.append(LabeledSpan(start=10, end=23, label="sentence"))
+    assert str(doc.spans[1]) == "test sentence"
+    # reference relation
+    doc.relations.append(BinaryRelation(head=doc.spans[0], tail=doc.spans[1], label="a"))
+    # swapped arguments
+    doc.relations.append(BinaryRelation(head=doc.spans[1], tail=doc.spans[0], label="a"))
+    # this is the only duplicate relation, it should be removed
+    doc.relations.append(BinaryRelation(head=doc.spans[0], tail=doc.spans[1], label="a"))
+    # different label
+    doc.relations.append(BinaryRelation(head=doc.spans[0], tail=doc.spans[1], label="b"))
+
+    assert len(doc.relations) == 4
+    remove_duplicate_relations(doc)
+    assert len(doc.relations) == 3
+    assert doc.relations[0].head == doc.spans[0]
+    assert doc.relations[0].tail == doc.spans[1]
+    assert doc.relations[0].label == "a"
+    assert doc.relations[1].label == "a"
+    assert doc.relations[1].head == doc.spans[1]
+    assert doc.relations[1].tail == doc.spans[0]
+    assert doc.relations[2].label == "b"
+    assert doc.relations[2].head == doc.spans[0]
+    assert doc.relations[2].tail == doc.spans[1]

@@ -1,4 +1,5 @@
 import logging
+from typing import Union
 
 from pie_modules.document.processing import (
     RegexPartitioner,
@@ -55,6 +56,20 @@ def get_common_converter_pipeline_steps_with_resolve_parts_of_same(
     )
 
 
+def remove_duplicate_relations(document: Union[BratDocument, BratDocumentWithMergedSpans]) -> None:
+    if len(document.relations) > len(set(document.relations)):
+        added = set()
+        i = 0
+        while i < len(document.relations):
+            relation = document.relations[i]
+            if relation in added:
+                logger.warning(f"doc_id={document.id}: Removing duplicate relation: {relation}")
+                document.relations.pop(i)
+            else:
+                added.add(relation)
+                i += 1
+
+
 class SciArgConfig(BratConfig):
     def __init__(
         self,
@@ -100,19 +115,7 @@ class SciArg(BratBuilder):
             )(document)
         else:
             # some documents have duplicate relations, remove them
-            if len(document.relations) > len(set(document.relations)):
-                added = set()
-                i = 0
-                while i < len(document.relations):
-                    relation = document.relations[i]
-                    if relation in added:
-                        logger.warning(
-                            f"doc_id={document.id}: Removing duplicate relation: {relation}"
-                        )
-                        document.relations.pop(i)
-                    else:
-                        added.add(relation)
-                        i += 1
+            remove_duplicate_relations(document)
 
         return document
 
