@@ -100,12 +100,12 @@ def test_pie_dataset(pie_dataset, dataset_variants, split_names):
 
 
 @pytest.fixture(scope="module")
-def hf_example(hf_dataset_extract):
+def hf_example(hf_dataset_extract) -> dict:
     return list(hf_dataset_extract)[0]
 
 
 @pytest.fixture(scope="module")
-def pie_example(pie_dataset_extract):
+def pie_example(pie_dataset_extract) -> DOCUMENT_TYPE:
     return list(pie_dataset_extract)[0]
 
 
@@ -165,24 +165,27 @@ def generated_example(generated_document, generate_document_kwargs):
     return document_to_example(generated_document, **generate_document_kwargs)
 
 
-def test_compare_document_and_generated_document(generated_document, pie_example):
-    assert generated_document.id == pie_example.id
-    assert generated_document.sentences == pie_example.sentences
-    assert generated_document.tokens == pie_example.tokens
-    assert generated_document.pos_tags == pie_example.pos_tags
-    assert generated_document.entities == pie_example.entities
-    assert generated_document.coref_mentions == pie_example.coref_mentions
-    assert generated_document.srl_arguments == pie_example.srl_arguments
-    assert generated_document.srl_relations == pie_example.srl_relations
-    assert generated_document.word_senses == pie_example.word_senses
-    assert generated_document.parts == pie_example.parts
+def test_pie_example_with_generated_document(generated_document, pie_example):
+    # just compare against the generated_document, we already checked that generated_document is correct
+    assert pie_example.id == generated_document.id
+    assert pie_example.sentences == generated_document.sentences
+    assert pie_example.tokens == generated_document.tokens
+    assert pie_example.pos_tags == generated_document.pos_tags
+    assert pie_example.entities == generated_document.entities
+    assert pie_example.coref_mentions == generated_document.coref_mentions
+    assert pie_example.srl_arguments == generated_document.srl_arguments
+    assert pie_example.srl_relations == generated_document.srl_relations
+    assert pie_example.word_senses == generated_document.word_senses
+    assert pie_example.parts == generated_document.parts
 
-
-# TODO: the following annotation fields have identical content but get assertion error
-#     assert generated_document.parse_trees == pie_example.parse_trees
-#     assert generated_document.speakers == pie_example.speakers
-#     assert generated_document.predicates == pie_example.predicates
-#     assert generated_document.coref_clusters == pie_example.coref_clusters
+    # The annotation types for the following layers are defined in the dataset script
+    # which gets copied before it is used so the types are different. We need to cast
+    # the types to the correct ones
+    pie_example_casted = pie_example.as_type(DOCUMENT_TYPE)
+    assert pie_example_casted.parse_trees == generated_document.parse_trees
+    assert pie_example_casted.speakers == generated_document.speakers
+    assert pie_example_casted.predicates == generated_document.predicates
+    assert pie_example_casted.coref_clusters == generated_document.coref_clusters
 
 
 def test_compare_generate_example_and_back(hf_example, generated_example):
