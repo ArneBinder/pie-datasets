@@ -11,7 +11,11 @@ from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
     example_to_document,
 )
 from pie_datasets import load_dataset as load_pie_dataset
-from tests.dataset_builders.common import HF_DS_FIXTURE_DATA_PATH, PIE_BASE_PATH
+from tests.dataset_builders.common import (
+    HF_DS_FIXTURE_DATA_PATH,
+    PIE_BASE_PATH,
+    resolve_annotations,
+)
 
 disable_caching()
 
@@ -248,7 +252,79 @@ def test_convert_to_text_document_with_labeled_spans_and_labeled_partitions_extr
     )
     assert converted_doc is not None
     assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndLabeledPartitions)
-    # TODO: check the actual content of the converted document
+    assert converted_doc.id == "bc/cctv/00/cctv_0001"
+
+    # check start and end of the text
+    assert converted_doc.text.startswith(
+        "What kind of memory ? We respectfully invite you to watch a special "
+        "edition of Across China . WW II Landmarks on the Great Earth of China : "
+        "Eternal Memories of Taihang Mountain Standing tall on Taihang Mountain is "
+        "the Monument to the Hundred Regiments Offensive ."
+    )
+    assert converted_doc.text.endswith(
+        "Scholars will give you a detailed analysis on this edition of Hot Topic "
+        "Analysis . On August 17 , Taiwan 's investigation department and police "
+        "solved the case and announced the March 19 shooting case was closed . This "
+        "case will not be prosecuted ."
+    )
+
+    assert len(converted_doc.labeled_spans) == 393
+    # check the first 10 spans
+    resolved_spans_10 = resolve_annotations(converted_doc.labeled_spans[:10])
+    assert resolved_spans_10 == [
+        ("Across China", "ORG"),
+        (
+            "WW II Landmarks on the Great Earth of China : Eternal Memories of Taihang Mountain",
+            "WORK_OF_ART",
+        ),
+        ("Taihang Mountain", "LOC"),
+        ("the Monument to the Hundred Regiments Offensive", "WORK_OF_ART"),
+        ("the Great Wall", "WORK_OF_ART"),
+        ("three", "CARDINAL"),
+        ("two", "CARDINAL"),
+        ("The Hundred Regiments Offensive", "EVENT"),
+        ("the Eighth Route Army", "ORG"),
+        ("the War of Resistance against Japan", "EVENT"),
+    ]
+
+    assert len(converted_doc.labeled_partitions) == 235
+    # check the first 10 partitions (sentences)
+    resolved_partitions_10 = resolve_annotations(converted_doc.labeled_partitions[:10])
+    assert resolved_partitions_10 == [
+        ("What kind of memory ?", "sentence"),
+        ("We respectfully invite you to watch a special edition of Across China .", "sentence"),
+        (
+            "WW II Landmarks on the Great Earth of China : Eternal Memories of Taihang Mountain",
+            "sentence",
+        ),
+        (
+            "Standing tall on Taihang Mountain is the Monument to the Hundred Regiments Offensive .",
+            "sentence",
+        ),
+        (
+            "It is composed of a primary stele , secondary steles , a huge round sculpture "
+            "and beacon tower , and the Great Wall , among other things .",
+            "sentence",
+        ),
+        ("A primary stele , three secondary steles , and two inscribed steles .", "sentence"),
+        (
+            "The Hundred Regiments Offensive was the campaign of the largest scale launched "
+            "by the Eighth Route Army during the War of Resistance against Japan .",
+            "sentence",
+        ),
+        (
+            "This campaign broke through the Japanese army 's blockade to reach base areas "
+            "behind enemy lines , stirring up anti-Japanese spirit throughout the nation and "
+            "influencing the situation of the anti-fascist war of the people worldwide .",
+            "sentence",
+        ),
+        (
+            "This is Zhuanbi Village , Wuxiang County of Shanxi Province , where the Eighth "
+            "Route Army was headquartered back then .",
+            "sentence",
+        ),
+        ("On a wall outside the headquarters we found a map .", "sentence"),
+    ]
 
 
 @pytest.mark.slow
