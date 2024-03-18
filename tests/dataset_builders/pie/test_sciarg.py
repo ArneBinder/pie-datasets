@@ -37,6 +37,21 @@ BUILDER_CLASS = SciArg
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 DATA_DIR = PIE_DS_FIXTURE_DATA_PATH / DATASET_NAME
 SPLIT_SIZES = {"train": 40 if TEST_FULL_DATASET else 3}
+FULL_LABEL_COUNTS = {
+    "default": {
+        "relations": {
+            "contradicts": 696,
+            "parts_of_same": 1298,
+            "semantically_same": 44,
+            "supports": 5789,
+        },
+        "spans": {"background_claim": 3291, "data": 4297, "own_claim": 6004},
+    },
+    "resolve_parts_of_same": {
+        "relations": {"contradicts": 696, "semantically_same": 44, "supports": 5788},
+        "spans": {"background_claim": 2752, "data": 4093, "own_claim": 5450},
+    },
+}
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
@@ -94,25 +109,22 @@ def dataset(dataset_variant) -> DatasetDict:
     )
 
 
+def assert_dataset_label_counts(dataset, expected_label_counts):
+    label_counts = {
+        ln: dict(Counter(ann.label for doc in dataset["train"] for ann in doc[ln]))
+        for ln in expected_label_counts.keys()
+    }
+    assert label_counts == expected_label_counts
+
+
 def test_dataset(dataset, dataset_variant):
     assert dataset is not None
     assert {name: len(ds) for name, ds in dataset.items()} == SPLIT_SIZES
 
     if TEST_FULL_DATASET:
-        span_label_counts = Counter(span.label for doc in dataset["train"] for span in doc.spans)
-        relation_label_counts = Counter(
-            relation.label for doc in dataset["train"] for relation in doc.relations
+        assert_dataset_label_counts(
+            dataset, expected_label_counts=FULL_LABEL_COUNTS[dataset_variant]
         )
-        if dataset_variant == "default":
-            # TODO
-            assert span_label_counts
-            assert relation_label_counts
-        elif dataset_variant == "resolve_parts_of_same":
-            # TODO
-            assert span_label_counts
-            assert relation_label_counts
-        else:
-            raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
 
 @pytest.fixture(scope="module")
@@ -170,6 +182,35 @@ def converted_dataset(dataset, target_document_type) -> Optional[DatasetDict]:
     if target_document_type is None:
         return None
     return dataset.to_document_type(target_document_type)
+
+
+def test_converted_datasets(converted_dataset, dataset_variant):
+    if converted_dataset is not None:
+        split_sizes = {name: len(ds) for name, ds in converted_dataset.items()}
+        assert split_sizes == SPLIT_SIZES
+        if dataset_variant == "default":
+            expected_document_type = TextDocumentWithLabeledSpansAndBinaryRelations
+            layer_name_mapping = {
+                "spans": "labeled_spans",
+                "relations": "binary_relations",
+            }
+        elif dataset_variant == "resolve_parts_of_same":
+            expected_document_type = TextDocumentWithLabeledMultiSpansAndBinaryRelations
+            layer_name_mapping = {
+                "spans": "labeled_multi_spans",
+                "relations": "binary_relations",
+            }
+        else:
+            raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+        assert isinstance(converted_dataset["train"][0], expected_document_type)
+
+        if TEST_FULL_DATASET:
+            expected_label_counts = {
+                layer_name_mapping[ln]: value
+                for ln, value in FULL_LABEL_COUNTS[dataset_variant].items()
+            }
+            assert_dataset_label_counts(converted_dataset, expected_label_counts)
 
 
 @pytest.fixture(scope="module")
