@@ -248,6 +248,7 @@ def test_convert_to_text_document_with_labeled_spans_and_labeled_partitions_extr
     )
     assert converted_doc is not None
     assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndLabeledPartitions)
+    # TODO: check the actual content of the converted document
 
 
 @pytest.mark.slow
