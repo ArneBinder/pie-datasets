@@ -3,6 +3,7 @@ from typing import Optional, Type
 
 import datasets
 import pytest
+from datasets import load_dataset
 from pie_modules.document.processing import tokenize_document
 from pie_modules.documents import (
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
@@ -16,7 +17,7 @@ from pytorch_ie.documents import TextDocumentWithLabeledPartitions
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.sciarg.sciarg import SciArg, remove_duplicate_relations
-from pie_datasets import DatasetDict
+from pie_datasets import Dataset
 from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
@@ -31,13 +32,11 @@ from tests.dataset_builders.common import (
 
 datasets.disable_caching()
 
-TEST_FULL_DATASET = True
-
 DATASET_NAME = "sciarg"
 BUILDER_CLASS = SciArg
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 DATA_DIR = PIE_DS_FIXTURE_DATA_PATH / DATASET_NAME
-SPLIT_SIZES = {"train": 40 if TEST_FULL_DATASET else 3}
+SPLIT_SIZES = {"train": 40}
 FULL_LABEL_COUNTS = {
     "default": {
         "relations": {
@@ -54,25 +53,33 @@ FULL_LABEL_COUNTS = {
     },
 }
 
+# fast testing parameters
+SPLIT = "train"
+STREAM_SIZE = 3
+
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
 def dataset_variant(request) -> str:
     return request.param
 
 
+@pytest.fixture(scope="module", params=SPLIT_SIZES.keys())
+def split(request) -> str:
+    return request.param
+
+
 @pytest.fixture(scope="module")
-def hf_dataset(dataset_variant) -> datasets.DatasetDict:
+def hf_dataset(dataset_variant, split) -> datasets.Dataset:
     kwargs = dict(BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[dataset_variant])
-    if not TEST_FULL_DATASET:
-        kwargs["data_dir"] = str(DATA_DIR)
-    result = datasets.load_dataset(BUILDER_CLASS.BASE_DATASET_PATH, name=dataset_variant, **kwargs)
+    result = load_dataset(
+        BUILDER_CLASS.BASE_DATASET_PATH, name=dataset_variant, split=split, **kwargs
+    )
     return result
 
 
-def test_hf_dataset(hf_dataset):
+def test_hf_dataset(hf_dataset, split):
     assert hf_dataset is not None
-    split_sizes = {name: len(ds) for name, ds in hf_dataset.items()}
-    assert split_sizes == SPLIT_SIZES
+    assert len(hf_dataset) == SPLIT_SIZES[split]
 
 
 @pytest.fixture(scope="module")
@@ -87,7 +94,7 @@ def test_builder(builder, dataset_variant):
 
 
 def test_generate_document(builder, hf_dataset, dataset_variant):
-    hf_example = hf_dataset["train"][0]
+    hf_example = hf_dataset[0]
     document = builder._generate_document(hf_example)
     if dataset_variant == "default":
         assert isinstance(document, BratDocumentWithMergedSpans)
@@ -100,37 +107,27 @@ def test_generate_document(builder, hf_dataset, dataset_variant):
 
 
 @pytest.fixture(scope="module")
-def dataset(dataset_variant) -> DatasetDict:
-    if TEST_FULL_DATASET:
-        base_dataset_kwargs = None
-    else:
-        base_dataset_kwargs = {"data_dir": str(PIE_DS_FIXTURE_DATA_PATH / DATASET_NAME)}
-    return DatasetDict.load_dataset(
-        str(PIE_DATASET_PATH), name=dataset_variant, base_dataset_kwargs=base_dataset_kwargs
-    )
+def dataset(dataset_variant, split) -> Dataset:
+    return load_dataset(str(PIE_DATASET_PATH), name=dataset_variant, split=split)
 
 
 def assert_dataset_label_counts(dataset, expected_label_counts):
     label_counts = {
-        ln: dict(Counter(ann.label for doc in dataset["train"] for ann in doc[ln]))
+        ln: dict(Counter(ann.label for doc in dataset for ann in doc[ln]))
         for ln in expected_label_counts.keys()
     }
     assert label_counts == expected_label_counts
 
 
-def test_dataset(dataset, dataset_variant):
+def test_dataset(dataset, dataset_variant, split):
     assert dataset is not None
-    assert {name: len(ds) for name, ds in dataset.items()} == SPLIT_SIZES
-
-    if TEST_FULL_DATASET:
-        assert_dataset_label_counts(
-            dataset, expected_label_counts=FULL_LABEL_COUNTS[dataset_variant]
-        )
+    assert len(dataset) == SPLIT_SIZES[split]
+    assert_dataset_label_counts(dataset, expected_label_counts=FULL_LABEL_COUNTS[dataset_variant])
 
 
 @pytest.fixture(scope="module")
 def document(dataset) -> BratDocumentWithMergedSpans:
-    result = dataset["train"][0]
+    result = dataset[0]
     # we can not assert the real document type because it may come from a dataset loading script
     # downloaded to a temporary directory and thus have a different type object, although it is
     # semantically the same
@@ -179,16 +176,15 @@ def target_document_type(builder, request) -> Optional[Type[Document]]:
 
 
 @pytest.fixture(scope="module")
-def converted_dataset(dataset, target_document_type) -> Optional[DatasetDict]:
+def converted_dataset(dataset, target_document_type) -> Optional[Dataset]:
     if target_document_type is None:
         return None
     return dataset.to_document_type(target_document_type)
 
 
-def test_converted_datasets(converted_dataset, dataset_variant):
+def test_converted_datasets(converted_dataset, dataset_variant, split):
     if converted_dataset is not None:
-        split_sizes = {name: len(ds) for name, ds in converted_dataset.items()}
-        assert split_sizes == SPLIT_SIZES
+        assert len(converted_dataset) == SPLIT_SIZES[split]
         if dataset_variant == "default":
             expected_document_type = TextDocumentWithLabeledSpansAndBinaryRelations
             layer_name_mapping = {
@@ -204,21 +200,21 @@ def test_converted_datasets(converted_dataset, dataset_variant):
         else:
             raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
-        assert isinstance(converted_dataset["train"][0], expected_document_type)
+        for doc in converted_dataset:
+            assert isinstance(doc, expected_document_type)
 
-        if TEST_FULL_DATASET:
-            expected_label_counts = {
-                layer_name_mapping[ln]: value
-                for ln, value in FULL_LABEL_COUNTS[dataset_variant].items()
-            }
-            assert_dataset_label_counts(converted_dataset, expected_label_counts)
+        expected_label_counts = {
+            layer_name_mapping[ln]: value
+            for ln, value in FULL_LABEL_COUNTS[dataset_variant].items()
+        }
+        assert_dataset_label_counts(converted_dataset, expected_label_counts)
 
 
 @pytest.fixture(scope="module")
 def converted_document(converted_dataset) -> Optional[Document]:
     if converted_dataset is None:
         return None
-    return converted_dataset["train"][0]
+    return converted_dataset[0]
 
 
 def test_converted_document(converted_document, dataset_variant):
@@ -620,7 +616,7 @@ def test_converted_document(converted_document, dataset_variant):
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
     if isinstance(doc, TextDocumentWithLabeledPartitions):
-        # check the partitions with startswiths(), endswith(), and label
+        # check the partitions with startswith(), endswith(), and label
         partitions = doc.labeled_partitions
         assert len(partitions) == 10
         # Only check the first sentence in each partition, as it could be really long
@@ -712,7 +708,7 @@ def tokenizer() -> PreTrainedTokenizer:
 @pytest.fixture(scope="module")
 def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
     dataset, dataset_variant
-) -> Optional[DatasetDict]:
+) -> Dataset:
     return dataset.to_document_type(TextDocumentWithLabeledSpansAndBinaryRelations)
 
 
@@ -734,27 +730,26 @@ def test_tokenize_documents_all(converted_dataset, tokenizer, dataset_variant):
     # - A24: "φ n = φ  ̄"
     # - A25: " M 0 −1 I −1 0 A 1 b T 1 ··· A k b T k b k" and " b 1  R = " / "('\uf8ee b 1 \uf8f9 R = \uf8f0',)" and "('\uf8fb M 0 −1 I −1 0 A 1 b T 1 ··· A k b T k b k',)"
     docs_with_span_errors = {"A11", "A19", "A20", "A24", "A25"}
-    for split, docs in converted_dataset.items():
-        for doc in docs:
-            strict_span_conversion = doc.id not in docs_with_span_errors and not isinstance(
-                doc, TextDocumentWithLabeledPartitions
-            )
-            # Note, that this is a list of documents, because the document may be split into chunks
-            # if the input text is too long.
-            tokenized_docs = tokenize_document(
-                doc,
-                tokenizer=tokenizer,
-                return_overflowing_tokens=True,
-                result_document_type=TOKENIZED_DOCUMENT_TYPE_MAPPING[type(doc)],
-                partition_layer="labeled_partitions"
-                if isinstance(doc, TextDocumentWithLabeledPartitions)
-                else None,
-                strict_span_conversion=strict_span_conversion,
-                verbose=True,
-            )
-            # we just ensure that we get at least one tokenized document
-            assert tokenized_docs is not None
-            assert len(tokenized_docs) > 0
+    for doc in converted_dataset:
+        strict_span_conversion = doc.id not in docs_with_span_errors and not isinstance(
+            doc, TextDocumentWithLabeledPartitions
+        )
+        # Note, that this is a list of documents, because the document may be split into chunks
+        # if the input text is too long.
+        tokenized_docs = tokenize_document(
+            doc,
+            tokenizer=tokenizer,
+            return_overflowing_tokens=True,
+            result_document_type=TOKENIZED_DOCUMENT_TYPE_MAPPING[type(doc)],
+            partition_layer="labeled_partitions"
+            if isinstance(doc, TextDocumentWithLabeledPartitions)
+            else None,
+            strict_span_conversion=strict_span_conversion,
+            verbose=True,
+        )
+        # we just ensure that we get at least one tokenized document
+        assert tokenized_docs is not None
+        assert len(tokenized_docs) > 0
 
 
 def test_document_converters(dataset_variant):
