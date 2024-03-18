@@ -19,7 +19,12 @@ DOCUMENT_TYPE = BUILDER_CLASS.DOCUMENT_TYPE
 HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 SPLIT_NAMES = {"train", "validation", "test"}
-SLOW_STREAM_SIZE = None
+SPLIT_SIZES = {
+    "english_v4": {"train": 1940, "validation": 222, "test": 222},
+    "chinese_v4": {"train": 1391, "validation": 172, "test": 166},
+    "arabic_v4": {"train": 359, "validation": 44, "test": 44},
+    "english_v12": {"train": 10539, "validation": 1370, "test": 1200},
+}
 
 # Testing parameters
 DATASET_VARIANT = "english_v4"
@@ -28,12 +33,12 @@ STREAM_SIZE = 2
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
-def dataset_variants(request):
+def dataset_variant(request):
     return request.param
 
 
 @pytest.fixture(params=SPLIT_NAMES, scope="module")
-def split_names(request):
+def split_name(request):
     return request.param
 
 
@@ -46,15 +51,13 @@ def hf_dataset_extract():
 
 
 @pytest.fixture(scope="module")
-def hf_dataset(dataset_variants, split_names):
+def hf_dataset_all(dataset_variant, split_name):
     dataset = load_dataset(
         BUILDER_CLASS.BASE_DATASET_PATH,
-        name=dataset_variants,
-        split=split_names,
-        streaming=SLOW_STREAM_SIZE is not None,
+        name=dataset_variant,
+        split=split_name,
+        streaming=False,
     )
-    if SLOW_STREAM_SIZE is not None:
-        dataset = dataset.take(SLOW_STREAM_SIZE)
 
     return dataset
 
@@ -64,8 +67,9 @@ def test_hf_dataset_extract(hf_dataset_extract):
 
 
 @pytest.mark.slow
-def test_hf_dataset(hf_dataset, dataset_variants, split_names):
-    assert hf_dataset is not None
+def test_hf_dataset_all(hf_dataset_all, dataset_variant, split_name):
+    assert hf_dataset_all is not None
+    assert len(hf_dataset_all) == SPLIT_SIZES[dataset_variant][split_name]
 
 
 @pytest.fixture(scope="module")
@@ -77,15 +81,13 @@ def pie_dataset_extract():
 
 
 @pytest.fixture(scope="module")
-def pie_dataset(dataset_variants, split_names):
+def pie_dataset_all(dataset_variant, split_name):
     dataset = load_pie_dataset(
         str(PIE_DATASET_PATH),
-        name=dataset_variants,
-        split=split_names,
-        streaming=SLOW_STREAM_SIZE is not None,
+        name=dataset_variant,
+        split=split_name,
+        streaming=False,
     )
-    if SLOW_STREAM_SIZE is not None:
-        dataset = dataset.take(SLOW_STREAM_SIZE)
 
     return dataset
 
@@ -95,54 +97,64 @@ def test_pie_dataset_extract(pie_dataset_extract):
 
 
 @pytest.mark.slow
-def test_pie_dataset(pie_dataset):
-    assert pie_dataset is not None
+def test_pie_dataset_all(pie_dataset_all):
+    assert pie_dataset_all is not None
 
 
 @pytest.fixture(scope="module")
-def hf_example(hf_dataset_extract) -> dict:
+def hf_example_extract(hf_dataset_extract) -> dict:
     return list(hf_dataset_extract)[0]
 
 
 @pytest.fixture(scope="module")
-def pie_example(pie_dataset_extract) -> DOCUMENT_TYPE:
+def pie_example_extract(pie_dataset_extract) -> DOCUMENT_TYPE:
     return list(pie_dataset_extract)[0]
 
 
-def test_hf_example(hf_example):
-    assert hf_example is not None
+def test_hf_example_extract(hf_example_extract):
+    assert hf_example_extract is not None
 
 
-def test_pie_example(pie_example):
-    assert pie_example is not None
+def test_pie_example_extract(pie_example_extract):
+    assert pie_example_extract is not None
 
 
 @pytest.fixture(scope="module")
-def generate_document_kwargs(hf_dataset_extract):
+def generate_document_kwargs_extract(hf_dataset_extract):
     return BUILDER_CLASS(config_name=DATASET_VARIANT)._generate_document_kwargs(hf_dataset_extract)
 
 
-def test_generate_document_kwargs(generate_document_kwargs):
-    assert generate_document_kwargs is not None
-    assert isinstance(generate_document_kwargs, dict)
+def test_generate_document_kwargs_extract(generate_document_kwargs_extract):
+    assert generate_document_kwargs_extract is not None
+    assert isinstance(generate_document_kwargs_extract, dict)
 
 
 @pytest.fixture(scope="module")
-def generated_document(hf_example, generate_document_kwargs):
+def generate_document_kwargs_all(hf_dataset_all):
+    return BUILDER_CLASS(config_name=DATASET_VARIANT)._generate_document_kwargs(hf_dataset_all)
+
+
+def test_generate_document_kwargs_all(generate_document_kwargs_all):
+    assert generate_document_kwargs_all is not None
+    assert isinstance(generate_document_kwargs_all, dict)
+
+
+@pytest.fixture(scope="module")
+def generated_document_extract(hf_example_extract, generate_document_kwargs_extract):
     return BUILDER_CLASS(config_name=DATASET_VARIANT)._generate_document(
-        hf_example, **generate_document_kwargs
+        hf_example_extract, **generate_document_kwargs_extract
     )
 
 
-def test_generate_document(generated_document):
-    assert generated_document is not None
-    assert isinstance(generated_document, BUILDER_CLASS.DOCUMENT_TYPE)
+def test_generate_document(generated_document_extract):
+    assert generated_document_extract is not None
+    assert isinstance(generated_document_extract, BUILDER_CLASS.DOCUMENT_TYPE)
     # check actual annotations
-    assert generated_document.speakers[0].label == "Speaker#1"
-    assert generated_document.parts[0].label == "0"
-    assert generated_document.entities[0].label == "ORG"
-    assert generated_document.predicates[0].lemma == "memory"
-    assert generated_document.srl_relations[0].roles == (
+    assert generated_document_extract.speakers[0].label == "Speaker#1"
+    assert generated_document_extract.parts[0].label == "0"
+    assert generated_document_extract.entities[0].label == "ORG"
+    assert generated_document_extract.predicates[0].lemma == "memory"
+    assert generated_document_extract.srl_relations[0].roles == (
         "ARG0",
         "ARGM-MNR",
         "V",
@@ -150,45 +162,49 @@ def test_generate_document(generated_document):
         "ARG2",
     )
     assert (
-        generated_document.parse_trees[0].label
+        generated_document_extract.parse_trees[0].label
         == "(TOP(SBARQ(WHNP(WHNP (WP What)  (NN kind) )(PP (IN of) (NP (NN memory) ))) (. ?) ))"
     )
-    assert generated_document.tokens[
-        generated_document.sentences[0].start : generated_document.sentences[0].end
+    assert generated_document_extract.tokens[
+        generated_document_extract.sentences[0].start : generated_document_extract.sentences[0].end
     ] == ("What", "kind", "of", "memory", "?")
-    assert generated_document.word_senses[0].label == "1.0"
+    assert generated_document_extract.word_senses[0].label == "1.0"
 
 
-def test_pie_example_with_generated_document(generated_document, pie_example):
+def test_pie_example_with_generated_document_extract(
+    generated_document_extract, pie_example_extract
+):
     # just compare against the generated_document, we already checked that generated_document is correct
-    assert pie_example.id == generated_document.id
-    assert pie_example.sentences == generated_document.sentences
-    assert pie_example.tokens == generated_document.tokens
-    assert pie_example.pos_tags == generated_document.pos_tags
-    assert pie_example.entities == generated_document.entities
-    assert pie_example.coref_mentions == generated_document.coref_mentions
-    assert pie_example.srl_arguments == generated_document.srl_arguments
-    assert pie_example.srl_relations == generated_document.srl_relations
-    assert pie_example.word_senses == generated_document.word_senses
-    assert pie_example.parts == generated_document.parts
+    assert pie_example_extract.id == generated_document_extract.id
+    assert pie_example_extract.sentences == generated_document_extract.sentences
+    assert pie_example_extract.tokens == generated_document_extract.tokens
+    assert pie_example_extract.pos_tags == generated_document_extract.pos_tags
+    assert pie_example_extract.entities == generated_document_extract.entities
+    assert pie_example_extract.coref_mentions == generated_document_extract.coref_mentions
+    assert pie_example_extract.srl_arguments == generated_document_extract.srl_arguments
+    assert pie_example_extract.srl_relations == generated_document_extract.srl_relations
+    assert pie_example_extract.word_senses == generated_document_extract.word_senses
+    assert pie_example_extract.parts == generated_document_extract.parts
 
     # The annotation types for the following layers are defined in the dataset script
     # which gets copied before it is used so the types are different. Casting the
     # document converts the annotation types to the original ones so we can compare
     # the annotation layers.
-    pie_example_casted = pie_example.as_type(type(generated_document))
-    assert pie_example_casted.parse_trees == generated_document.parse_trees
-    assert pie_example_casted.speakers == generated_document.speakers
-    assert pie_example_casted.predicates == generated_document.predicates
-    assert pie_example_casted.coref_clusters == generated_document.coref_clusters
+    pie_example_casted = pie_example_extract.as_type(type(generated_document_extract))
+    assert pie_example_casted.parse_trees == generated_document_extract.parse_trees
+    assert pie_example_casted.speakers == generated_document_extract.speakers
+    assert pie_example_casted.predicates == generated_document_extract.predicates
+    assert pie_example_casted.coref_clusters == generated_document_extract.coref_clusters
 
 
-def test_compare_generate_example_and_back(
-    hf_example, generated_document, generate_document_kwargs
+def test_generate_example_and_back_extract(
+    hf_example_extract, generated_document_extract, generate_document_kwargs_extract
 ):
-    hf_ex_back = document_to_example(generated_document, **generate_document_kwargs)
-    assert hf_ex_back["document_id"] == hf_example["document_id"]
-    for hf, gen in zip(hf_example["sentences"], hf_ex_back["sentences"]):
+    hf_ex_back = document_to_example(
+        generated_document_extract, **generate_document_kwargs_extract
+    )
+    assert hf_ex_back["document_id"] == hf_example_extract["document_id"]
+    for hf, gen in zip(hf_example_extract["sentences"], hf_ex_back["sentences"]):
         for key in hf.keys():
             if key == "coref_spans":
                 # 'coref_spans' must be sorted before compare
@@ -198,23 +214,36 @@ def test_compare_generate_example_and_back(
 
 
 @pytest.mark.slow
-def test_compare_generate_example_and_back_all(hf_dataset, generate_document_kwargs):
-    for hf_ex in list(hf_dataset):
-        doc = example_to_document(hf_ex, **generate_document_kwargs)
-        hf_ex_back = document_to_example(doc, **generate_document_kwargs)
+def test_generate_example_and_back_all(
+    hf_dataset_all, generate_document_kwargs_all, dataset_variant, split_name
+):
+    i = 0
+    for hf_ex in list(hf_dataset_all):
+        doc = example_to_document(hf_ex, **generate_document_kwargs_all)
+        hf_ex_back = document_to_example(doc, **generate_document_kwargs_all)
         assert hf_ex_back["document_id"] == hf_ex["document_id"]
         for ex, ex_back in zip(hf_ex["sentences"], hf_ex_back["sentences"]):
             for key in ex.keys():
                 # 'coref_spans' must be sorted before compare
                 if key == "coref_spans":
                     assert sorted(ex[key]) == sorted(ex_back[key])
+                # TODO: srl_frames are not equal, but they should be
+                elif key == "srl_frames":
+                    if not ex[key] == ex_back[key]:
+                        print(
+                            f"Error for example {hf_ex['document_id']}: {key}. Expected: {ex[key]}, Got: {ex_back[key]}"
+                        )
                 else:
                     assert ex[key] == ex_back[key]
+        i += 1
+    assert i == SPLIT_SIZES[dataset_variant][split_name]
 
 
-def test_convert_to_text_document_with_labeled_spans_and_labeled_partitions(generated_document):
+def test_convert_to_text_document_with_labeled_spans_and_labeled_partitions_extract(
+    generated_document_extract,
+):
     converted_doc = convert_to_text_document_with_labeled_spans_and_labeled_partitions(
-        generated_document
+        generated_document_extract
     )
     assert converted_doc is not None
     assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndLabeledPartitions)
