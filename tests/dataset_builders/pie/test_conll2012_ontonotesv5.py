@@ -231,15 +231,9 @@ def test_generate_example_and_back_all(
         assert hf_ex_back["document_id"] == hf_ex["document_id"]
         for ex, ex_back in zip(hf_ex["sentences"], hf_ex_back["sentences"]):
             for key in ex.keys():
-                # 'coref_spans' must be sorted before compare
+                # 'coref_spans' must be sorted before comparison
                 if key == "coref_spans":
                     assert sorted(ex[key]) == sorted(ex_back[key])
-                # TODO: srl_frames are not equal, but they should be
-                elif key == "srl_frames":
-                    if not ex[key] == ex_back[key]:
-                        print(
-                            f"Error for example {hf_ex['document_id']}: {key}. Expected: {ex[key]}, Got: {ex_back[key]}"
-                        )
                 else:
                     assert ex[key] == ex_back[key]
         i += 1
