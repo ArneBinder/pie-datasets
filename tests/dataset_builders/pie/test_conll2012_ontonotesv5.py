@@ -95,7 +95,7 @@ def test_pie_dataset_extract(pie_dataset_extract):
 
 
 @pytest.mark.slow
-def test_pie_dataset(pie_dataset, dataset_variants, split_names):
+def test_pie_dataset(pie_dataset):
     assert pie_dataset is not None
 
 
@@ -113,7 +113,6 @@ def test_hf_example(hf_example):
     assert hf_example is not None
 
 
-@pytest.mark.slow
 def test_pie_example(pie_example):
     assert pie_example is not None
 
@@ -160,11 +159,6 @@ def test_generate_document(generated_document):
     assert generated_document.word_senses[0].label == "1.0"
 
 
-@pytest.fixture(scope="module")
-def generated_example(generated_document, generate_document_kwargs):
-    return document_to_example(generated_document, **generate_document_kwargs)
-
-
 def test_pie_example_with_generated_document(generated_document, pie_example):
     # just compare against the generated_document, we already checked that generated_document is correct
     assert pie_example.id == generated_document.id
@@ -179,18 +173,22 @@ def test_pie_example_with_generated_document(generated_document, pie_example):
     assert pie_example.parts == generated_document.parts
 
     # The annotation types for the following layers are defined in the dataset script
-    # which gets copied before it is used so the types are different. We need to cast
-    # the types to the correct ones
-    pie_example_casted = pie_example.as_type(DOCUMENT_TYPE)
+    # which gets copied before it is used so the types are different. Casting the
+    # document converts the annotation types to the original ones so we can compare
+    # the annotation layers.
+    pie_example_casted = pie_example.as_type(type(generated_document))
     assert pie_example_casted.parse_trees == generated_document.parse_trees
     assert pie_example_casted.speakers == generated_document.speakers
     assert pie_example_casted.predicates == generated_document.predicates
     assert pie_example_casted.coref_clusters == generated_document.coref_clusters
 
 
-def test_compare_generate_example_and_back(hf_example, generated_example):
-    assert hf_example["document_id"] == generated_example["document_id"]
-    for hf, gen in zip(hf_example["sentences"], generated_example["sentences"]):
+def test_compare_generate_example_and_back(
+    hf_example, generated_document, generate_document_kwargs
+):
+    hf_ex_back = document_to_example(generated_document, **generate_document_kwargs)
+    assert hf_ex_back["document_id"] == hf_example["document_id"]
+    for hf, gen in zip(hf_example["sentences"], hf_ex_back["sentences"]):
         for key in hf.keys():
             if key == "coref_spans":
                 # 'coref_spans' must be sorted before compare
@@ -200,7 +198,7 @@ def test_compare_generate_example_and_back(hf_example, generated_example):
 
 
 @pytest.mark.slow
-def test_compare_generate_example_and_back_all_slow(hf_dataset, generate_document_kwargs):
+def test_compare_generate_example_and_back_all(hf_dataset, generate_document_kwargs):
     for hf_ex in list(hf_dataset):
         doc = example_to_document(hf_ex, **generate_document_kwargs)
         hf_ex_back = document_to_example(doc, **generate_document_kwargs)
