@@ -298,7 +298,16 @@ def document_to_example(
                             "I-" + role
                         ] * (arg.end - arg.start - 1)
                     # english_v4 and arabic_v4 contain some weird role names (in addition to "V") for the verb
-                    if role in ["V", "ARG1(V", "C-ARG0(V", "C-ARG1(V", "C-ARG2(V", "R-ARG1(V"]:
+                    if role in [
+                        "V",
+                        "ARG0(V",
+                        "ARG1(V",
+                        "C-ARG0(V",
+                        "C-ARG1(V",
+                        "C-ARG2(V",
+                        "R-ARG0(V",
+                        "R-ARG1(V",
+                    ]:
                         verb = document.tokens[arg.start]
                 if verb is None:
                     raise ValueError(f"Verb not found for SRL relation: {srl_rel}")
