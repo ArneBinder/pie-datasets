@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from datasets import disable_caching, load_dataset
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndLabeledPartitions
@@ -9,7 +11,7 @@ from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
     example_to_document,
 )
 from pie_datasets import load_dataset as load_pie_dataset
-from tests.dataset_builders.common import PIE_BASE_PATH
+from tests.dataset_builders.common import HF_DS_FIXTURE_DATA_PATH, PIE_BASE_PATH
 
 disable_caching()
 
@@ -29,6 +31,7 @@ SPLIT_SIZES = {
 # Testing parameters
 DATASET_VARIANT = "english_v4"
 SPLIT_NAME = "train"
+HF_EXAMPLE_FIXTURE_PATH = HF_DS_FIXTURE_DATA_PATH / DATASET_NAME / "example.json"
 STREAM_SIZE = 2
 
 
@@ -97,8 +100,9 @@ def test_pie_dataset_extract(pie_dataset_extract):
 
 
 @pytest.mark.slow
-def test_pie_dataset_all(pie_dataset_all):
+def test_pie_dataset_all(pie_dataset_all, dataset_variant, split_name):
     assert pie_dataset_all is not None
+    assert len(pie_dataset_all) == SPLIT_SIZES[dataset_variant][split_name]
 
 
 @pytest.fixture(scope="module")
@@ -113,6 +117,9 @@ def pie_example_extract(pie_dataset_extract) -> DOCUMENT_TYPE:
 
 def test_hf_example_extract(hf_example_extract):
     assert hf_example_extract is not None
+    with open(HF_EXAMPLE_FIXTURE_PATH) as f:
+        expected = json.load(f)
+    assert hf_example_extract == expected
 
 
 def test_pie_example_extract(pie_example_extract):
