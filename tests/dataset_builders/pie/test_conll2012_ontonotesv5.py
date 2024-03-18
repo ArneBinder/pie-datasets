@@ -1,7 +1,5 @@
-import datasets
 import pytest
-from datasets import ClassLabel, disable_caching, load_dataset
-from pytorch_ie import Document
+from datasets import disable_caching, load_dataset
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndLabeledPartitions
 
 from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
@@ -10,7 +8,6 @@ from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
     document_to_example,
     example_to_document,
 )
-from pie_datasets import DatasetDict
 from pie_datasets import load_dataset as load_pie_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
@@ -22,7 +19,7 @@ DOCUMENT_TYPE = BUILDER_CLASS.DOCUMENT_TYPE
 HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 SPLIT_NAMES = {"train", "validation", "test"}
-SLOW_STREAM_SIZE = 5
+SLOW_STREAM_SIZE = None
 
 # Testing parameters
 DATASET_VARIANT = "english_v4"
@@ -53,7 +50,10 @@ def hf_dataset_slow(dataset_variants, split_names):
     dataset = load_dataset(
         BUILDER_CLASS.BASE_DATASET_PATH, name=dataset_variants, split=split_names, streaming=True
     )
-    return dataset.take(SLOW_STREAM_SIZE)
+    if SLOW_STREAM_SIZE is None:
+        return dataset
+    else:
+        return dataset.take(SLOW_STREAM_SIZE)
 
 
 def test_hf_dataset(hf_dataset):
@@ -78,7 +78,10 @@ def pie_dataset_slow(dataset_variants, split_names):
     dataset = load_pie_dataset(
         str(PIE_DATASET_PATH), name=dataset_variants, split=split_names, streaming=True
     )
-    return dataset.take(SLOW_STREAM_SIZE)
+    if SLOW_STREAM_SIZE is None:
+        return dataset
+    else:
+        return dataset.take(SLOW_STREAM_SIZE)
 
 
 def test_pie_dataset(pie_dataset):
