@@ -254,3 +254,11 @@ def test_convert_to_text_document_with_labeled_spans_and_labeled_partitions_extr
     )
     assert converted_doc is not None
     assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndLabeledPartitions)
+
+
+@pytest.mark.slow
+def test_convert_to_text_document_with_labeled_spans_and_labeled_partitions_all(pie_dataset_all):
+    for doc in pie_dataset_all:
+        converted_doc = convert_to_text_document_with_labeled_spans_and_labeled_partitions(doc)
+        assert converted_doc is not None
+        assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndLabeledPartitions)
