@@ -4,12 +4,14 @@ import logging
 import os
 import re
 from pathlib import Path
-from typing import List, Optional
+from typing import Any, List, Optional, Sequence
 
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan
+from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
+from pytorch_ie import Annotation
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TokenBasedDocument
 
+from pie_datasets.builders.brat import BratAttribute
 from tests import FIXTURES_ROOT
 
 DATASET_BUILDER_BASE_PATH = Path("dataset_builders")
@@ -75,6 +77,75 @@ def _load_json(fn: str):
     return ex
 
 
+def resolve_annotation(annotation: Annotation) -> Any:
+    if annotation.target is None:
+        return None
+    if isinstance(annotation, LabeledSpan):
+        return annotation.target[annotation.start : annotation.end], annotation.label
+    elif isinstance(annotation, LabeledMultiSpan):
+        return (
+            tuple(annotation.target[start:end] for start, end in annotation.slices),
+            annotation.label,
+        )
+    elif isinstance(annotation, BinaryRelation):
+        return (
+            resolve_annotation(annotation.head),
+            annotation.label,
+            resolve_annotation(annotation.tail),
+        )
+    elif isinstance(annotation, BratAttribute):
+        result = (resolve_annotation(annotation.annotation), annotation.label)
+        if annotation.value is not None:
+            return result + (annotation.value,)
+        else:
+            return result
+    elif isinstance(annotation, BinaryRelation):
+        return (
+            resolve_annotation(annotation.head),
+            annotation.label,
+            resolve_annotation(annotation.tail),
+        )
+    else:
+        raise TypeError(f"Unknown annotation type: {type(annotation)}")
+
+
+def sort_annotations(annotations: Sequence[Annotation]) -> List[Annotation]:
+    if len(annotations) == 0:
+        return []
+    annotation = annotations[0]
+    if isinstance(annotation, LabeledSpan):
+        return sorted(annotations, key=lambda a: (a.start, a.end, a.label))
+    elif isinstance(annotation, Span):
+        return sorted(annotations, key=lambda a: (a.start, a.end))
+    elif isinstance(annotation, LabeledMultiSpan):
+        return sorted(annotations, key=lambda a: (a.slices, a.label))
+    elif isinstance(annotation, BinaryRelation):
+        if isinstance(annotation.head, LabeledSpan) and isinstance(annotation.tail, LabeledSpan):
+            return sorted(
+                annotations,
+                key=lambda a: (a.head.start, a.head.end, a.label, a.tail.start, a.tail.end),
+            )
+        elif isinstance(annotation.head, LabeledMultiSpan) and isinstance(
+            annotation.tail, LabeledMultiSpan
+        ):
+            return sorted(
+                annotations,
+                key=lambda a: (a.head.slices, a.label, a.tail.slices),
+            )
+        else:
+            raise ValueError(
+                f"Unsupported relation type for BinaryRelation arguments: "
+                f"{type(annotation.head)}, {type(annotation.tail)}"
+            )
+    else:
+        raise ValueError(f"Unsupported annotation type: {type(annotation)}")
+
+
+def resolve_annotations(annotations: Sequence[Annotation]) -> List[Any]:
+    sorted_annotations = sort_annotations(annotations)
+    return [resolve_annotation(a) for a in sorted_annotations]
+
+
 @dataclasses.dataclass
 class TestTokenDocumentWithLabeledSpans(TokenBasedDocument):
     labeled_spans: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
@@ -93,5 +164,21 @@ class TestTokenDocumentWithLabeledPartitions(TokenBasedDocument):
 @dataclasses.dataclass
 class TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions(
     TestTokenDocumentWithLabeledSpansAndBinaryRelations, TestTokenDocumentWithLabeledPartitions
+):
+    pass
+
+
+@dataclasses.dataclass
+class TestTokenDocumentWithLabeledMultiSpansAndBinaryRelations(TokenBasedDocument):
+    labeled_multi_spans: AnnotationList[LabeledMultiSpan] = annotation_field(target="tokens")
+    binary_relations: AnnotationList[BinaryRelation] = annotation_field(
+        target="labeled_multi_spans"
+    )
+
+
+@dataclasses.dataclass
+class TestTokenDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions(
+    TestTokenDocumentWithLabeledMultiSpansAndBinaryRelations,
+    TestTokenDocumentWithLabeledPartitions,
 ):
     pass

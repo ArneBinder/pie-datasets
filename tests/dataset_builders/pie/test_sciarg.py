@@ -1,34 +1,58 @@
-from typing import List, Optional
+from collections import Counter
+from typing import Optional, Type
 
 import datasets
 import pytest
 from pie_modules.document.processing import tokenize_document
-from pytorch_ie.core import Document
-from pytorch_ie.documents import (
+from pie_modules.documents import (
+    TextDocumentWithLabeledMultiSpansAndBinaryRelations,
+    TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan
+from pytorch_ie.core import Document
+from pytorch_ie.documents import TextDocumentWithLabeledPartitions
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
-from dataset_builders.pie.sciarg.sciarg import SciArg
+from dataset_builders.pie.sciarg.sciarg import SciArg, remove_duplicate_relations
 from pie_datasets import DatasetDict
-from pie_datasets.builders.brat import BratDocumentWithMergedSpans
+from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
     PIE_DS_FIXTURE_DATA_PATH,
+    TestTokenDocumentWithLabeledMultiSpansAndBinaryRelations,
+    TestTokenDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
+    TestTokenDocumentWithLabeledPartitions,
     TestTokenDocumentWithLabeledSpansAndBinaryRelations,
     TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+    resolve_annotations,
 )
 
 datasets.disable_caching()
 
-TEST_FULL_DATASET = False
+TEST_FULL_DATASET = True
 
 DATASET_NAME = "sciarg"
 BUILDER_CLASS = SciArg
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 DATA_DIR = PIE_DS_FIXTURE_DATA_PATH / DATASET_NAME
 SPLIT_SIZES = {"train": 40 if TEST_FULL_DATASET else 3}
+FULL_LABEL_COUNTS = {
+    "default": {
+        "relations": {
+            "contradicts": 696,
+            "parts_of_same": 1298,
+            "semantically_same": 44,
+            "supports": 5789,
+        },
+        "spans": {"background_claim": 3291, "data": 4297, "own_claim": 6004},
+    },
+    "resolve_parts_of_same": {
+        "relations": {"contradicts": 696, "semantically_same": 44, "supports": 5788},
+        "spans": {"background_claim": 2752, "data": 4093, "own_claim": 5450},
+    },
+}
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
@@ -60,7 +84,19 @@ def test_builder(builder, dataset_variant):
     assert builder is not None
     assert builder.config_id == dataset_variant
     assert builder.dataset_name == DATASET_NAME
-    assert builder.document_type == BratDocumentWithMergedSpans
+
+
+def test_generate_document(builder, hf_dataset, dataset_variant):
+    hf_example = hf_dataset["train"][0]
+    document = builder._generate_document(hf_example)
+    if dataset_variant == "default":
+        assert isinstance(document, BratDocumentWithMergedSpans)
+        assert len(document.spans) == 183
+    elif dataset_variant == "resolve_parts_of_same":
+        assert isinstance(document, BratDocument)
+        assert len(document.spans) == 177
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
 
 @pytest.fixture(scope="module")
@@ -74,9 +110,22 @@ def dataset(dataset_variant) -> DatasetDict:
     )
 
 
-def test_dataset(dataset):
+def assert_dataset_label_counts(dataset, expected_label_counts):
+    label_counts = {
+        ln: dict(Counter(ann.label for doc in dataset["train"] for ann in doc[ln]))
+        for ln in expected_label_counts.keys()
+    }
+    assert label_counts == expected_label_counts
+
+
+def test_dataset(dataset, dataset_variant):
     assert dataset is not None
     assert {name: len(ds) for name, ds in dataset.items()} == SPLIT_SIZES
+
+    if TEST_FULL_DATASET:
+        assert_dataset_label_counts(
+            dataset, expected_label_counts=FULL_LABEL_COUNTS[dataset_variant]
+        )
 
 
 @pytest.fixture(scope="module")
@@ -89,171 +138,490 @@ def document(dataset) -> BratDocumentWithMergedSpans:
     return result
 
 
-def test_document(document):
+def test_document(document, dataset_variant):
     assert document is not None
     assert document.text.startswith(
         '<?xml version="1.0" encoding="UTF-8" standalone="no"?>\n<Document xmlns:gate="http://www.gate.ac.uk" '
         'name="A01_S01_A_Powell_Optimization_Approach__for_Example-Based_Skinning_CITATION_PURPOSE_M_v1.xml">'
     )
+    if dataset_variant == "default":
+        assert isinstance(document, BratDocumentWithMergedSpans)
+        assert len(document.spans) == 183
+        counter = Counter([i.label for i in document.relations])
+        assert dict(counter) == {
+            "supports": 93,
+            "semantically_same": 9,
+            "contradicts": 8,
+            "parts_of_same": 6,
+        }
+    elif dataset_variant == "resolve_parts_of_same":
+        assert isinstance(document, BratDocument)
+        assert len(document.spans) == 177
+        counter = Counter([i.label for i in document.relations])
+        assert dict(counter) == {"supports": 93, "semantically_same": 9, "contradicts": 8}
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
+@pytest.fixture(
+    scope="module",
+    params=[
+        TextDocumentWithLabeledSpansAndBinaryRelations,
+        TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+        TextDocumentWithLabeledMultiSpansAndBinaryRelations,
+        TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
+    ],
+)
+def target_document_type(builder, request) -> Optional[Type[Document]]:
+    if request.param in set(builder.document_converters):
+        return request.param
+    return None
 
 
 @pytest.fixture(scope="module")
-def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
-    dataset, dataset_variant
-) -> Optional[DatasetDict]:
-    if dataset_variant == "default" or dataset_variant is None:
-        converted_dataset = dataset.to_document_type(
-            TextDocumentWithLabeledSpansAndBinaryRelations
-        )
-    else:
-        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
-    return converted_dataset
+def converted_dataset(dataset, target_document_type) -> Optional[DatasetDict]:
+    if target_document_type is None:
+        return None
+    return dataset.to_document_type(target_document_type)
 
 
-def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations,
-):
-    if dataset_of_text_documents_with_labeled_spans_and_binary_relations is not None:
-        # Check that the conversion is correct and the data makes sense
-        # get a document to check
-        doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations["train"][0]
-        assert isinstance(doc, TextDocumentWithLabeledSpansAndBinaryRelations)
-        # check the entities
-        assert len(doc.labeled_spans) == 183
-        # sort the entities by their start position and convert them to tuples
-        # check the first ten entities after sorted
-        sorted_entity_tuples = [
-            (str(ent), ent.label)
-            for ent in sorted(doc.labeled_spans, key=lambda ent: ent.start)[:10]
-        ]
-        # Checking the first ten entities
-        assert sorted_entity_tuples[0] == (
-            "complicated 3D character models are widely used in fields of entertainment, virtual reality, medicine etc",
-            "background_claim",
-        )
-        assert sorted_entity_tuples[1] == (
-            "The range of breathtaking realistic 3D models is only limited by the creativity of artists and resolution "
-            "of devices",
-            "background_claim",
-        )
-        assert sorted_entity_tuples[2] == (
-            "Driving 3D models in a natural and believable manner is not trivial",
-            "background_claim",
-        )
-        assert sorted_entity_tuples[3] == ("the model is very detailed", "data")
-        assert sorted_entity_tuples[4] == (
-            "playback of animation becomes quite heavy and time consuming",
-            "data",
-        )
-        assert sorted_entity_tuples[5] == ("a frame goes wrong", "data")
-        assert sorted_entity_tuples[6] == (
-            "a production cannot afford major revisions",
-            "background_claim",
-        )
-        assert sorted_entity_tuples[7] == ("resculpting models", "data")
-        assert sorted_entity_tuples[8] == ("re-rigging skeletons", "data")
-        assert sorted_entity_tuples[9] == (
-            "providing a flexible and efficient solution to animation remains an open problem",
-            "own_claim",
-        )
+def test_converted_datasets(converted_dataset, dataset_variant):
+    if converted_dataset is not None:
+        split_sizes = {name: len(ds) for name, ds in converted_dataset.items()}
+        assert split_sizes == SPLIT_SIZES
+        if dataset_variant == "default":
+            expected_document_type = TextDocumentWithLabeledSpansAndBinaryRelations
+            layer_name_mapping = {
+                "spans": "labeled_spans",
+                "relations": "binary_relations",
+            }
+        elif dataset_variant == "resolve_parts_of_same":
+            expected_document_type = TextDocumentWithLabeledMultiSpansAndBinaryRelations
+            layer_name_mapping = {
+                "spans": "labeled_multi_spans",
+                "relations": "binary_relations",
+            }
+        else:
+            raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
-        # check the relations
-        assert len(doc.binary_relations) == 116
-        # check the first ten relations
-        relation_tuples = [
-            (str(rel.head), rel.label, str(rel.tail)) for rel in doc.binary_relations[:10]
-        ]
-        assert relation_tuples[0] == (
-            "a production cannot afford major revisions",
-            "supports",
-            "providing a flexible and efficient solution to animation remains an open problem",
-        )
-        assert relation_tuples[1] == (
-            "its ease of implementation",
-            "supports",
-            "SSD is widely used in games, virtual reality and other realtime applications",
-        )
-        assert relation_tuples[2] == (
-            "low cost of computing",
-            "supports",
-            "SSD is widely used in games, virtual reality and other realtime applications",
-        )
-        assert relation_tuples[3] == (
-            "editing in the rest pose will influence most other poses",
-            "supports",
-            "This approach is not commonly applied",
-        )
-        assert relation_tuples[4] == (
-            "This approach is not commonly applied",
-            "contradicts",
-            "artists will edit the geometry of characters in the rest pose to fine-tune animations",
-        )
-        assert relation_tuples[5] == (
-            "the animator specifies the PSD examples after the SSD has been performed",
-            "contradicts",
-            "the examples are best interpolated in the rest pose, before the SSD has been applied",
-        )
-        assert relation_tuples[6] == (
-            "PSD may be used as a compensation to the underlying SSD",
-            "contradicts",
-            "the examples are best interpolated in the rest pose, before the SSD has been applied",
-        )
-        assert relation_tuples[7] == (
-            "the examples are best interpolated in the rest pose, before the SSD has been applied",
-            "supports",
-            "the action of the SSD and any other deformations must be “inverted” in order to push the example "
-            "compensation before these operations",
-        )
-        assert relation_tuples[8] == (
-            "this inverse strategy has a better performance than the same framework without it",
-            "semantically_same",
-            "this approach will improve the quality of deformation",
-        )
-        assert relation_tuples[9] == (
-            "the high cost of computing",
-            "supports",
-            "they are seldom applied to interactive applications",
-        )
+        assert isinstance(converted_dataset["train"][0], expected_document_type)
+
+        if TEST_FULL_DATASET:
+            expected_label_counts = {
+                layer_name_mapping[ln]: value
+                for ln, value in FULL_LABEL_COUNTS[dataset_variant].items()
+            }
+            assert_dataset_label_counts(converted_dataset, expected_label_counts)
 
 
 @pytest.fixture(scope="module")
-def dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions(
-    dataset, dataset_variant
-) -> Optional[DatasetDict]:
-    if dataset_variant == "default" or dataset_variant is None:
-        converted_dataset = dataset.to_document_type(
-            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
-        )
+def converted_document(converted_dataset) -> Optional[Document]:
+    if converted_dataset is None:
+        return None
+    return converted_dataset["train"][0]
+
+
+def test_converted_document(converted_document, dataset_variant):
+    # Check that the conversion is correct and the data makes sense
+    # get a document to check
+    doc = converted_document
+    if dataset_variant == "default":
+        if isinstance(doc, TextDocumentWithLabeledSpansAndBinaryRelations):
+            # check the entities
+            assert len(doc.labeled_spans) == 183
+            # sort the entities by their start position and convert them to tuples
+            # check the first ten entities after sorted
+            sorted_entity_tuples = resolve_annotations(doc.labeled_spans)
+            # Checking the first ten entities
+            assert sorted_entity_tuples[:10] == [
+                (
+                    "complicated 3D character models are widely used in fields of entertainment, virtual reality, medicine etc",
+                    "background_claim",
+                ),
+                (
+                    "The range of breathtaking realistic 3D models is only limited by the creativity of artists and resolution of devices",
+                    "background_claim",
+                ),
+                (
+                    "Driving 3D models in a natural and believable manner is not trivial",
+                    "background_claim",
+                ),
+                ("the model is very detailed", "data"),
+                ("playback of animation becomes quite heavy and time consuming", "data"),
+                ("a frame goes wrong", "data"),
+                ("a production cannot afford major revisions", "background_claim"),
+                ("resculpting models", "data"),
+                ("re-rigging skeletons", "data"),
+                (
+                    "providing a flexible and efficient solution to animation remains an open problem",
+                    "own_claim",
+                ),
+            ]
+
+            # check the relations
+            assert len(doc.binary_relations) == 116
+            relation_tuples = resolve_annotations(doc.binary_relations)
+            # check the first ten relations
+            assert relation_tuples[:13] == [
+                (
+                    ("the model is very detailed", "data"),
+                    "supports",
+                    (
+                        "Driving 3D models in a natural and believable manner is not trivial",
+                        "background_claim",
+                    ),
+                ),
+                (
+                    ("playback of animation becomes quite heavy and time consuming", "data"),
+                    "supports",
+                    (
+                        "Driving 3D models in a natural and believable manner is not trivial",
+                        "background_claim",
+                    ),
+                ),
+                (
+                    ("a frame goes wrong", "data"),
+                    "supports",
+                    ("a production cannot afford major revisions", "background_claim"),
+                ),
+                (
+                    ("a production cannot afford major revisions", "background_claim"),
+                    "supports",
+                    (
+                        "providing a flexible and efficient solution to animation remains an open problem",
+                        "own_claim",
+                    ),
+                ),
+                (
+                    ("resculpting models", "data"),
+                    "supports",
+                    ("a production cannot afford major revisions", "background_claim"),
+                ),
+                (
+                    ("re-rigging skeletons", "data"),
+                    "supports",
+                    ("a production cannot afford major revisions", "background_claim"),
+                ),
+                (("1", "data"), "supports", ("A nice review of SSD is given", "background_claim")),
+                (
+                    (
+                        "SSD is widely used in games, virtual reality and other realtime applications",
+                        "background_claim",
+                    ),
+                    "supports",
+                    (
+                        "Skeleton Subspace Deformation (SSD) is the predominant approach to character skinning at present",
+                        "background_claim",
+                    ),
+                ),
+                (
+                    ("its ease of implementation", "data"),
+                    "supports",
+                    (
+                        "SSD is widely used in games, virtual reality and other realtime applications",
+                        "background_claim",
+                    ),
+                ),
+                (
+                    ("low cost of computing", "data"),
+                    "supports",
+                    (
+                        "SSD is widely used in games, virtual reality and other realtime applications",
+                        "background_claim",
+                    ),
+                ),
+                (
+                    ("This approach is not commonly applied", "background_claim"),
+                    "contradicts",
+                    (
+                        "artists will edit the geometry of characters in the rest pose to fine-tune animations",
+                        "background_claim",
+                    ),
+                ),
+                (
+                    (
+                        "editing in the rest pose will influence most other poses",
+                        "background_claim",
+                    ),
+                    "supports",
+                    ("This approach is not commonly applied", "background_claim"),
+                ),
+                (
+                    ("For those applications that require visual fidelity", "background_claim"),
+                    "parts_of_same",
+                    ("SSD serves only as a basic framework", "background_claim"),
+                ),
+            ]
+            counter = Counter([rt[1] for rt in relation_tuples])
+            assert dict(counter) == {
+                "supports": 93,
+                "contradicts": 8,
+                "parts_of_same": 6,
+                "semantically_same": 9,
+            }
+        elif doc is None:
+            pass
+        else:
+            raise ValueError(f"Unknown document type: {type(doc)}")
+    elif dataset_variant == "resolve_parts_of_same":
+        # if isinstance(doc, TextDocumentWithLabeledSpansAndBinaryRelations):
+        #     # check the entities
+        #     assert len(doc.labeled_spans) == 177
+        #     # sort the labeled spans by their start position and convert them to tuples
+        #     sorted_entity_tuples = resolve_annotations(doc.labeled_spans)
+        #     # check the first ten entities
+        #     assert sorted_entity_tuples[:10] == [
+        #         (
+        #             "complicated 3D character models are widely used in fields of entertainment, virtual reality, medicine etc",
+        #             "background_claim",
+        #         ),
+        #         (
+        #             "The range of breathtaking realistic 3D models is only limited by the creativity of artists and resolution of devices",
+        #             "background_claim",
+        #         ),
+        #         (
+        #             "Driving 3D models in a natural and believable manner is not trivial",
+        #             "background_claim",
+        #         ),
+        #         ("the model is very detailed", "data"),
+        #         ("playback of animation becomes quite heavy and time consuming", "data"),
+        #         ("a frame goes wrong", "data"),
+        #         ("a production cannot afford major revisions", "background_claim"),
+        #         ("resculpting models", "data"),
+        #         ("re-rigging skeletons", "data"),
+        #         (
+        #             "providing a flexible and efficient solution to animation remains an open problem",
+        #             "own_claim",
+        #         ),
+        #     ]
+        #
+        #     # this comes out of the 13th relation which is a parts_of_same relation (see above)
+        #     assert sorted_entity_tuples[20] == (
+        #         "For those applications that require visual fidelity, such as movies, SSD serves only as a basic framework",
+        #         "background_claim",
+        #     )
+        #
+        #     # check the relations
+        #     assert len(doc.binary_relations) == 110
+        #     relation_tuples = resolve_annotations(doc.binary_relations)
+        #     # check the first ten relations
+        #     assert relation_tuples[:10] == [
+        #         (
+        #             ("the model is very detailed", "data"),
+        #             "supports",
+        #             (
+        #                 "Driving 3D models in a natural and believable manner is not trivial",
+        #                 "background_claim",
+        #             ),
+        #         ),
+        #         (
+        #             ("playback of animation becomes quite heavy and time consuming", "data"),
+        #             "supports",
+        #             (
+        #                 "Driving 3D models in a natural and believable manner is not trivial",
+        #                 "background_claim",
+        #             ),
+        #         ),
+        #         (
+        #             ("a frame goes wrong", "data"),
+        #             "supports",
+        #             ("a production cannot afford major revisions", "background_claim"),
+        #         ),
+        #         (
+        #             ("a production cannot afford major revisions", "background_claim"),
+        #             "supports",
+        #             (
+        #                 "providing a flexible and efficient solution to animation remains an open problem",
+        #                 "own_claim",
+        #             ),
+        #         ),
+        #         (
+        #             ("resculpting models", "data"),
+        #             "supports",
+        #             ("a production cannot afford major revisions", "background_claim"),
+        #         ),
+        #         (
+        #             ("re-rigging skeletons", "data"),
+        #             "supports",
+        #             ("a production cannot afford major revisions", "background_claim"),
+        #         ),
+        #         (("1", "data"), "supports", ("A nice review of SSD is given", "background_claim")),
+        #         (
+        #             (
+        #                 "SSD is widely used in games, virtual reality and other realtime applications",
+        #                 "background_claim",
+        #             ),
+        #             "supports",
+        #             (
+        #                 "Skeleton Subspace Deformation (SSD) is the predominant approach to character skinning at present",
+        #                 "background_claim",
+        #             ),
+        #         ),
+        #         (
+        #             ("its ease of implementation", "data"),
+        #             "supports",
+        #             (
+        #                 "SSD is widely used in games, virtual reality and other realtime applications",
+        #                 "background_claim",
+        #             ),
+        #         ),
+        #         (
+        #             ("low cost of computing", "data"),
+        #             "supports",
+        #             (
+        #                 "SSD is widely used in games, virtual reality and other realtime applications",
+        #                 "background_claim",
+        #             ),
+        #         ),
+        #     ]
+        #     counter = Counter([rt[1] for rt in relation_tuples])
+        #     assert dict(counter) == {"supports": 93, "contradicts": 8, "semantically_same": 9}
+
+        if isinstance(doc, TextDocumentWithLabeledMultiSpansAndBinaryRelations):
+            # check the entities
+            assert len(doc.labeled_multi_spans) == 177
+            # sort the labeled spans by their start position and convert them to tuples
+            sorted_span_tuples = resolve_annotations(doc.labeled_multi_spans)
+            # check the first ten entities
+            assert sorted_span_tuples[:10] == [
+                (
+                    (
+                        "complicated 3D character models are widely used in fields of entertainment, virtual reality, medicine etc",
+                    ),
+                    "background_claim",
+                ),
+                (
+                    (
+                        "The range of breathtaking realistic 3D models is only limited by the creativity of artists and resolution of devices",
+                    ),
+                    "background_claim",
+                ),
+                (
+                    ("Driving 3D models in a natural and believable manner is not trivial",),
+                    "background_claim",
+                ),
+                (("the model is very detailed",), "data"),
+                (("playback of animation becomes quite heavy and time consuming",), "data"),
+                (("a frame goes wrong",), "data"),
+                (("a production cannot afford major revisions",), "background_claim"),
+                (("resculpting models",), "data"),
+                (("re-rigging skeletons",), "data"),
+                (
+                    (
+                        "providing a flexible and efficient solution to animation remains an open problem",
+                    ),
+                    "own_claim",
+                ),
+            ]
+
+            # this comes out of the 13th relation which is a parts_of_same relation (see above)
+            assert sorted_span_tuples[20] == (
+                (
+                    "For those applications that require visual fidelity",
+                    "SSD serves only as a basic framework",
+                ),
+                "background_claim",
+            )
+
+            # check the relations
+            assert len(doc.binary_relations) == 110
+            relation_tuples = resolve_annotations(doc.binary_relations)
+            # check the first ten relations
+            assert relation_tuples[:10] == [
+                (
+                    (("the model is very detailed",), "data"),
+                    "supports",
+                    (
+                        ("Driving 3D models in a natural and believable manner is not trivial",),
+                        "background_claim",
+                    ),
+                ),
+                (
+                    (("playback of animation becomes quite heavy and time consuming",), "data"),
+                    "supports",
+                    (
+                        ("Driving 3D models in a natural and believable manner is not trivial",),
+                        "background_claim",
+                    ),
+                ),
+                (
+                    (("a frame goes wrong",), "data"),
+                    "supports",
+                    (("a production cannot afford major revisions",), "background_claim"),
+                ),
+                (
+                    (("a production cannot afford major revisions",), "background_claim"),
+                    "supports",
+                    (
+                        (
+                            "providing a flexible and efficient solution to animation remains an open problem",
+                        ),
+                        "own_claim",
+                    ),
+                ),
+                (
+                    (("resculpting models",), "data"),
+                    "supports",
+                    (("a production cannot afford major revisions",), "background_claim"),
+                ),
+                (
+                    (("re-rigging skeletons",), "data"),
+                    "supports",
+                    (("a production cannot afford major revisions",), "background_claim"),
+                ),
+                (
+                    (("1",), "data"),
+                    "supports",
+                    (("A nice review of SSD is given",), "background_claim"),
+                ),
+                (
+                    (
+                        (
+                            "SSD is widely used in games, virtual reality and other realtime applications",
+                        ),
+                        "background_claim",
+                    ),
+                    "supports",
+                    (
+                        (
+                            "Skeleton Subspace Deformation (SSD) is the predominant approach to character skinning at present",
+                        ),
+                        "background_claim",
+                    ),
+                ),
+                (
+                    (("its ease of implementation",), "data"),
+                    "supports",
+                    (
+                        (
+                            "SSD is widely used in games, virtual reality and other realtime applications",
+                        ),
+                        "background_claim",
+                    ),
+                ),
+                (
+                    (("low cost of computing",), "data"),
+                    "supports",
+                    (
+                        (
+                            "SSD is widely used in games, virtual reality and other realtime applications",
+                        ),
+                        "background_claim",
+                    ),
+                ),
+            ]
+            counter = Counter([rt[1] for rt in relation_tuples])
+            assert dict(counter) == {"supports": 93, "contradicts": 8, "semantically_same": 9}
+        elif doc is None:
+            pass
+        else:
+            raise ValueError(f"Unknown document type: {type(doc)}")
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
-    return converted_dataset
 
-
-def test_dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions(
-    dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions,
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations,
-):
-    if (
-        dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions
-        is not None
-    ):
-        # Check that the conversion is correct and the data makes sense
-        # get a document to check
-        doc_without_partitions = dataset_of_text_documents_with_labeled_spans_and_binary_relations[
-            "train"
-        ][0]
-        doc_with_partitions = (
-            dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions[
-                "train"
-            ][0]
-        )
-        assert isinstance(doc_without_partitions, TextDocumentWithLabeledSpansAndBinaryRelations)
-        assert isinstance(
-            doc_with_partitions, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
-        )
-
+    if isinstance(doc, TextDocumentWithLabeledPartitions):
         # check the partitions with startswiths(), endswith(), and label
-        partitions = doc_with_partitions.labeled_partitions
+        partitions = doc.labeled_partitions
         assert len(partitions) == 10
         # Only check the first sentence in each partition, as it could be really long
         assert str(partitions[0]).startswith(
@@ -335,12 +703,6 @@ def test_dataset_of_text_documents_with_labeled_spans_binary_relations_and_label
         )
         assert partitions[9].label == "H1"
 
-        # check the entities
-        assert doc_with_partitions.labeled_spans == doc_without_partitions.labeled_spans
-
-        # check the relations
-        assert doc_with_partitions.binary_relations == doc_without_partitions.binary_relations
-
 
 @pytest.fixture(scope="module")
 def tokenizer() -> PreTrainedTokenizer:
@@ -348,234 +710,51 @@ def tokenizer() -> PreTrainedTokenizer:
 
 
 @pytest.fixture(scope="module")
-def tokenized_documents_with_labeled_spans_and_binary_relations(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer
-) -> Optional[List[TestTokenDocumentWithLabeledSpansAndBinaryRelations]]:
-    if dataset_of_text_documents_with_labeled_spans_and_binary_relations is None:
-        return None
-
-    # get a document to check
-    doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations["train"][0]
-    # Note, that this is a list of documents, because the document may be split into chunks
-    # if the input text is too long.
-    tokenized_docs = tokenize_document(
-        doc,
-        tokenizer=tokenizer,
-        return_overflowing_tokens=True,
-        result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-        verbose=True,
-    )
-    return tokenized_docs
+def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
+    dataset, dataset_variant
+) -> Optional[DatasetDict]:
+    return dataset.to_document_type(TextDocumentWithLabeledSpansAndBinaryRelations)
 
 
-def test_tokenized_documents_with_labeled_spans_and_binary_relations(
-    tokenized_documents_with_labeled_spans_and_binary_relations,
-):
-    if tokenized_documents_with_labeled_spans_and_binary_relations is not None:
-        docs = tokenized_documents_with_labeled_spans_and_binary_relations
-        # check that the tokenization was fine
-        assert len(docs) == 1
-        doc = docs[0]
-        assert len(doc.labeled_spans) == 183
-        assert len(doc.tokens) == 7689
-        # Check the first ten tokens
-        assert doc.tokens[:10] == ("[CLS]", "<", "?", "xml", "version", "=", '"', "1", ".", "0")
-        # Check the first ten tokenized entities after sorted by their start position
-        sorted_entities = sorted(doc.labeled_spans, key=lambda ent: ent.start)
-        assert (
-            str(sorted_entities[0])
-            == "('complicated', '3d', 'character', 'models', 'are', 'widely', 'used', 'in', 'fields', 'of', "
-            "'entertainment', ',', 'virtual', 'reality', ',', 'medicine', 'etc')"
-        )
-        assert (
-            str(sorted_entities[1])
-            == "('the', 'range', 'of', 'breath', '##taking', 'realistic', '3d', 'models', 'is', 'only', 'limited', "
-            "'by', 'the', 'creativity', 'of', 'artists', 'and', 'resolution', 'of', 'devices')"
-        )
-        assert (
-            str(sorted_entities[2])
-            == "('driving', '3d', 'models', 'in', 'a', 'natural', 'and', 'bel', '##ie', '##vable', 'manner', 'is', "
-            "'not', 'trivial')"
-        )
-        assert str(sorted_entities[3]) == "('the', 'model', 'is', 'very', 'detailed')"
-        assert (
-            str(sorted_entities[4])
-            == "('playback', 'of', 'animation', 'becomes', 'quite', 'heavy', 'and', 'time', 'consuming')"
-        )
-        assert str(sorted_entities[5]) == "('a', 'frame', 'goes', 'wrong')"
-        assert (
-            str(sorted_entities[6])
-            == "('a', 'production', 'cannot', 'afford', 'major', 'revisions')"
-        )
-        assert str(sorted_entities[7]) == "('res', '##cu', '##lp', '##ting', 'models')"
-        assert str(sorted_entities[8]) == "('re', '-', 'rig', '##ging', 'skeletons')"
-        assert (
-            str(sorted_entities[9])
-            == "('providing', 'a', 'flexible', 'and', 'efficient', 'solution', 'to', 'animation', 'remains', 'an', "
-            "'open', 'problem')"
-        )
+TOKENIZED_DOCUMENT_TYPE_MAPPING = {
+    TextDocumentWithLabeledSpansAndBinaryRelations: TestTokenDocumentWithLabeledSpansAndBinaryRelations,
+    TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions: TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+    TextDocumentWithLabeledMultiSpansAndBinaryRelations: TestTokenDocumentWithLabeledMultiSpansAndBinaryRelations,
+    TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions: TestTokenDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
+}
 
 
-def test_tokenized_documents_with_entities_and_relations_all(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer, dataset_variant
-):
-    if dataset_of_text_documents_with_labeled_spans_and_binary_relations is not None:
-        for (
-            split,
-            docs,
-        ) in dataset_of_text_documents_with_labeled_spans_and_binary_relations.items():
-            for doc in docs:
-                # Note, that this is a list of documents, because the document may be split into chunks
-                # if the input text is too long.
-                tokenized_docs = tokenize_document(
-                    doc,
-                    tokenizer=tokenizer,
-                    return_overflowing_tokens=True,
-                    result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-                    verbose=True,
-                )
-                # we just ensure that we get at least one tokenized document
-                assert tokenized_docs is not None
-                assert len(tokenized_docs) > 0
-
-
-@pytest.fixture(scope="module")
-def tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions(
-    dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions, tokenizer
-) -> List[TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions]:
-    if (
-        dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions
-        is not None
-    ):
-        # get a document to check
-        doc = dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions[
-            "train"
-        ][0]
-        # Note, that this is a list of documents, because the document may be split into chunks
-        # if the input text is too long.
-        tokenized_docs = tokenize_document(
-            doc,
-            tokenizer=tokenizer,
-            partition_layer="labeled_partitions",
-            return_overflowing_tokens=True,
-            result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-            strict_span_conversion=False,
-            verbose=True,
-        )
-        return tokenized_docs
-
-
-def test_tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions(
-    tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions,
-    tokenized_documents_with_labeled_spans_and_binary_relations,
-):
-    if tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions is not None:
-        docs_with_partitions = (
-            tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions
-        )
-
-        # check that the tokenization was fine
-        assert len(docs_with_partitions) == 10
-        doc_with_partitions = docs_with_partitions[0]
-        assert len(doc_with_partitions.labeled_partitions) == 1
-        assert len(doc_with_partitions.labeled_spans) == 0
-        assert len(doc_with_partitions.binary_relations) == 0
-        assert doc_with_partitions.tokens == (
-            "[CLS]",
-            "<",
-            "title",
-            ">",
-            "a",
-            "powell",
-            "optimization",
-            "approach",
-            "for",
-            "example",
-            "-",
-            "based",
-            "skin",
-            "##ning",
-            "in",
-            "a",
-            "production",
-            "animation",
-            "environment",
-            "<",
-            "/",
-            "title",
-            ">",
-            "xiao",
-            "xi",
-            "##an",
-            "∗",
-            "john",
-            "p",
-            ".",
-            "lewis",
-            "nan",
-            "##yang",
-            "technological",
-            "university",
-            "graphic",
-            "primitive",
-            "##s",
-            "sea",
-            "##h",
-            "hoc",
-            "##k",
-            "soon",
-            "nick",
-            "##son",
-            "f",
-            "##ong",
-            "nan",
-            "##yang",
-            "technological",
-            "university",
-            "eggs",
-            "##tory",
-            "##cp",
-            "tian",
-            "feng",
-            "nan",
-            "##yang",
-            "technological",
-            "university",
-            "[SEP]",
-        )
-
-
-def test_tokenized_documents_with_entities_relations_and_partitions_all(
-    dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions, tokenizer
-):
-    if (
-        dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions
-        is not None
-    ):
-        for (
-            split,
-            docs,
-        ) in (
-            dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions.items()
-        ):
-            for doc in docs:
-                # Note, that this is a list of documents, because the document may be split into chunks
-                # if the input text is too long.
-                tokenized_docs = tokenize_document(
-                    doc,
-                    tokenizer=tokenizer,
-                    partition_layer="labeled_partitions",
-                    return_overflowing_tokens=True,
-                    result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-                    strict_span_conversion=False,
-                    verbose=True,
-                )
-                # we just ensure that we get at least one tokenized document
-                assert tokenized_docs is not None
-                assert len(tokenized_docs) > 0
-                for tokenized_doc in tokenized_docs:
-                    assert tokenized_doc.labeled_partitions is not None
-                    assert len(tokenized_doc.labeled_partitions) == 1
+def test_tokenize_documents_all(converted_dataset, tokenizer, dataset_variant):
+    if converted_dataset is None:
+        return
+    # docs that cause errors when using strict_span_conversion (and the spans that can not be converted):
+    # - A11: "́ Ø 1⁄2 μ 3⁄4È and  ́ Ø 3⁄4 μ 3⁄4Ç"
+    # - A19: "̃ l CE is the normalized muscle fiber length"
+    # - A20: "̇ to generalized forces (u)" / "('a force field function u = g(q, q)  ̇ maps kinematic states', '̇ to generalized forces (u)')"
+    # - A24: "φ n = φ  ̄"
+    # - A25: " M 0 −1 I −1 0 A 1 b T 1 ··· A k b T k b k" and " b 1  R = " / "('\uf8ee b 1 \uf8f9 R = \uf8f0',)" and "('\uf8fb M 0 −1 I −1 0 A 1 b T 1 ··· A k b T k b k',)"
+    docs_with_span_errors = {"A11", "A19", "A20", "A24", "A25"}
+    for split, docs in converted_dataset.items():
+        for doc in docs:
+            strict_span_conversion = doc.id not in docs_with_span_errors and not isinstance(
+                doc, TextDocumentWithLabeledPartitions
+            )
+            # Note, that this is a list of documents, because the document may be split into chunks
+            # if the input text is too long.
+            tokenized_docs = tokenize_document(
+                doc,
+                tokenizer=tokenizer,
+                return_overflowing_tokens=True,
+                result_document_type=TOKENIZED_DOCUMENT_TYPE_MAPPING[type(doc)],
+                partition_layer="labeled_partitions"
+                if isinstance(doc, TextDocumentWithLabeledPartitions)
+                else None,
+                strict_span_conversion=strict_span_conversion,
+                verbose=True,
+            )
+            # we just ensure that we get at least one tokenized document
+            assert tokenized_docs is not None
+            assert len(tokenized_docs) > 0
 
 
 def test_document_converters(dataset_variant):
@@ -583,11 +762,47 @@ def test_document_converters(dataset_variant):
     document_converters = builder.document_converters
 
     if dataset_variant == "default":
-        assert len(document_converters) == 2
         assert set(document_converters) == {
             TextDocumentWithLabeledSpansAndBinaryRelations,
             TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
         }
-        assert all(callable(v) for k, v in document_converters.items())
+    elif dataset_variant == "resolve_parts_of_same":
+        assert set(document_converters) == {
+            # TextDocumentWithLabeledSpansAndBinaryRelations,
+            # TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+            TextDocumentWithLabeledMultiSpansAndBinaryRelations,
+            TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
+        }
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+    assert all(callable(v) for k, v in document_converters.items())
+
+
+def test_remove_duplicate_relations():
+    doc = BratDocumentWithMergedSpans(id="test", text="This is a test sentence.")
+    doc.spans.append(LabeledSpan(start=0, end=4, label="test"))
+    assert str(doc.spans[0]) == "This"
+    doc.spans.append(LabeledSpan(start=10, end=23, label="sentence"))
+    assert str(doc.spans[1]) == "test sentence"
+    # reference relation
+    doc.relations.append(BinaryRelation(head=doc.spans[0], tail=doc.spans[1], label="a"))
+    # swapped arguments
+    doc.relations.append(BinaryRelation(head=doc.spans[1], tail=doc.spans[0], label="a"))
+    # this is the only duplicate relation, it should be removed
+    doc.relations.append(BinaryRelation(head=doc.spans[0], tail=doc.spans[1], label="a"))
+    # different label
+    doc.relations.append(BinaryRelation(head=doc.spans[0], tail=doc.spans[1], label="b"))
+
+    assert len(doc.relations) == 4
+    remove_duplicate_relations(doc)
+    assert len(doc.relations) == 3
+    assert doc.relations[0].head == doc.spans[0]
+    assert doc.relations[0].tail == doc.spans[1]
+    assert doc.relations[0].label == "a"
+    assert doc.relations[1].label == "a"
+    assert doc.relations[1].head == doc.spans[1]
+    assert doc.relations[1].tail == doc.spans[0]
+    assert doc.relations[2].label == "b"
+    assert doc.relations[2].head == doc.spans[0]
+    assert doc.relations[2].tail == doc.spans[1]
