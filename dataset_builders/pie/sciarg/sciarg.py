@@ -1,3 +1,5 @@
+import logging
+
 from pie_modules.document.processing import (
     RegexPartitioner,
     RelationArgumentSorter,
@@ -16,6 +18,8 @@ from pie_datasets.builders import BratBuilder, BratConfig
 from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
 from pie_datasets.core.dataset import DocumentConvertersType
 from pie_datasets.document.processing import Caster, Pipeline
+
+logger = logging.getLogger(__name__)
 
 URL = "http://data.dws.informatik.uni-mannheim.de/sci-arg/compiled_corpus.zip"
 SPLIT_PATHS = {"train": "compiled_corpus"}
@@ -94,6 +98,22 @@ class SciArg(BratBuilder):
                 result_document_type=BratDocument,
                 result_field_mapping={"spans": "spans", "relations": "relations"},
             )(document)
+        else:
+            # some documents have duplicate relations, remove them
+            if len(document.relations) > len(set(document.relations)):
+                added = set()
+                i = 0
+                while i < len(document.relations):
+                    relation = document.relations[i]
+                    if relation in added:
+                        logger.warning(
+                            f"doc_id={document.id}: Removing duplicate relation: {relation}"
+                        )
+                        document.relations.pop(i)
+                    else:
+                        added.add(relation)
+                        i += 1
+
         return document
 
     @property
