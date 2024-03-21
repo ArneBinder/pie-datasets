@@ -1,2 +1,2 @@
-pie-datasets>=0.6.0,<0.9.0
+pie-datasets>=0.6.0,<0.10.0
 pie-modules>=0.8.0,<0.12.0
