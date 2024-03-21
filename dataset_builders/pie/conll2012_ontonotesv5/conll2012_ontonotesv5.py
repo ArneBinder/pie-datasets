@@ -3,7 +3,6 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 
 import datasets
-from datasets import ClassLabel
 from pytorch_ie.annotations import LabeledSpan, NaryRelation, Span
 from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import (
@@ -102,8 +101,8 @@ def bio2spans(bio: List[str], offset: int = 0) -> List[LabeledSpan]:
 
 def example_to_document(
     example: Dict[str, Any],
-    entity_labels: ClassLabel,
-    pos_tag_labels: Optional[ClassLabel] = None,
+    entity_labels: datasets.ClassLabel,
+    pos_tag_labels: Optional[datasets.ClassLabel] = None,
 ) -> Conll2012OntonotesV5Document:
     sentences = []
     tokens = []
@@ -241,8 +240,8 @@ def example_to_document(
 
 def document_to_example(
     document: Conll2012OntonotesV5Document,
-    entity_labels: ClassLabel,
-    pos_tag_labels: Optional[ClassLabel] = None,
+    entity_labels: datasets.ClassLabel,
+    pos_tag_labels: Optional[datasets.ClassLabel] = None,
 ) -> Dict[str, Any]:
     example = {
         "document_id": document.id,
