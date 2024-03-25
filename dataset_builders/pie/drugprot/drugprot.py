@@ -4,7 +4,6 @@ import datasets
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
-from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
 
 from pie_datasets import GeneratorBasedBuilder
 
@@ -22,8 +21,13 @@ class Drugprot(GeneratorBasedBuilder):
 
     BUILDER_CONFIGS = [
         datasets.BuilderConfig(
-            name="drugprot", version=datasets.Version("1.0.0"), description="DrugProt dataset"
+            name="drugprot_source",
+            version=datasets.Version("1.0.2"),
+            description="DrugProt source schema",
         ),
+        # datasets.BuilderConfig(
+        #     name="drugprot_bigbio_kb", version=datasets.Version("1.0.0"), description="DrugProt BigBio schema"
+        # ), # not ready yet
     ]
 
     # DOCUMENT_CONVERTERS = {
@@ -34,25 +38,42 @@ class Drugprot(GeneratorBasedBuilder):
     # }
 
     def _generate_document_kwargs(self, dataset):
-        return {"int_to_str": dataset.features["ner_tags"].feature.int2str}
+        return {}
 
     def _generate_document(self, example):
-        doc_id = example["document_id"]
         text = example["text"]
+        doc_id = example["document_id"]
         metadata = {k: example[k] for k in ("title", "abstract")}
-        text, ner_spans = tokens_and_tags_to_text_and_labeled_spans(tokens=tokens, tags=ner_tags)
-        # spans =
-        # relations =
-
+        id2start = {}
+        for entity in example["entities"]:
+            id2start[entity["id"]] = entity["offset"][0]
         document = DrugprotDocument(
             text=text,
             id=doc_id,
             metadata=metadata,
-            labeled_spans=spans,
-            binary_relations=relations,
         )
 
-        for span in sorted(ner_spans, key=lambda span: span.start):
-            document.entities.append(span)
-
+        for span in sorted(example["entities"], key=lambda span: span["offset"][0]):
+            labeled_span = LabeledSpan(
+                start=span["offset"][0],
+                end=span["offset"][1],
+                label=span["type"],
+            )
+            document.labeled_spans.append(labeled_span)
+        for relation in sorted(example["relations"], key=lambda relation: relation["id"]):
+            document.binary_relations.append(
+                BinaryRelation(
+                    head=[
+                        span
+                        for span in document.labeled_spans
+                        if span.start == id2start[relation["arg1_id"]]
+                    ][0],
+                    tail=[
+                        span
+                        for span in document.labeled_spans
+                        if span.start == id2start[relation["arg2_id"]]
+                    ][0],
+                    label=relation["type"],
+                )
+            )
         return document
