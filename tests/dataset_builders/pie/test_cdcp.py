@@ -150,7 +150,7 @@ def test_example_to_document_and_back_all(hf_dataset, generate_document_kwargs, 
 
 @pytest.fixture(scope="module")
 def dataset() -> DatasetDict:
-    return DatasetDict.load_dataset(str(PIE_DATASET_PATH))
+    return DatasetDict.load_dataset(str(PIE_DATASET_PATH), data_dir=DATA_PATH)
 
 
 def test_pie_dataset(dataset):
