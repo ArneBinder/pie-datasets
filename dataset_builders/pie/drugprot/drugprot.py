@@ -1,8 +1,8 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional
+from typing import Any, Dict, Optional, Union
 
 import datasets
-from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import AnnotationLayer, annotation_field
 from pytorch_ie.documents import (
     TextBasedDocument,
@@ -161,7 +161,7 @@ class Drugprot(GeneratorBasedBuilder):
     def _generate_document(
         self,
         example: Dict[str, Any],
-    ) -> DrugprotDocument | DrugprotBigbioDocument:
+    ) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
         if self.config.name == "drugprot_source":
             return example2drugprot(example)
         elif self.config.name == "drugprot_bigbio_kb":
