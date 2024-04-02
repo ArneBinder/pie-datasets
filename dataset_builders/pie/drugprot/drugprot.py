@@ -2,11 +2,13 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
 import datasets
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan
-from pytorch_ie.core import AnnotationLayer, annotation_field
-from pytorch_ie.documents import (
+from pie_modules.annotations import BinaryRelation, LabeledSpan
+from pie_modules.documents import (
+    AnnotationLayer,
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
+    TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+    annotation_field,
 )
 
 from pie_datasets import GeneratorBasedBuilder
@@ -28,10 +30,8 @@ class DrugprotBigbioDocument(TextBasedDocument):
 
 
 def example2drugprot(example: Dict[str, Any]) -> DrugprotDocument:
-    metadata = {"entity_id": []}
-    id2start = {}
-    for entity in example["entities"]:
-        id2start[entity["id"]] = entity["offset"][0]
+    metadata = {"entity_ids": []}
+    id2labeled_span: Dict[str, LabeledSpan] = {}
 
     document = DrugprotDocument(
         text=example["text"],
@@ -41,27 +41,20 @@ def example2drugprot(example: Dict[str, Any]) -> DrugprotDocument:
         metadata=metadata,
     )
     # We sort labels and relation to always have an deterministic order for testing purposes.
-    for span in sorted(example["entities"], key=lambda span: span["offset"][0]):
+    for span in sorted(example["entities"], key=lambda span: tuple(span["offset"])):
         labeled_span = LabeledSpan(
             start=span["offset"][0],
             end=span["offset"][1],
             label=span["type"],
         )
         document.entities.append(labeled_span)
-        document.metadata["entity_id"].append(span["id"])
-    for relation in sorted(example["relations"], key=lambda relation: relation["id"]):
+        document.metadata["entity_ids"].append(span["id"])
+        id2labeled_span[span["id"]] = labeled_span
+    for relation in example["relations"]:
         document.relations.append(
             BinaryRelation(
-                head=[
-                    span
-                    for span in document.entities
-                    if span.start == id2start[relation["arg1_id"]]
-                ][0],
-                tail=[
-                    span
-                    for span in document.entities
-                    if span.start == id2start[relation["arg2_id"]]
-                ][0],
+                head=id2labeled_span[relation["arg1_id"]],
+                tail=id2labeled_span[relation["arg2_id"]],
                 label=relation["type"],
             )
         )
@@ -71,11 +64,8 @@ def example2drugprot(example: Dict[str, Any]) -> DrugprotDocument:
 def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
     text = " ".join([" ".join(passage["text"]) for passage in example["passages"]])
     doc_id = example["document_id"]
-    metadata = {"entity_id": []}
-
-    id2start = {}
-    for entity in example["entities"]:
-        id2start[entity["id"]] = entity["offsets"][0][0]
+    metadata = {"entity_ids": []}
+    id2labeled_span: Dict[str, (int, int)] = {}
 
     document = DrugprotBigbioDocument(
         text=text,
@@ -91,28 +81,20 @@ def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
             )
         )
     # We sort labels and relation to always have an deterministic order for testing purposes.
-    for span in sorted(example["entities"], key=lambda span: span["offsets"][0][0]):
-        document.entities.append(
-            LabeledSpan(
-                start=span["offsets"][0][0],
-                end=span["offsets"][0][1],
-                label=span["type"],
-            )
+    for span in sorted(example["entities"], key=lambda span: tuple(span["offsets"][0])):
+        labeled_span = LabeledSpan(
+            start=span["offsets"][0][0],
+            end=span["offsets"][0][1],
+            label=span["type"],
         )
-        document.metadata["entity_id"].append(span["id"])
-    for relation in sorted(example["relations"], key=lambda relation: relation["id"]):
+        document.entities.append(labeled_span)
+        document.metadata["entity_ids"].append(span["id"])
+        id2labeled_span[span["id"]] = labeled_span
+    for relation in example["relations"]:
         document.relations.append(
             BinaryRelation(
-                head=[
-                    span
-                    for span in document.entities
-                    if span.start == id2start[relation["arg1_id"]]
-                ][0],
-                tail=[
-                    span
-                    for span in document.entities
-                    if span.start == id2start[relation["arg2_id"]]
-                ][0],
+                head=id2labeled_span[relation["arg1_id"]],
+                tail=id2labeled_span[relation["arg2_id"]],
                 label=relation["type"],
             )
         )
@@ -132,31 +114,34 @@ class Drugprot(GeneratorBasedBuilder):
         datasets.BuilderConfig(
             name="drugprot_source",
             version=datasets.Version("1.0.2"),
-            description="DrugProt source schema",
+            description="DrugProt source version",
         ),
         datasets.BuilderConfig(
             name="drugprot_bigbio_kb",
             version=datasets.Version("1.0.0"),
-            description="DrugProt BigBio schema",
+            description="DrugProt BigBio version",
         ),
     ]
-    DOCUMENT_CONVERTERS = {
-        TextDocumentWithLabeledSpansAndBinaryRelations: {
-            "entities": "labeled_spans",
-            "relations": "binary_relations",
-        }
-    }
-    # @property
-    # def document_converters(self):
-    #     if self.config.name in ("drugprot_source", "drugprot_bigbio_kb"):
-    #         return {
-    #             TextDocumentWithLabeledSpansAndBinaryRelations: {
-    #                 "entities": "labeled_spans",
-    #                 "relations": "binary_relations",
-    #             }
-    #         }
-    #     else:
-    #         raise ValueError(f"Unknown dataset name: {self.config.name}")
+
+    @property
+    def document_converters(self):
+        if self.config.name == "drugprot_source":
+            return {
+                TextDocumentWithLabeledSpansAndBinaryRelations: {
+                    "entities": "labeled_spans",
+                    "relations": "binary_relations",
+                }
+            }
+        elif self.config.name == "drugprot_bigbio_kb":
+            return {
+                TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions: {
+                    "passages": "labeled_partitions",
+                    "entities": "labeled_spans",
+                    "relations": "binary_relations",
+                }
+            }
+        else:
+            raise ValueError(f"Unknown dataset name: {self.config.name}")
 
     def _generate_document(
         self,
@@ -166,3 +151,5 @@ class Drugprot(GeneratorBasedBuilder):
             return example2drugprot(example)
         elif self.config.name == "drugprot_bigbio_kb":
             return example2drugprot_bigbio(example)
+        else:
+            raise ValueError(f"Unknown dataset config name: {self.config.name}")

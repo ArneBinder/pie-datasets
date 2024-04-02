@@ -43,7 +43,8 @@ type definitions.
 
 The dataset provides predefined document converters for the following target document types:
 
-- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations` for `DrugprotDocument`
+- `pie_modules.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions` for `DrugprotBigbioDocument`
 
 See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
 definitions.

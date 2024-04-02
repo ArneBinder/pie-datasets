@@ -1,7 +1,17 @@
+from typing import Any, Dict, List, Type, Union
+
 import datasets
 import pytest
-from pytorch_ie.core import Document
-from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+from pie_modules.document.processing import tokenize_document
+from pie_modules.documents import (
+    TextBasedDocument,
+    TextDocumentWithLabeledSpansAndBinaryRelations,
+    TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+    TokenBasedDocument,
+    TokenDocumentWithLabeledSpansAndBinaryRelations,
+    TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+)
+from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.drugprot.drugprot import (
     Drugprot,
@@ -10,7 +20,7 @@ from dataset_builders.pie.drugprot.drugprot import (
     example2drugprot,
     example2drugprot_bigbio,
 )
-from pie_datasets import load_dataset
+from pie_datasets import DatasetDict, load_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 DATASET_NAME = "drugprot"
@@ -21,13 +31,13 @@ SPLIT_SIZES = {"train": 3500, "validation": 750}
 
 
 @pytest.fixture(params=[config.name for config in Drugprot.BUILDER_CONFIGS], scope="module")
-def dataset_name(request):
+def dataset_variant(request) -> str:
     return request.param
 
 
 @pytest.fixture(scope="module")
-def hf_dataset(dataset_name):
-    return datasets.load_dataset(HF_DATASET_PATH, name=dataset_name)
+def hf_dataset(dataset_variant) -> datasets.DatasetDict:
+    return datasets.load_dataset(HF_DATASET_PATH, name=dataset_variant)
 
 
 def test_hf_dataset(hf_dataset):
@@ -37,12 +47,12 @@ def test_hf_dataset(hf_dataset):
 
 
 @pytest.fixture(scope="module")
-def hf_example(hf_dataset):
+def hf_example(hf_dataset) -> Dict[str, Any]:
     return hf_dataset["train"][0]
 
 
-def test_hf_example(hf_example, dataset_name):
-    if dataset_name == "drugprot_source":
+def test_hf_example(hf_example, dataset_variant):
+    if dataset_variant == "drugprot_source":
         assert hf_example == {
             "document_id": "17512723",
             "title": "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism.",
@@ -137,7 +147,7 @@ def test_hf_example(hf_example, dataset_name):
                 }
             ],
         }
-    elif dataset_name == "drugprot_bigbio_kb":
+    elif dataset_variant == "drugprot_bigbio_kb":
         assert hf_example == {
             "id": "17512723",
             "document_id": "17512723",
@@ -265,61 +275,67 @@ def test_hf_example(hf_example, dataset_name):
             ],
         }
     else:
-        raise ValueError(f"Unknown dataset name: {dataset_name}")
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
 
 @pytest.fixture(scope="module")
-def document(hf_example, dataset_name):
-    if dataset_name == "drugprot_source":
+def document(hf_example, dataset_variant) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
+    if dataset_variant == "drugprot_source":
         return example2drugprot(hf_example)
-    elif dataset_name == "drugprot_bigbio_kb":
+    elif dataset_variant == "drugprot_bigbio_kb":
         return example2drugprot_bigbio(hf_example)
-
-
-def test_document(document, dataset_name):
-    assert isinstance(document, Document)
-    if dataset_name in ("drugprot_source", "drugprot_bigbio_kb"):
-        if dataset_name == "drugprot_source":
-            assert (
-                document.title
-                == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism."
-            )
-            assert (
-                document.abstract
-                == "Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
-            )
-        elif dataset_name == "drugprot_bigbio_kb":
-            passages = list(document.passages)
-            assert len(passages)
-            assert (
-                str(passages[0])
-                == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism."
-            )
-
-        assert (
-            document.text
-            == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism. Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
-        )
-        entities = list(document.entities)
-        assert len(entities) == 13
-        assert str(entities[0]) == "RDH12"
-        assert document.metadata["entity_id"][0] == "17512723_T12"
-        assert str(entities[1]) == "retinol"
-        assert document.metadata["entity_id"][1] == "17512723_T3"
-        assert str(entities[-1]) == "androstanediol"
-        assert document.metadata["entity_id"][-1] == "17512723_T1"
-
-        relations = list(document.relations)
-        assert len(relations) == 1
-        assert relations[0].label == "PRODUCT-OF"
-        assert str(relations[0].head) == "androstanediol"
     else:
-        raise ValueError(f"Unknown dataset name: {dataset_name}")
+        raise ValueError(f"unknown dataset variant: {dataset_variant}")
+
+
+def test_document(document, dataset_variant):
+    if dataset_variant == "drugprot_source":
+        assert isinstance(document, DrugprotDocument)
+        assert (
+            document.title
+            == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism."
+        )
+        assert (
+            document.abstract
+            == "Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
+        )
+    elif dataset_variant == "drugprot_bigbio_kb":
+        assert isinstance(document, DrugprotBigbioDocument)
+        passages = list(document.passages)
+        assert len(passages)
+        assert (
+            str(passages[0])
+            == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism."
+        )
+        assert (
+            str(passages[1])
+            == "Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
+        )
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+    assert (
+        document.text
+        == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism. Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
+    )
+    entities = list(document.entities)
+    assert len(entities) == 13
+    assert str(entities[0]) == "RDH12"
+    assert str(entities[1]) == "retinol"
+    assert str(entities[-1]) == "androstanediol"
+    assert document.metadata["entity_ids"][0] == "17512723_T12"
+    assert document.metadata["entity_ids"][1] == "17512723_T3"
+    assert document.metadata["entity_ids"][-1] == "17512723_T1"
+
+    relations = list(document.relations)
+    assert len(relations) == 1
+    assert relations[0].label == "PRODUCT-OF"
+    assert str(relations[0].head) == "androstanediol"
 
 
 @pytest.fixture(scope="module")
-def pie_dataset(dataset_name):
-    return load_dataset(str(PIE_DATASET_PATH), name=dataset_name)
+def pie_dataset(dataset_variant) -> DatasetDict:
+    return load_dataset(str(PIE_DATASET_PATH), name=dataset_variant)
 
 
 def test_pie_dataset(pie_dataset):
@@ -328,48 +344,175 @@ def test_pie_dataset(pie_dataset):
     assert split_sizes == SPLIT_SIZES
 
 
-@pytest.fixture(scope="module", params=list(Drugprot.DOCUMENT_CONVERTERS))
-def converter_document_type(request):
-    return request.param
+@pytest.fixture(scope="module")
+def converted_document_type(dataset_variant) -> Type[TextBasedDocument]:
+    if dataset_variant == "drugprot_source":
+        return TextDocumentWithLabeledSpansAndBinaryRelations
+    elif dataset_variant == "drugprot_bigbio_kb":
+        return TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
 
 @pytest.fixture(scope="module")
-def converted_pie_dataset(pie_dataset, converter_document_type):
-    pie_dataset_converted = pie_dataset.to_document_type(document_type=converter_document_type)
+def converted_pie_dataset(pie_dataset, converted_document_type) -> DatasetDict:
+    pie_dataset_converted = pie_dataset.to_document_type(document_type=converted_document_type)
     return pie_dataset_converted
 
 
-def test_converted_pie_dataset(converted_pie_dataset, converter_document_type):
+def test_converted_pie_dataset(converted_pie_dataset, converted_document_type):
     assert set(converted_pie_dataset) == SPLIT_NAMES
     split_sizes = {split_name: len(ds) for split_name, ds in converted_pie_dataset.items()}
     assert split_sizes == SPLIT_SIZES
     for ds in converted_pie_dataset.values():
         for document in ds:
-            assert isinstance(document, converter_document_type)
+            assert isinstance(document, converted_document_type)
 
 
 @pytest.fixture(scope="module")
-def converted_document(converted_pie_dataset):
+def converted_document(converted_pie_dataset) -> Type[TextBasedDocument]:
     return converted_pie_dataset["train"][0]
 
 
-def test_converted_document(converted_document, converter_document_type):
-    assert isinstance(converted_document, converter_document_type)
-    if converter_document_type == TextDocumentWithLabeledSpansAndBinaryRelations:
+def test_converted_document(converted_document, converted_document_type):
+    assert isinstance(converted_document, converted_document_type)
+    if converted_document_type == TextDocumentWithLabeledSpansAndBinaryRelations:
+        pass  # no specific tests for this type
+    elif (
+        converted_document_type == TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+    ):
+        labeled_partitions = list(converted_document.labeled_partitions)
+        assert len(labeled_partitions)
         assert (
-            converted_document.text
-            == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism. Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
+            str(labeled_partitions[0])
+            == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism."
         )
-        entities = list(converted_document.labeled_spans)
-        assert len(entities) == 13
-        assert str(entities[0]) == "RDH12"
-        assert converted_document.metadata["entity_id"][0] == "17512723_T12"
-        assert str(entities[1]) == "retinol"
-        assert converted_document.metadata["entity_id"][1] == "17512723_T3"
-        assert str(entities[-1]) == "androstanediol"
-        assert converted_document.metadata["entity_id"][-1] == "17512723_T1"
+        assert (
+            str(labeled_partitions[1])
+            == "Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
+        )
+    else:
+        raise ValueError(f"Unknown document type: {converted_document_type}")
 
-        relations = list(converted_document.binary_relations)
-        assert len(relations) == 1
-        assert relations[0].label == "PRODUCT-OF"
-        assert str(relations[0].head) == "androstanediol"
+    assert (
+        converted_document.text
+        == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism. Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
+    )
+    labeled_spans = list(converted_document.labeled_spans)
+    assert len(labeled_spans) == 13
+    assert str(labeled_spans[0]) == "RDH12"
+    assert str(labeled_spans[1]) == "retinol"
+    assert str(labeled_spans[-1]) == "androstanediol"
+    assert converted_document.metadata["entity_ids"][0] == "17512723_T12"
+    assert converted_document.metadata["entity_ids"][1] == "17512723_T3"
+    assert converted_document.metadata["entity_ids"][-1] == "17512723_T1"
+
+    binary_relations = list(converted_document.binary_relations)
+    assert len(binary_relations) == 1
+    assert binary_relations[0].label == "PRODUCT-OF"
+    assert str(binary_relations[0].head) == "androstanediol"
+
+
+@pytest.fixture(scope="module")
+def tokenizer() -> PreTrainedTokenizer:
+    return AutoTokenizer.from_pretrained("bert-base-uncased")
+
+
+def tokenize(
+    document: TextBasedDocument, tokenizer: PreTrainedTokenizer
+) -> List[TokenBasedDocument]:
+    if isinstance(document, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions):
+        result_document_type = TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+        partition_layer = "labeled_partitions"
+    elif isinstance(document, TextDocumentWithLabeledSpansAndBinaryRelations):
+        result_document_type = TokenDocumentWithLabeledSpansAndBinaryRelations
+        partition_layer = None
+    else:
+        raise ValueError(f"Unsupported document type: {type(document)}")
+    tokenized_documents = tokenize_document(
+        document,
+        tokenizer=tokenizer,
+        return_overflowing_tokens=True,
+        result_document_type=result_document_type,
+        partition_layer=partition_layer,
+        strict_span_conversion=True,
+        verbose=True,
+    )
+    return tokenized_documents
+
+
+def test_tokenize_document(converted_document, tokenizer):
+    tokenized_docs = tokenize(converted_document, tokenizer=tokenizer)
+    # we just ensure that we get at least one tokenized document
+    assert tokenized_docs is not None
+    assert len(tokenized_docs) > 0
+    if isinstance(
+        converted_document,
+        TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+    ):
+        assert len(tokenized_docs) == 2
+        doc = tokenized_docs
+        assert len(doc[0].tokens) == 32
+        assert len(doc[1].tokens) == 132
+
+        assert len(doc[0].labeled_spans) == 3
+        assert len(doc[1].labeled_spans) == 10
+        ent = doc[0].labeled_spans[0]
+        assert ent.target[ent.start : ent.end] == ("rd", "##h", "##12")
+        ent = doc[1].labeled_spans[0]
+        assert ent.target[ent.start : ent.end] == ("re", "##tino", "##l")
+        ent = doc[1].labeled_spans[-1]
+        assert ent.target[ent.start : ent.end] == ("and", "##ros", "##tan", "##ed", "##iol")
+
+        assert len(doc[0].binary_relations) == 0
+        assert len(doc[1].binary_relations) == 1
+        rel = doc[1].binary_relations[0]
+        assert rel.label == "PRODUCT-OF"
+        assert rel.head.target[rel.head.start : rel.head.end] == (
+            "and",
+            "##ros",
+            "##tan",
+            "##ed",
+            "##iol",
+        )
+
+    elif isinstance(
+        converted_document,
+        TextDocumentWithLabeledSpansAndBinaryRelations,
+    ):
+        assert len(tokenized_docs) == 1
+        doc = tokenized_docs[0]
+        assert len(doc.tokens) == 162
+
+        assert len(doc.labeled_spans) == 13
+        ent = doc.labeled_spans[0]
+        assert ent.target[ent.start : ent.end] == ("rd", "##h", "##12")
+        ent = doc.labeled_spans[1]
+        assert ent.target[ent.start : ent.end] == ("re", "##tino", "##l")
+        ent = doc.labeled_spans[-1]
+        assert ent.target[ent.start : ent.end] == ("and", "##ros", "##tan", "##ed", "##iol")
+
+        assert len(doc.binary_relations) == 1
+        rel = doc.binary_relations[0]
+        assert rel.label == "PRODUCT-OF"
+        assert rel.head.target[rel.head.start : rel.head.end] == (
+            "and",
+            "##ros",
+            "##tan",
+            "##ed",
+            "##iol",
+        )
+    else:
+        raise ValueError(f"Converted document has an unsupported type: {type(converted_document)}")
+
+
+@pytest.mark.slow
+def test_tokenize_documents_all(converted_pie_dataset, tokenizer):
+    for split, docs in converted_pie_dataset.items():
+        for doc in docs:
+            # Note, that this is a list of documents, because the document may be split into chunks
+            # if the input text is too long.
+            tokenized_docs = tokenize(doc, tokenizer=tokenizer)
+            # we just ensure that we get at least one tokenized document
+            assert tokenized_docs is not None
+            assert len(tokenized_docs) > 0
