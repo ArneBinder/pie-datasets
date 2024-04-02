@@ -65,7 +65,7 @@ def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
     text = " ".join([" ".join(passage["text"]) for passage in example["passages"]])
     doc_id = example["document_id"]
     metadata = {"entity_ids": []}
-    id2labeled_span: Dict[str, (int, int)] = {}
+    id2labeled_span: Dict[str, LabeledSpan] = {}
 
     document = DrugprotBigbioDocument(
         text=text,
