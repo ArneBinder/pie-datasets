@@ -17,8 +17,6 @@ from dataset_builders.pie.drugprot.drugprot import (
     Drugprot,
     DrugprotBigbioDocument,
     DrugprotDocument,
-    example2drugprot,
-    example2drugprot_bigbio,
 )
 from pie_datasets import DatasetDict, load_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
@@ -279,13 +277,28 @@ def test_hf_example(hf_example, dataset_variant):
 
 
 @pytest.fixture(scope="module")
-def document(hf_example, dataset_variant) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
+def builder(dataset_variant) -> Drugprot:
+    return Drugprot(name=dataset_variant)
+
+
+def test_document_converters(builder, dataset_variant):
     if dataset_variant == "drugprot_source":
-        return example2drugprot(hf_example)
+        assert (
+            list(builder.document_converters.keys())[0]
+            == TextDocumentWithLabeledSpansAndBinaryRelations
+        )
     elif dataset_variant == "drugprot_bigbio_kb":
-        return example2drugprot_bigbio(hf_example)
+        assert (
+            list(builder.document_converters.keys())[0]
+            == TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+        )
     else:
-        raise ValueError(f"unknown dataset variant: {dataset_variant}")
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
+@pytest.fixture(scope="module")
+def document(hf_example, builder) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
+    return builder._generate_document(hf_example)
 
 
 def test_document(document, dataset_variant):
@@ -462,7 +475,13 @@ def test_tokenize_document(converted_document, tokenizer):
         ent = doc[1].labeled_spans[0]
         assert ent.target[ent.start : ent.end] == ("re", "##tino", "##l")
         ent = doc[1].labeled_spans[-1]
-        assert ent.target[ent.start : ent.end] == ("and", "##ros", "##tan", "##ed", "##iol")
+        assert ent.target[ent.start : ent.end] == (
+            "and",
+            "##ros",
+            "##tan",
+            "##ed",
+            "##iol",
+        )
 
         assert len(doc[0].binary_relations) == 0
         assert len(doc[1].binary_relations) == 1
@@ -490,7 +509,13 @@ def test_tokenize_document(converted_document, tokenizer):
         ent = doc.labeled_spans[1]
         assert ent.target[ent.start : ent.end] == ("re", "##tino", "##l")
         ent = doc.labeled_spans[-1]
-        assert ent.target[ent.start : ent.end] == ("and", "##ros", "##tan", "##ed", "##iol")
+        assert ent.target[ent.start : ent.end] == (
+            "and",
+            "##ros",
+            "##tan",
+            "##ed",
+            "##iol",
+        )
 
         assert len(doc.binary_relations) == 1
         rel = doc.binary_relations[0]
