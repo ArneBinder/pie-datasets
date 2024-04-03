@@ -283,15 +283,11 @@ def builder(dataset_variant) -> Drugprot:
 
 def test_document_converters(builder, dataset_variant):
     if dataset_variant == "drugprot_source":
-        assert (
-            list(builder.document_converters.keys())[0]
-            == TextDocumentWithLabeledSpansAndBinaryRelations
-        )
+        assert set(builder.document_converters) == {TextDocumentWithLabeledSpansAndBinaryRelations}
     elif dataset_variant == "drugprot_bigbio_kb":
-        assert (
-            list(builder.document_converters.keys())[0]
-            == TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
-        )
+        assert set(builder.document_converters) == {
+            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+        }
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
