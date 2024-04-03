@@ -41,7 +41,7 @@ def example2drugprot(example: Dict[str, Any]) -> DrugprotDocument:
         metadata=metadata,
     )
     # We sort labels and relation to always have an deterministic order for testing purposes.
-    for span in sorted(example["entities"], key=lambda span: tuple(span["offset"])):
+    for span in example["entities"]:
         labeled_span = LabeledSpan(
             start=span["offset"][0],
             end=span["offset"][1],
@@ -81,7 +81,7 @@ def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
             )
         )
     # We sort labels and relation to always have an deterministic order for testing purposes.
-    for span in sorted(example["entities"], key=lambda span: tuple(span["offsets"][0])):
+    for span in example["entities"]:
         labeled_span = LabeledSpan(
             start=span["offsets"][0][0],
             end=span["offsets"][0][1],

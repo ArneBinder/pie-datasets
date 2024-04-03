@@ -278,7 +278,7 @@ def test_hf_example(hf_example, dataset_variant):
 
 @pytest.fixture(scope="module")
 def builder(dataset_variant) -> Drugprot:
-    return Drugprot(name=dataset_variant)
+    return Drugprot(config_name=dataset_variant)
 
 
 def test_document_converters(builder, dataset_variant):
@@ -333,12 +333,12 @@ def test_document(document, dataset_variant):
     )
     entities = list(document.entities)
     assert len(entities) == 13
-    assert str(entities[0]) == "RDH12"
+    assert str(entities[0]) == "androstanediol"
     assert str(entities[1]) == "retinol"
-    assert str(entities[-1]) == "androstanediol"
-    assert document.metadata["entity_ids"][0] == "17512723_T12"
-    assert document.metadata["entity_ids"][1] == "17512723_T3"
-    assert document.metadata["entity_ids"][-1] == "17512723_T1"
+    assert str(entities[-1]) == "retinol dehydrogenase"
+    assert document.metadata["entity_ids"][0] == "17512723_T1"
+    assert document.metadata["entity_ids"][1] == "17512723_T2"
+    assert document.metadata["entity_ids"][-1] == "17512723_T13"
 
     relations = list(document.relations)
     assert len(relations) == 1
@@ -413,12 +413,12 @@ def test_converted_document(converted_document, converted_document_type):
     )
     labeled_spans = list(converted_document.labeled_spans)
     assert len(labeled_spans) == 13
-    assert str(labeled_spans[0]) == "RDH12"
+    assert str(labeled_spans[0]) == "androstanediol"
     assert str(labeled_spans[1]) == "retinol"
-    assert str(labeled_spans[-1]) == "androstanediol"
-    assert converted_document.metadata["entity_ids"][0] == "17512723_T12"
-    assert converted_document.metadata["entity_ids"][1] == "17512723_T3"
-    assert converted_document.metadata["entity_ids"][-1] == "17512723_T1"
+    assert str(labeled_spans[-1]) == "retinol dehydrogenase"
+    assert converted_document.metadata["entity_ids"][0] == "17512723_T1"
+    assert converted_document.metadata["entity_ids"][1] == "17512723_T2"
+    assert converted_document.metadata["entity_ids"][-1] == "17512723_T13"
 
     binary_relations = list(converted_document.binary_relations)
     assert len(binary_relations) == 1
