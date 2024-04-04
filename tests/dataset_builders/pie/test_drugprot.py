@@ -520,28 +520,31 @@ def test_tokenize_document(converted_document, tokenizer):
         assert len(doc[0].labeled_spans) == 3
         assert len(doc[1].labeled_spans) == 10
         ent = doc[0].labeled_spans[0]
-        assert ent.target[ent.start : ent.end] == ("rd", "##h", "##12")
-        ent = doc[1].labeled_spans[0]
-        assert ent.target[ent.start : ent.end] == ("re", "##tino", "##l")
+        assert ent.resolve() == ("GENE-Y", ("rd", "##h", "##12"))
+        ent = doc[0].labeled_spans[1]
+        assert ent.resolve() == ("CHEMICAL", ("re", "##tino", "##l"))
         ent = doc[1].labeled_spans[-1]
-        assert ent.target[ent.start : ent.end] == (
-            "and",
-            "##ros",
-            "##tan",
-            "##ed",
-            "##iol",
+        assert ent.resolve() == (
+            "CHEMICAL",
+            (
+                "and",
+                "##ros",
+                "##tan",
+                "##ed",
+                "##iol",
+            ),
         )
 
         assert len(doc[0].binary_relations) == 0
         assert len(doc[1].binary_relations) == 1
         rel = doc[1].binary_relations[0]
         assert rel.label == "PRODUCT-OF"
-        assert rel.head.target[rel.head.start : rel.head.end] == (
-            "and",
-            "##ros",
-            "##tan",
-            "##ed",
-            "##iol",
+        assert rel.resolve() == (
+            "PRODUCT-OF",
+            (
+                ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
+                ("GENE-Y", ("human", "type", "12", "rd", "##h")),
+            ),
         )
 
     elif isinstance(
@@ -554,27 +557,29 @@ def test_tokenize_document(converted_document, tokenizer):
 
         assert len(doc.labeled_spans) == 13
         ent = doc.labeled_spans[0]
-        assert ent.target[ent.start : ent.end] == ("rd", "##h", "##12")
+        assert ent.resolve() == ("GENE-Y", ("rd", "##h", "##12"))
         ent = doc.labeled_spans[1]
-        assert ent.target[ent.start : ent.end] == ("re", "##tino", "##l")
+        assert ent.resolve() == ("CHEMICAL", ("re", "##tino", "##l"))
         ent = doc.labeled_spans[-1]
-        assert ent.target[ent.start : ent.end] == (
-            "and",
-            "##ros",
-            "##tan",
-            "##ed",
-            "##iol",
+        assert ent.resolve() == (
+            "CHEMICAL",
+            (
+                "and",
+                "##ros",
+                "##tan",
+                "##ed",
+                "##iol",
+            ),
         )
 
         assert len(doc.binary_relations) == 1
         rel = doc.binary_relations[0]
-        assert rel.label == "PRODUCT-OF"
-        assert rel.head.target[rel.head.start : rel.head.end] == (
-            "and",
-            "##ros",
-            "##tan",
-            "##ed",
-            "##iol",
+        assert rel.resolve() == (
+            "PRODUCT-OF",
+            (
+                ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
+                ("GENE-Y", ("human", "type", "12", "rd", "##h")),
+            ),
         )
     else:
         raise ValueError(f"Converted document has an unsupported type: {type(converted_document)}")
