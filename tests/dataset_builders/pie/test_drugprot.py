@@ -515,7 +515,7 @@ def test_tokenize_document(converted_document, tokenizer):
         # we get two parts because the original document has two labeled partitions (passages)
         assert len(tokenized_docs) == 2
         # check the first document / partition
-        doc: TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions = tokenized_docs[0]
+        doc: TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions = tokenized_docs[0]
         assert len(doc.tokens) == 32
         assert len(doc.labeled_spans) == 3
         resolved_labeled_spans = [ent.resolve() for ent in doc.labeled_spans]
@@ -527,7 +527,7 @@ def test_tokenize_document(converted_document, tokenizer):
         assert len(doc.binary_relations) == 0
 
         # check the second document / partition
-        doc: TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions = tokenized_docs[1]
+        doc: TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions = tokenized_docs[1]
         assert len(doc.tokens) == 132
         assert len(doc.labeled_spans) == 10
         resolved_labeled_spans = [ent.resolve() for ent in doc.labeled_spans]
@@ -560,7 +560,7 @@ def test_tokenize_document(converted_document, tokenizer):
         TextDocumentWithLabeledSpansAndBinaryRelations,
     ):
         assert len(tokenized_docs) == 1
-        doc: TextDocumentWithLabeledSpansAndBinaryRelations = tokenized_docs[0]
+        doc: TokenDocumentWithLabeledSpansAndBinaryRelations = tokenized_docs[0]
         assert len(doc.tokens) == 162
 
         assert len(doc.labeled_spans) == 13
