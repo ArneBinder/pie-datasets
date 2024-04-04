@@ -310,16 +310,17 @@ def test_document(document, dataset_variant):
         )
     elif dataset_variant == "drugprot_bigbio_kb":
         assert isinstance(document, DrugprotBigbioDocument)
-        passages = list(document.passages)
-        assert len(passages)
-        assert (
-            str(passages[0])
-            == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism."
-        )
-        assert (
-            str(passages[1])
-            == "Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
-        )
+        resolved_passages = [passage.resolve() for passage in document.passages]
+        assert resolved_passages == [
+            (
+                "title",
+                "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism.",
+            ),
+            (
+                "abstract",
+                "Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes.",
+            ),
+        ]
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
@@ -411,24 +412,23 @@ def converted_document(converted_pie_dataset) -> Type[TextBasedDocument]:
 
 
 def test_converted_document(converted_document, converted_document_type):
-    assert isinstance(converted_document, converted_document_type)
-    if converted_document_type == TextDocumentWithLabeledSpansAndBinaryRelations:
-        pass  # no specific tests for this type
-    elif (
-        converted_document_type == TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+    assert isinstance(converted_document, TextDocumentWithLabeledSpansAndBinaryRelations)
+    if isinstance(
+        converted_document, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
     ):
-        labeled_partitions = list(converted_document.labeled_partitions)
-        assert len(labeled_partitions)
-        assert (
-            str(labeled_partitions[0])
-            == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism."
-        )
-        assert (
-            str(labeled_partitions[1])
-            == "Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
-        )
-    else:
-        raise ValueError(f"Unknown document type: {converted_document_type}")
+        resolved_labeled_partitions = [
+            partition.resolve() for partition in converted_document.labeled_partitions
+        ]
+        assert resolved_labeled_partitions == [
+            (
+                "title",
+                "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism.",
+            ),
+            (
+                "abstract",
+                "Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes.",
+            ),
+        ]
 
     assert (
         converted_document.text
