@@ -40,7 +40,6 @@ def example2drugprot(example: Dict[str, Any]) -> DrugprotDocument:
         id=example["document_id"],
         metadata=metadata,
     )
-    # We sort labels and relation to always have an deterministic order for testing purposes.
     for span in example["entities"]:
         labeled_span = LabeledSpan(
             start=span["offset"][0],
