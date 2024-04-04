@@ -310,8 +310,7 @@ def test_document(document, dataset_variant):
         )
     elif dataset_variant == "drugprot_bigbio_kb":
         assert isinstance(document, DrugprotBigbioDocument)
-        resolved_passages = [passage.resolve() for passage in document.passages]
-        assert resolved_passages == [
+        assert document.passages.resolve() == [
             (
                 "title",
                 "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism.",
@@ -330,8 +329,7 @@ def test_document(document, dataset_variant):
     )
 
     # check the entities
-    resolved_entities = [entity.resolve() for entity in document.entities]
-    assert resolved_entities == [
+    assert document.entities.resolve() == [
         ("CHEMICAL", "androstanediol"),
         ("CHEMICAL", "retinol"),
         ("CHEMICAL", "retinol"),
@@ -364,8 +362,7 @@ def test_document(document, dataset_variant):
     ]
 
     # check the relations
-    resolved_relations = [relation.resolve() for relation in document.relations]
-    assert resolved_relations == [
+    assert document.relations.resolve() == [
         ("PRODUCT-OF", (("CHEMICAL", "androstanediol"), ("GENE-Y", "human type 12 RDH")))
     ]
 
@@ -416,10 +413,7 @@ def test_converted_document(converted_document, converted_document_type):
     if isinstance(
         converted_document, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
     ):
-        resolved_labeled_partitions = [
-            partition.resolve() for partition in converted_document.labeled_partitions
-        ]
-        assert resolved_labeled_partitions == [
+        assert converted_document.labeled_partitions.resolve() == [
             (
                 "title",
                 "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism.",
@@ -435,8 +429,7 @@ def test_converted_document(converted_document, converted_document_type):
         == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism. Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
     )
     # check the entities
-    resolved_entities = [entity.resolve() for entity in converted_document.labeled_spans]
-    assert resolved_entities == [
+    assert converted_document.labeled_spans.resolve() == [
         ("CHEMICAL", "androstanediol"),
         ("CHEMICAL", "retinol"),
         ("CHEMICAL", "retinol"),
@@ -469,8 +462,7 @@ def test_converted_document(converted_document, converted_document_type):
     ]
 
     # check the relations
-    resolved_relations = [relation.resolve() for relation in converted_document.binary_relations]
-    assert resolved_relations == [
+    assert converted_document.binary_relations.resolve() == [
         ("PRODUCT-OF", (("CHEMICAL", "androstanediol"), ("GENE-Y", "human type 12 RDH")))
     ]
 
@@ -518,8 +510,7 @@ def test_tokenize_document(converted_document, tokenizer):
         doc: TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions = tokenized_docs[0]
         assert len(doc.tokens) == 32
         assert len(doc.labeled_spans) == 3
-        resolved_labeled_spans = [ent.resolve() for ent in doc.labeled_spans]
-        assert resolved_labeled_spans == [
+        assert doc.labeled_spans.resolve() == [
             ("GENE-Y", ("rd", "##h", "##12")),
             ("CHEMICAL", ("re", "##tino", "##l")),
             ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase")),
@@ -530,8 +521,7 @@ def test_tokenize_document(converted_document, tokenizer):
         doc: TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions = tokenized_docs[1]
         assert len(doc.tokens) == 132
         assert len(doc.labeled_spans) == 10
-        resolved_labeled_spans = [ent.resolve() for ent in doc.labeled_spans]
-        assert resolved_labeled_spans == [
+        assert doc.labeled_spans.resolve() == [
             ("CHEMICAL", ("re", "##tino", "##l")),
             ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase", "##s")),
             ("GENE-N", ("rd", "##hs")),
@@ -544,8 +534,7 @@ def test_tokenize_document(converted_document, tokenizer):
             ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
         ]
         assert len(doc.binary_relations) == 1
-        resolved_relations = [rel.resolve() for rel in doc.binary_relations]
-        assert resolved_relations == [
+        assert doc.binary_relations.resolve() == [
             (
                 "PRODUCT-OF",
                 (
@@ -564,8 +553,7 @@ def test_tokenize_document(converted_document, tokenizer):
         assert len(doc.tokens) == 162
 
         assert len(doc.labeled_spans) == 13
-        resolved_labeled_spans = [ent.resolve() for ent in doc.labeled_spans]
-        assert resolved_labeled_spans == [
+        assert doc.labeled_spans.resolve() == [
             ("GENE-Y", ("rd", "##h", "##12")),
             ("CHEMICAL", ("re", "##tino", "##l")),
             ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase")),
@@ -582,8 +570,7 @@ def test_tokenize_document(converted_document, tokenizer):
         ]
 
         assert len(doc.binary_relations) == 1
-        resolved_relations = [rel.resolve() for rel in doc.binary_relations]
-        assert resolved_relations == [
+        assert doc.binary_relations.resolve() == [
             (
                 "PRODUCT-OF",
                 (
