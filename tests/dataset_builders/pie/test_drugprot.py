@@ -434,19 +434,45 @@ def test_converted_document(converted_document, converted_document_type):
         converted_document.text
         == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism. Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
     )
-    labeled_spans = list(converted_document.labeled_spans)
-    assert len(labeled_spans) == 13
-    assert str(labeled_spans[0]) == "androstanediol"
-    assert str(labeled_spans[1]) == "retinol"
-    assert str(labeled_spans[-1]) == "retinol dehydrogenase"
-    assert converted_document.metadata["entity_ids"][0] == "17512723_T1"
-    assert converted_document.metadata["entity_ids"][1] == "17512723_T2"
-    assert converted_document.metadata["entity_ids"][-1] == "17512723_T13"
+    # check the entities
+    resolved_entities = [entity.resolve() for entity in converted_document.labeled_spans]
+    assert resolved_entities == [
+        ("CHEMICAL", "androstanediol"),
+        ("CHEMICAL", "retinol"),
+        ("CHEMICAL", "retinol"),
+        ("GENE-Y", "human RDH13"),
+        ("GENE-Y", "RDH12"),
+        ("GENE-Y", "murine Rdh12"),
+        ("GENE-Y", "human RDH13"),
+        ("GENE-N", "RDHs"),
+        ("GENE-Y", "human type 12 RDH"),
+        ("GENE-N", "retinol dehydrogenases"),
+        ("GENE-N", "human and murine RDH 12"),
+        ("GENE-Y", "RDH12"),
+        ("GENE-N", "retinol dehydrogenase"),
+    ]
+    # check entity ids
+    assert converted_document.metadata["entity_ids"] == [
+        "17512723_T1",
+        "17512723_T2",
+        "17512723_T3",
+        "17512723_T4",
+        "17512723_T5",
+        "17512723_T6",
+        "17512723_T7",
+        "17512723_T8",
+        "17512723_T9",
+        "17512723_T10",
+        "17512723_T11",
+        "17512723_T12",
+        "17512723_T13",
+    ]
 
-    binary_relations = list(converted_document.binary_relations)
-    assert len(binary_relations) == 1
-    assert binary_relations[0].label == "PRODUCT-OF"
-    assert str(binary_relations[0].head) == "androstanediol"
+    # check the relations
+    resolved_relations = [relation.resolve() for relation in converted_document.binary_relations]
+    assert resolved_relations == [
+        ("PRODUCT-OF", (("CHEMICAL", "androstanediol"), ("GENE-Y", "human type 12 RDH")))
+    ]
 
 
 @pytest.fixture(scope="module")
