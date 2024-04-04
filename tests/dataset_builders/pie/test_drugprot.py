@@ -329,30 +329,41 @@ def test_document(document, dataset_variant):
     )
 
     # check the entities
-    assert len(document.entities) == 13
-    # zip entities with their ids, then sort to have a deterministic order
-    sorted_entities_with_ids = sorted(zip(document.metadata["entity_ids"], document.entities))
-    resolved_entities_with_ids = [
-        (ent_id, entity.resolve()) for ent_id, entity in sorted_entities_with_ids
+    resolved_entities = [entity.resolve() for entity in document.entities]
+    assert resolved_entities == [
+        ("CHEMICAL", "androstanediol"),
+        ("CHEMICAL", "retinol"),
+        ("CHEMICAL", "retinol"),
+        ("GENE-Y", "human RDH13"),
+        ("GENE-Y", "RDH12"),
+        ("GENE-Y", "murine Rdh12"),
+        ("GENE-Y", "human RDH13"),
+        ("GENE-N", "RDHs"),
+        ("GENE-Y", "human type 12 RDH"),
+        ("GENE-N", "retinol dehydrogenases"),
+        ("GENE-N", "human and murine RDH 12"),
+        ("GENE-Y", "RDH12"),
+        ("GENE-N", "retinol dehydrogenase"),
     ]
-    assert resolved_entities_with_ids == [
-        ("17512723_T1", ("CHEMICAL", "androstanediol")),
-        ("17512723_T10", ("GENE-N", "retinol dehydrogenases")),
-        ("17512723_T11", ("GENE-N", "human and murine RDH 12")),
-        ("17512723_T12", ("GENE-Y", "RDH12")),
-        ("17512723_T13", ("GENE-N", "retinol dehydrogenase")),
-        ("17512723_T2", ("CHEMICAL", "retinol")),
-        ("17512723_T3", ("CHEMICAL", "retinol")),
-        ("17512723_T4", ("GENE-Y", "human RDH13")),
-        ("17512723_T5", ("GENE-Y", "RDH12")),
-        ("17512723_T6", ("GENE-Y", "murine Rdh12")),
-        ("17512723_T7", ("GENE-Y", "human RDH13")),
-        ("17512723_T8", ("GENE-N", "RDHs")),
-        ("17512723_T9", ("GENE-Y", "human type 12 RDH")),
+    # check entity ids
+    assert document.metadata["entity_ids"] == [
+        "17512723_T1",
+        "17512723_T2",
+        "17512723_T3",
+        "17512723_T4",
+        "17512723_T5",
+        "17512723_T6",
+        "17512723_T7",
+        "17512723_T8",
+        "17512723_T9",
+        "17512723_T10",
+        "17512723_T11",
+        "17512723_T12",
+        "17512723_T13",
     ]
 
     # check the relations
-    resolved_relations = [rel.resolve() for rel in sorted(document.relations)]
+    resolved_relations = [relation.resolve() for relation in document.relations]
     assert resolved_relations == [
         ("PRODUCT-OF", (("CHEMICAL", "androstanediol"), ("GENE-Y", "human type 12 RDH")))
     ]
