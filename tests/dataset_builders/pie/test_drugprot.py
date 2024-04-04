@@ -327,19 +327,35 @@ def test_document(document, dataset_variant):
         document.text
         == "RDH12, a retinol dehydrogenase causing Leber's congenital amaurosis, is also involved in steroid metabolism. Three retinol dehydrogenases (RDHs) were tested for steroid converting abilities: human and murine RDH 12 and human RDH13. RDH12 is involved in retinal degeneration in Leber's congenital amaurosis (LCA). We show that murine Rdh12 and human RDH13 do not reveal activity towards the checked steroids, but that human type 12 RDH reduces dihydrotestosterone to androstanediol, and is thus also involved in steroid metabolism. Furthermore, we analyzed both expression and subcellular localization of these enzymes."
     )
-    entities = list(document.entities)
-    assert len(entities) == 13
-    assert str(entities[0]) == "androstanediol"
-    assert str(entities[1]) == "retinol"
-    assert str(entities[-1]) == "retinol dehydrogenase"
-    assert document.metadata["entity_ids"][0] == "17512723_T1"
-    assert document.metadata["entity_ids"][1] == "17512723_T2"
-    assert document.metadata["entity_ids"][-1] == "17512723_T13"
 
-    relations = list(document.relations)
-    assert len(relations) == 1
-    assert relations[0].label == "PRODUCT-OF"
-    assert str(relations[0].head) == "androstanediol"
+    # check the entities
+    assert len(document.entities) == 13
+    # zip entities with their ids, then sort to have a deterministic order
+    sorted_entities_with_ids = sorted(zip(document.metadata["entity_ids"], document.entities))
+    resolved_entities_with_ids = [
+        (ent_id, entity.resolve()) for ent_id, entity in sorted_entities_with_ids
+    ]
+    assert resolved_entities_with_ids == [
+        ("17512723_T1", ("CHEMICAL", "androstanediol")),
+        ("17512723_T10", ("GENE-N", "retinol dehydrogenases")),
+        ("17512723_T11", ("GENE-N", "human and murine RDH 12")),
+        ("17512723_T12", ("GENE-Y", "RDH12")),
+        ("17512723_T13", ("GENE-N", "retinol dehydrogenase")),
+        ("17512723_T2", ("CHEMICAL", "retinol")),
+        ("17512723_T3", ("CHEMICAL", "retinol")),
+        ("17512723_T4", ("GENE-Y", "human RDH13")),
+        ("17512723_T5", ("GENE-Y", "RDH12")),
+        ("17512723_T6", ("GENE-Y", "murine Rdh12")),
+        ("17512723_T7", ("GENE-Y", "human RDH13")),
+        ("17512723_T8", ("GENE-N", "RDHs")),
+        ("17512723_T9", ("GENE-Y", "human type 12 RDH")),
+    ]
+
+    # check the relations
+    resolved_relations = [rel.resolve() for rel in sorted(document.relations)]
+    assert resolved_relations == [
+        ("PRODUCT-OF", (("CHEMICAL", "androstanediol"), ("GENE-Y", "human type 12 RDH")))
+    ]
 
 
 @pytest.fixture(scope="module")
