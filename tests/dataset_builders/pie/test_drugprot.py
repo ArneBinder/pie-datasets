@@ -512,75 +512,86 @@ def test_tokenize_document(converted_document, tokenizer):
         converted_document,
         TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
     ):
+        # we get two parts because the original document has two labeled partitions (passages)
         assert len(tokenized_docs) == 2
-        doc = tokenized_docs
-        assert len(doc[0].tokens) == 32
-        assert len(doc[1].tokens) == 132
+        # check the first document / partition
+        doc: TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions = tokenized_docs[0]
+        assert len(doc.tokens) == 32
+        assert len(doc.labeled_spans) == 3
+        resolved_labeled_spans = [ent.resolve() for ent in doc.labeled_spans]
+        assert resolved_labeled_spans == [
+            ("GENE-Y", ("rd", "##h", "##12")),
+            ("CHEMICAL", ("re", "##tino", "##l")),
+            ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase")),
+        ]
+        assert len(doc.binary_relations) == 0
 
-        assert len(doc[0].labeled_spans) == 3
-        assert len(doc[1].labeled_spans) == 10
-        ent = doc[0].labeled_spans[0]
-        assert ent.resolve() == ("GENE-Y", ("rd", "##h", "##12"))
-        ent = doc[0].labeled_spans[1]
-        assert ent.resolve() == ("CHEMICAL", ("re", "##tino", "##l"))
-        ent = doc[1].labeled_spans[-1]
-        assert ent.resolve() == (
-            "CHEMICAL",
+        # check the second document / partition
+        doc: TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions = tokenized_docs[1]
+        assert len(doc.tokens) == 132
+        assert len(doc.labeled_spans) == 10
+        resolved_labeled_spans = [ent.resolve() for ent in doc.labeled_spans]
+        assert resolved_labeled_spans == [
+            ("CHEMICAL", ("re", "##tino", "##l")),
+            ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase", "##s")),
+            ("GENE-N", ("rd", "##hs")),
+            ("GENE-N", ("human", "and", "mu", "##rine", "rd", "##h", "12")),
+            ("GENE-Y", ("human", "rd", "##h", "##13")),
+            ("GENE-Y", ("rd", "##h", "##12")),
+            ("GENE-Y", ("mu", "##rine", "rd", "##h", "##12")),
+            ("GENE-Y", ("human", "rd", "##h", "##13")),
+            ("GENE-Y", ("human", "type", "12", "rd", "##h")),
+            ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
+        ]
+        assert len(doc.binary_relations) == 1
+        resolved_relations = [rel.resolve() for rel in doc.binary_relations]
+        assert resolved_relations == [
             (
-                "and",
-                "##ros",
-                "##tan",
-                "##ed",
-                "##iol",
-            ),
-        )
-
-        assert len(doc[0].binary_relations) == 0
-        assert len(doc[1].binary_relations) == 1
-        rel = doc[1].binary_relations[0]
-        assert rel.label == "PRODUCT-OF"
-        assert rel.resolve() == (
-            "PRODUCT-OF",
-            (
-                ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
-                ("GENE-Y", ("human", "type", "12", "rd", "##h")),
-            ),
-        )
+                "PRODUCT-OF",
+                (
+                    ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
+                    ("GENE-Y", ("human", "type", "12", "rd", "##h")),
+                ),
+            )
+        ]
 
     elif isinstance(
         converted_document,
         TextDocumentWithLabeledSpansAndBinaryRelations,
     ):
         assert len(tokenized_docs) == 1
-        doc = tokenized_docs[0]
+        doc: TextDocumentWithLabeledSpansAndBinaryRelations = tokenized_docs[0]
         assert len(doc.tokens) == 162
 
         assert len(doc.labeled_spans) == 13
-        ent = doc.labeled_spans[0]
-        assert ent.resolve() == ("GENE-Y", ("rd", "##h", "##12"))
-        ent = doc.labeled_spans[1]
-        assert ent.resolve() == ("CHEMICAL", ("re", "##tino", "##l"))
-        ent = doc.labeled_spans[-1]
-        assert ent.resolve() == (
-            "CHEMICAL",
-            (
-                "and",
-                "##ros",
-                "##tan",
-                "##ed",
-                "##iol",
-            ),
-        )
+        resolved_labeled_spans = [ent.resolve() for ent in doc.labeled_spans]
+        assert resolved_labeled_spans == [
+            ("GENE-Y", ("rd", "##h", "##12")),
+            ("CHEMICAL", ("re", "##tino", "##l")),
+            ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase")),
+            ("CHEMICAL", ("re", "##tino", "##l")),
+            ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase", "##s")),
+            ("GENE-N", ("rd", "##hs")),
+            ("GENE-N", ("human", "and", "mu", "##rine", "rd", "##h", "12")),
+            ("GENE-Y", ("human", "rd", "##h", "##13")),
+            ("GENE-Y", ("rd", "##h", "##12")),
+            ("GENE-Y", ("mu", "##rine", "rd", "##h", "##12")),
+            ("GENE-Y", ("human", "rd", "##h", "##13")),
+            ("GENE-Y", ("human", "type", "12", "rd", "##h")),
+            ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
+        ]
 
         assert len(doc.binary_relations) == 1
-        rel = doc.binary_relations[0]
-        assert rel.resolve() == (
-            "PRODUCT-OF",
+        resolved_relations = [rel.resolve() for rel in doc.binary_relations]
+        assert resolved_relations == [
             (
-                ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
-                ("GENE-Y", ("human", "type", "12", "rd", "##h")),
-            ),
-        )
+                "PRODUCT-OF",
+                (
+                    ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
+                    ("GENE-Y", ("human", "type", "12", "rd", "##h")),
+                ),
+            )
+        ]
     else:
         raise ValueError(f"Converted document has an unsupported type: {type(converted_document)}")
 
