@@ -1213,13 +1213,13 @@ files = [
 
 [[package]]
 name = "pytorch-ie"
-version = "0.30.0"
+version = "0.30.2"
 description = "State-of-the-art Information Extraction in PyTorch"
 optional = false
-python-versions = ">=3.9,<4.0"
+python-versions = "<4.0,>=3.9"
 files = [
-    {file = "pytorch_ie-0.30.0-py3-none-any.whl", hash = "sha256:519d9f30f08bee4ce50cacd01c8a96ffd9f8ac80f5ad031bc71760204f0dda8c"},
-    {file = "pytorch_ie-0.30.0.tar.gz", hash = "sha256:82d9526164d0cabf5d4e629167ee8e0f36bed63f8c71e6d76edbe1eec8bf5449"},
+    {file = "pytorch_ie-0.30.2-py3-none-any.whl", hash = "sha256:3ba70c27e999824ae0e568ab3cf31b89f8cf253c9b08653a380422c93a9fea0f"},
+    {file = "pytorch_ie-0.30.2.tar.gz", hash = "sha256:b4e45c72e9d461d0c8ba1deb83341bffa51265b89be087ff54924c7f700cfb21"},
 ]
 
 [package.dependencies]
@@ -2165,4 +2165,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "44650bb0ba73cddf238b6a6977bd60056f3b43a7d4a35bbb6b7d656ab2d95e0b"
+content-hash = "f9af09e2df802bc9f18ec18345e2d611dbc8f689e44723dce66ff51cd1dc5560"
