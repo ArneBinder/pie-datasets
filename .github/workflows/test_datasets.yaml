@@ -4,16 +4,16 @@ name: Test Datasets
 on:
   push:
     branches: [main]
-    paths:
-      - "!src/**"
-      - "!tests/**"
-      - "tests/dataset_builders/**"
+    paths-ignore:
+      - "src/**"
+      - "tests/**"
+      - "!tests/dataset_builders/**"
   pull_request:
     branches: [main, "release/*"]
-    paths:
-      - "!src/**"
-      - "!tests/**"
-      - "tests/dataset_builders/**"
+    paths-ignore:
+      - "src/**"
+      - "tests/**"
+      - "!tests/dataset_builders/**"
 
 jobs:
   tests:
