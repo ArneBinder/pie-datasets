@@ -271,6 +271,7 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
 
 class GeneratorBasedBuilder(PieDatasetBuilder, datasets.builder.GeneratorBasedBuilder):
     def _generate_examples(self, *args, **kwargs):
+        print("DELETE ME")
         return self.base_builder._generate_examples(*args, **kwargs)
 
 
