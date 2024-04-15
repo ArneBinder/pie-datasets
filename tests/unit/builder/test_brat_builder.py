@@ -3,6 +3,7 @@ from typing import Any
 import pytest
 from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
 from pytorch_ie import Annotation
+from pytorch_ie.documents import TextBasedDocument
 
 from pie_datasets.builders.brat import BratAttribute, BratBuilder
 
@@ -107,35 +108,34 @@ def test_builder(builder):
     assert builder is not None
 
 
-@pytest.fixture(scope="module", params=range(len(HF_EXAMPLES)))
-def sample_idx(request) -> int:
+@pytest.fixture(scope="module", params=HF_EXAMPLES)
+def hf_example(request) -> dict:
     return request.param
 
 
-def test_generate_document(builder, sample_idx, config_name):
-    hf_example = HF_EXAMPLES[sample_idx]
+def test_generate_document(builder, hf_example):
     kwargs = dict()
     generated_document = builder._generate_document(example=hf_example, **kwargs)
     resolved_spans = [resolve_annotation(annotation=span) for span in generated_document.spans]
     resolved_relations = [
         resolve_annotation(relation) for relation in generated_document.relations
     ]
-    if sample_idx == 0:
+    if hf_example == HF_EXAMPLES[0]:
         assert len(generated_document.spans) == 2
         assert len(generated_document.relations) == 0
         assert len(generated_document.span_attributes) == 0
         assert len(generated_document.relation_attributes) == 0
 
-        if config_name == "default":
+        if builder.config.name == "default":
             assert resolved_spans[0] == (["Jane"], "person")
             assert resolved_spans[1] == (["Berlin"], "city")
-        elif config_name == "merge_fragmented_spans":
+        elif builder.config.name == "merge_fragmented_spans":
             assert resolved_spans[0] == ("Jane", "person")
             assert resolved_spans[1] == ("Berlin", "city")
         else:
-            raise ValueError(f"Unknown dataset variant: {config_name}")
+            raise ValueError(f"Unknown builder variant: {builder.name}")
 
-    elif sample_idx == 1:
+    elif hf_example == HF_EXAMPLES[1]:
         assert len(generated_document.spans) == 2
         assert len(generated_document.relations) == 1
         assert len(generated_document.span_attributes) == 1
@@ -148,7 +148,7 @@ def test_generate_document(builder, sample_idx, config_name):
             resolve_annotation(attribute) for attribute in generated_document.relation_attributes
         ]
 
-        if config_name == "default":
+        if builder.config.name == "default":
             assert resolved_spans[0] == (["Seattle"], "city")
             assert resolved_spans[1] == (["Jenny Durkan"], "person")
             assert resolved_relations[0] == (
@@ -162,7 +162,7 @@ def test_generate_document(builder, sample_idx, config_name):
                 "statement",
                 "true",
             )
-        elif config_name == "merge_fragmented_spans":
+        elif builder.config.name == "merge_fragmented_spans":
             assert resolved_spans[0] == ("Seattle", "city")
             assert resolved_spans[1] == ("Jenny Durkan", "person")
             assert resolved_relations[0] == (
@@ -177,9 +177,9 @@ def test_generate_document(builder, sample_idx, config_name):
                 "true",
             )
         else:
-            raise ValueError(f"Unknown dataset variant: {config_name}")
+            raise ValueError(f"Unknown builder variant: {config_name}")
     else:
-        raise ValueError(f"Unknown sample index: {sample_idx}")
+        raise ValueError(f"Unknown sample: {hf_example}")
 
 
 def test_example_to_document_and_back_all(builder):
@@ -188,3 +188,11 @@ def test_example_to_document_and_back_all(builder):
         assert isinstance(doc, builder.document_type)
         hf_example_back = builder._generate_example(doc)
         assert hf_example == hf_example_back
+
+
+def test_document_to_example_wrong_type(builder):
+    doc = TextBasedDocument(text="Hello, world!")
+
+    with pytest.raises(TypeError) as exc_info:
+        builder._generate_example(doc)
+    assert str(exc_info.value) == f"document type {type(doc)} is not supported"
