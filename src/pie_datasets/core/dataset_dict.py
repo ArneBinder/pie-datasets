@@ -431,7 +431,9 @@ class DatasetDict(datasets.DatasetDict):
                     f"can only select from a Dataset, but the split '{split}' is of type {type(pie_split)}"
                 )
             result[split] = Dataset.from_hf_dataset(
-                dataset=pie_split.select(**kwargs), document_type=pie_split.document_type
+                dataset=pie_split.select(**kwargs),
+                document_type=pie_split.document_type,
+                document_converters=pie_split.document_converters,
             )
             return result
         else:
