@@ -7,11 +7,13 @@ on:
     paths-ignore:
       - "dataset_builders/**"
       - "tests/dataset_builders/**"
+      - "tests/fixtures/dataset_builders/**"
   pull_request:
     branches: [main, "release/*"]
     paths-ignore:
       - "dataset_builders/**"
       - "tests/dataset_builders/**"
+      - "tests/fixtures/dataset_builders/**"
 
 jobs:
   tests:
