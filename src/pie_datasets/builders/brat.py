@@ -5,6 +5,7 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datasets
 from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
+from pytorch_ie import Document
 from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import TextBasedDocument
 
@@ -305,3 +306,8 @@ class BratBuilder(GeneratorBasedBuilder):
         return example_to_document(
             example, merge_fragmented_spans=self.config.merge_fragmented_spans
         )
+
+    def _generate_example(self, document: Document, **kwargs) -> Dict[str, Any]:
+        if not isinstance(document, (BratDocument, BratDocumentWithMergedSpans)):
+            raise TypeError(f"document type {type(document)} is not supported")
+        return document_to_example(document)
