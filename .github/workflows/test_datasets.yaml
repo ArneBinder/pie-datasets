@@ -4,16 +4,18 @@ name: Test Datasets
 on:
   push:
     branches: [main]
-    paths-ignore:
-      - "src/**"
-      - "tests/**"
-      - "!tests/dataset_builders/**"
+    paths:
+      - "src/dataset_builders/**"
+      - "tests/dataset_builders/**"
+      - "data/datasets/**"
+      - ".github/workflows/test_datasets.yaml"
   pull_request:
     branches: [main, "release/*"]
-    paths-ignore:
-      - "src/**"
-      - "tests/**"
-      - "!tests/dataset_builders/**"
+    paths:
+      - "src/dataset_builders/**"
+      - "tests/dataset_builders/**"
+      - "data/datasets/**"
+      - ".github/workflows/test_datasets.yaml"
 
 jobs:
   tests:
