@@ -1,17 +1,19 @@
 
-name: Tests
+name: Test Datasets
 
 on:
   push:
     branches: [main]
     paths:
-      - "!dataset_builders/**"
-      - "!tests/dataset_builders/**"
+      - "!src/**"
+      - "!tests/**"
+      - "tests/dataset_builders/**"
   pull_request:
     branches: [main, "release/*"]
     paths:
-      - "!dataset_builders/**"
-      - "!tests/dataset_builders/**"
+      - "!src/**"
+      - "!tests/**"
+      - "tests/dataset_builders/**"
 
 jobs:
   tests:
@@ -23,7 +25,7 @@ jobs:
         os: ["ubuntu-latest"]
         python-version: ["3.9"]
 
-    timeout-minutes: 10
+    timeout-minutes: 30
 
     steps:
       #----------------------------------------------
@@ -76,10 +78,10 @@ jobs:
       - name: Run tests with coverage
         run: |
           source .venv/bin/activate
-          pytest --ignore=tests/dataset_builders -k "not slow" --cov=src --cov-report term-missing --cov-report xml:coverage.xml
+          pytest tests/dataset_builders -k "not slow" --cov=dataset_builders --cov-report term-missing --cov-report xml:coverage_datasets.xml
       - name: Upload coverage reports to Codecov
         uses: codecov/codecov-action@v3
         with:
-          files: ./coverage.xml
+          files: ./coverage_datasets.xml
         env:
           CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
