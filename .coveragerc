@@ -1,6 +1,6 @@
 
 [run]
-source = src
+source = src,dataset_builders
 
 [report]
 exclude_lines =
