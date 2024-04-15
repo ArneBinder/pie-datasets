@@ -8,12 +8,14 @@ on:
       - "dataset_builders/**"
       - "tests/dataset_builders/**"
       - "tests/fixtures/dataset_builders/**"
+      - ".github/workflows/test_datasets.yaml"
   pull_request:
     branches: [main, "release/*"]
     paths-ignore:
       - "dataset_builders/**"
       - "tests/dataset_builders/**"
       - "tests/fixtures/dataset_builders/**"
+      - ".github/workflows/test_datasets.yaml"
 
 jobs:
   tests:
