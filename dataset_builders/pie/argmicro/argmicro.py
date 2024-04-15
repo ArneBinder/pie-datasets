@@ -267,7 +267,7 @@ class ArgMicro(GeneratorBasedBuilder):
         TextDocumentWithLabeledSpansAndBinaryRelations: convert_to_text_document_with_labeled_spans_and_binary_relations
     }
 
-    BASE_DATASET_PATH = "DFKI-SLT/argmicroXXX"
+    BASE_DATASET_PATH = "DFKI-SLT/argmicro"
     BASE_DATASET_REVISION = "282733d6d57243f2a202d81143c4e31bb250e663"
 
     BUILDER_CONFIGS = [datasets.BuilderConfig(name="en"), datasets.BuilderConfig(name="de")]
