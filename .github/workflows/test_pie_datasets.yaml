@@ -45,14 +45,21 @@ jobs:
           DATASETS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.datasets_all_changed_files }}
         # Define step output named dir base on ls command transformed to JSON thanks to jq
         run: |
-          for file in ${DATASETS_ALL_CHANGED_FILES}; do
-            echo "$file was changed"
-          done
           DATASETS=$(ls dataset_builders/pie)
-          for dataset in ${DATASETS}; do
-            echo "$dataset was found"
-          done
-          echo "datasets=$(echo "$DATASETS" | jq -R -s -c 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
+          echo "collected datasets: $DATASETS"
+          PREFIXES="dataset_builders/pie/ data/datasets/ tests/dataset_builders/pie/test_ tests/fixtures/dataset_builders/pie/"
+          echo "file paths to check for changes: $PREFIXES"
+          # filter entries in DATASETS for which any prefix+dataset is in DATASETS_ALL_CHANGED_FILES
+          DATASETS_FILTERED=$(for dataset in ${DATASETS}; do
+            for prefix in ${PREFIXES}; do
+              if [[ $DATASETS_ALL_CHANGED_FILES == *"$prefix$dataset"* ]]; then
+                echo $dataset
+                break
+              fi
+            done
+          done)
+          echo "filtered datasets: $DATASETS_FILTERED"
+          echo "datasets=$(echo "$DATASETS_FILTERED" | jq -R -s -c 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
       - if: steps.changed-files.outputs.datasets_any_changed != 'true'
         run: echo "datasets=[]" >> "$GITHUB_OUTPUT"
 
