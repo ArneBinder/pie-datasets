@@ -46,7 +46,7 @@ jobs:
         # Define step output named dir base on ls command transformed to JSON thanks to jq
         run: |
           DATASETS=$(ls dataset_builders/pie)
-          echo "collected datasets: $DATASETS"
+          echo "collected datasets: $DATASETS" | tr '\n' ' '
           PREFIXES="dataset_builders/pie/ data/datasets/ tests/dataset_builders/pie/test_ tests/fixtures/dataset_builders/pie/"
           echo "file paths to check for changes: $PREFIXES"
           # filter entries in DATASETS for which any prefix+dataset is in DATASETS_ALL_CHANGED_FILES
