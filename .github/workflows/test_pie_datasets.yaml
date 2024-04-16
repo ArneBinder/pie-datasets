@@ -1,5 +1,5 @@
 
-name: Test Dataset
+name: Test Pie Dataset
 
 on:
   push:
@@ -9,7 +9,7 @@ on:
       - "data/datasets/**"
       - "tests/dataset_builders/**"
       - "tests/fixtures/dataset_builders/**"
-      - ".github/workflows/test_datasets_single.yaml"
+      - ".github/workflows/test_pie_datasets.yaml"
   pull_request:
     branches: [main, "release/*"]
     paths:
@@ -17,24 +17,24 @@ on:
       - "data/datasets/**"
       - "tests/dataset_builders/**"
       - "tests/fixtures/dataset_builders/**"
-      - ".github/workflows/test_datasets_single.yaml"
+      - ".github/workflows/test_pie_datasets.yaml"
 
 jobs:
-  directories_pie: # Job that list subdirectories
+  directories: # Job that list subdirectories
     runs-on: ubuntu-latest
     outputs:
       dir: ${{ steps.set-dirs.outputs.dir }} # generate output name dir by using inner step output
     steps:
       - uses: actions/checkout@v2
       - id: set-dirs # Give it an id to handle to get step outputs in the outputs key above
-        run: echo "::set-output name=dir::$(ls dataset_builders/pie | jq -R -s -c 'split("\n")[:-1]')"
+        run: echo "::set-output name=dataset::$(ls dataset_builders/pie | jq -R -s -c 'split("\n")[:-1]')"
         # Define step output named dir base on ls command transformed to JSON thanks to jq
 
-  test_pie:
+  dataset_builder:
     runs-on: ubuntu-latest
-    needs: [ directories_pie ] # Depends on previous job
+    needs: [ directories ] # Depends on previous job
     strategy:
       matrix:
-        dir: ${{fromJson(needs.directories_pie.outputs.dir)}} # List matrix strategy from directories dynamically
+        dataset: ${{fromJson(needs.directories.outputs.dataset)}} # List matrix strategy from directories dynamically
     steps:
-      - run: echo ${{matrix.dir}}
+      - run: echo ${{matrix.dataset}}
