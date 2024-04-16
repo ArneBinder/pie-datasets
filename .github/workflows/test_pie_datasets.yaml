@@ -25,8 +25,8 @@ jobs:
     outputs:
       datasets: ${{ steps.set-datasets.outputs.datasets }} # generate output name dir by using inner step output
     steps:
-      - uses: actions/checkout@v4
-      - id: set-datasets # Give it an id to handle to get step outputs in the outputs key above
+      - name: Get changed dataset files
+        id: changed-files
         uses: tj-actions/changed-files@v44
         with:
           files_yaml: |
@@ -35,12 +35,13 @@ jobs:
               - 'data/datasets/**'
               - 'tests/dataset_builders/pie/**'
               - 'tests/fixtures/dataset_builders/pie/**'
-      - name: Run step if dataset file(s) change
+      - name: Set datasets
+        id: set-datasets # Give it an id to handle to get step outputs in the outputs key above
         # NOTE: Ensure all outputs are prefixed by the same key used above e.g. `dataset_(...)`
         #   when trying to access the `any_changed` output.
-        if: steps.changed-files-yaml.outputs.datasets_any_changed == 'true'
+        if: steps.changed-files.outputs.datasets_any_changed == 'true'
         env:
-          DATASETS_ALL_CHANGED_FILES: ${{ steps.changed-files-yaml.outputs.test_all_changed_files }}
+          DATASETS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.datasets_all_changed_files }}
         # Define step output named dir base on ls command transformed to JSON thanks to jq
         run: |
           for file in ${DATASETS_ALL_CHANGED_FILES}; do
