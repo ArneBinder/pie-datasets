@@ -48,11 +48,11 @@ jobs:
           for file in ${DATASETS_ALL_CHANGED_FILES}; do
             echo "$file was changed"
           done
-          DATASETS=$(ls dataset_builders/pie | jq -R -s -c 'split("\n")[:-1]')
+          DATASETS=$(ls dataset_builders/pie)
           for dataset in ${DATASETS}; do
             echo "$dataset was found"
           done
-          echo "datasets=$DATASETS" >> "$GITHUB_OUTPUT"
+          echo "datasets=$(DATASETS | jq -R -s -c 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
       - if: steps.changed-files.outputs.datasets_any_changed != 'true'
         run: echo "datasets=[]" >> "$GITHUB_OUTPUT"
 
