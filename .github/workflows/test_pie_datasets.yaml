@@ -43,7 +43,6 @@ jobs:
         if: steps.changed-files.outputs.datasets_any_changed == 'true'
         env:
           DATASETS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.datasets_all_changed_files }}
-        # Define step output named dir base on ls command transformed to JSON thanks to jq
         run: |
           DATASETS=$(ls dataset_builders/pie)
           echo "collected datasets: $DATASETS" | tr '\n' ' '
@@ -60,6 +59,7 @@ jobs:
             done
           done)
           echo "filtered datasets: $DATASETS_FILTERED"
+          # Define step output named dataset base on ls command transformed to JSON thanks to jq
           echo "datasets=$(echo "$DATASETS_FILTERED" | jq -R -s -c 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
       - if: steps.changed-files.outputs.datasets_any_changed != 'true'
         run: echo "datasets=[]" >> "$GITHUB_OUTPUT"
