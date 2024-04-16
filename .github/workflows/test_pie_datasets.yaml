@@ -5,18 +5,18 @@ on:
   push:
     branches: [main]
     paths:
-      - "dataset_builders/**"
+      - "dataset_builders/pie/**"
       - "data/datasets/**"
-      - "tests/dataset_builders/**"
-      - "tests/fixtures/dataset_builders/**"
+      - "tests/dataset_builders/pie/**"
+      - "tests/fixtures/dataset_builders/pie/**"
       - ".github/workflows/test_pie_datasets.yaml"
   pull_request:
     branches: [main, "release/*"]
     paths:
-      - "dataset_builders/**"
+      - "dataset_builders/pie/**"
       - "data/datasets/**"
-      - "tests/dataset_builders/**"
-      - "tests/fixtures/dataset_builders/**"
+      - "tests/dataset_builders/pie/**"
+      - "tests/fixtures/dataset_builders/pie/**"
       - ".github/workflows/test_pie_datasets.yaml"
 
 jobs:
