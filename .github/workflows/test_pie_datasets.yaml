@@ -49,6 +49,8 @@ jobs:
           done
           DATASETS=$(ls dataset_builders/pie | jq -R -s -c 'split("\n")[:-1]')
           echo "datasets=$DATASETS" >> "$GITHUB_OUTPUT"
+      - if: steps.changed-files.outputs.datasets_any_changed != 'true'
+        run: echo "datasets=[]" >> "$GITHUB_OUTPUT"
 
   dataset_builder:
     runs-on: ubuntu-latest
