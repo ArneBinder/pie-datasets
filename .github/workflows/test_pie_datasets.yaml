@@ -23,7 +23,7 @@ jobs:
   collect_datasets: # Job that list subdirectories
     runs-on: ubuntu-latest
     outputs:
-      dataset: ${{ steps.set-datasets.outputs.datasets }} # generate output name dir by using inner step output
+      datasets: ${{ steps.set-datasets.outputs.datasets }} # generate output name dir by using inner step output
     steps:
       - uses: actions/checkout@v2
       - id: set-datasets # Give it an id to handle to get step outputs in the outputs key above
