@@ -25,6 +25,7 @@ jobs:
     outputs:
       datasets: ${{ steps.set-datasets.outputs.datasets }} # generate output name dir by using inner step output
     steps:
+      - uses: actions/checkout@v4
       - name: Get changed dataset files
         id: changed-files
         uses: tj-actions/changed-files@v44
