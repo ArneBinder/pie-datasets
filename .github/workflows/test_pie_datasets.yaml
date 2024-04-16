@@ -27,8 +27,10 @@ jobs:
     steps:
       - uses: actions/checkout@v2
       - id: set-datasets # Give it an id to handle to get step outputs in the outputs key above
-        run: echo "datasets=$(ls dataset_builders/pie | jq -R -s -c 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
         # Define step output named dir base on ls command transformed to JSON thanks to jq
+        run: |
+          DATASETS=$(ls dataset_builders/pie | jq -R -s -c 'split("\n")[:-1]')
+          echo "datasets=$DATASETS" >> "$GITHUB_OUTPUT"
 
   dataset_builder:
     runs-on: ubuntu-latest
