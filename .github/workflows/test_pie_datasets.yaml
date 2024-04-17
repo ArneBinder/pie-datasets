@@ -44,6 +44,7 @@ jobs:
         env:
           DATASETS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.datasets_all_changed_files }}
         run: |
+          echo "all dataset related changed files: $DATASETS_ALL_CHANGED_FILES"
           DATASETS=$(ls dataset_builders/pie)
           echo "collected datasets: $DATASETS" | tr '\n' ' '
           echo "\n"
