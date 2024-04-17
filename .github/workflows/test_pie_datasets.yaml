@@ -82,4 +82,4 @@ jobs:
           python-version: ${{ matrix.python-version }}
           cache: 'pip' # caching pip dependencies
       - name: Install dependencies
-        run: pip install -r dataset_builders/${{matrix.dataset}}/requirements.txt
+        run: pip install -r dataset_builders/pie/${{matrix.dataset}}/requirements.txt
