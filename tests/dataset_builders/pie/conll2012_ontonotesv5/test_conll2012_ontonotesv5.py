@@ -39,75 +39,6 @@ HF_EXAMPLE_FIXTURE_PATH = HF_DS_FIXTURE_DATA_PATH / DATASET_NAME / "example.json
 STREAM_SIZE = 2
 
 
-def resolve_annotation(annotation: Annotation) -> Any:
-    if annotation.target is None:
-        return None
-    if isinstance(annotation, LabeledSpan):
-        return annotation.target[annotation.start : annotation.end], annotation.label
-    elif isinstance(annotation, LabeledMultiSpan):
-        return (
-            tuple(annotation.target[start:end] for start, end in annotation.slices),
-            annotation.label,
-        )
-    elif isinstance(annotation, BinaryRelation):
-        return (
-            resolve_annotation(annotation.head),
-            annotation.label,
-            resolve_annotation(annotation.tail),
-        )
-    elif isinstance(annotation, BratAttribute):
-        result = (resolve_annotation(annotation.annotation), annotation.label)
-        if annotation.value is not None:
-            return result + (annotation.value,)
-        else:
-            return result
-    elif isinstance(annotation, BinaryRelation):
-        return (
-            resolve_annotation(annotation.head),
-            annotation.label,
-            resolve_annotation(annotation.tail),
-        )
-    else:
-        raise TypeError(f"Unknown annotation type: {type(annotation)}")
-
-
-def sort_annotations(annotations: Sequence[Annotation]) -> List[Annotation]:
-    if len(annotations) == 0:
-        return []
-    annotation = annotations[0]
-    if isinstance(annotation, LabeledSpan):
-        return sorted(annotations, key=lambda a: (a.start, a.end, a.label))
-    elif isinstance(annotation, Span):
-        return sorted(annotations, key=lambda a: (a.start, a.end))
-    elif isinstance(annotation, LabeledMultiSpan):
-        return sorted(annotations, key=lambda a: (a.slices, a.label))
-    elif isinstance(annotation, BinaryRelation):
-        if isinstance(annotation.head, LabeledSpan) and isinstance(annotation.tail, LabeledSpan):
-            return sorted(
-                annotations,
-                key=lambda a: (a.head.start, a.head.end, a.label, a.tail.start, a.tail.end),
-            )
-        elif isinstance(annotation.head, LabeledMultiSpan) and isinstance(
-            annotation.tail, LabeledMultiSpan
-        ):
-            return sorted(
-                annotations,
-                key=lambda a: (a.head.slices, a.label, a.tail.slices),
-            )
-        else:
-            raise ValueError(
-                f"Unsupported relation type for BinaryRelation arguments: "
-                f"{type(annotation.head)}, {type(annotation.tail)}"
-            )
-    else:
-        raise ValueError(f"Unsupported annotation type: {type(annotation)}")
-
-
-def resolve_annotations(annotations: Sequence[Annotation]) -> List[Any]:
-    sorted_annotations = sort_annotations(annotations)
-    return [resolve_annotation(a) for a in sorted_annotations]
-
-
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
 def dataset_variant(request):
     return request.param
@@ -339,60 +270,60 @@ def test_convert_to_text_document_with_labeled_spans_and_labeled_partitions_extr
 
     assert len(converted_doc.labeled_spans) == 393
     # check the first 10 spans
-    resolved_spans_10 = resolve_annotations(converted_doc.labeled_spans[:10])
+    resolved_spans_10 = converted_doc.labeled_spans.resolve()[:10]
     assert resolved_spans_10 == [
-        ("Across China", "ORG"),
+        ("ORG", "Across China"),
         (
-            "WW II Landmarks on the Great Earth of China : Eternal Memories of Taihang Mountain",
             "WORK_OF_ART",
+            "WW II Landmarks on the Great Earth of China : Eternal Memories of Taihang Mountain",
         ),
-        ("Taihang Mountain", "LOC"),
-        ("the Monument to the Hundred Regiments Offensive", "WORK_OF_ART"),
-        ("the Great Wall", "WORK_OF_ART"),
-        ("three", "CARDINAL"),
-        ("two", "CARDINAL"),
-        ("The Hundred Regiments Offensive", "EVENT"),
-        ("the Eighth Route Army", "ORG"),
-        ("the War of Resistance against Japan", "EVENT"),
+        ("LOC", "Taihang Mountain"),
+        ("WORK_OF_ART", "the Monument to the Hundred Regiments Offensive"),
+        ("WORK_OF_ART", "the Great Wall"),
+        ("CARDINAL", "three"),
+        ("CARDINAL", "two"),
+        ("EVENT", "The Hundred Regiments Offensive"),
+        ("ORG", "the Eighth Route Army"),
+        ("EVENT", "the War of Resistance against Japan"),
     ]
 
     assert len(converted_doc.labeled_partitions) == 235
     # check the first 10 partitions (sentences)
-    resolved_partitions_10 = resolve_annotations(converted_doc.labeled_partitions[:10])
+    resolved_partitions_10 = converted_doc.labeled_partitions.resolve()[:10]
     assert resolved_partitions_10 == [
-        ("What kind of memory ?", "sentence"),
-        ("We respectfully invite you to watch a special edition of Across China .", "sentence"),
+        ("sentence", "What kind of memory ?"),
+        ("sentence", "We respectfully invite you to watch a special edition of Across China ."),
         (
+            "sentence",
             "WW II Landmarks on the Great Earth of China : Eternal Memories of Taihang Mountain",
-            "sentence",
         ),
         (
+            "sentence",
             "Standing tall on Taihang Mountain is the Monument to the Hundred Regiments Offensive .",
-            "sentence",
         ),
         (
-            "It is composed of a primary stele , secondary steles , a huge round sculpture "
-            "and beacon tower , and the Great Wall , among other things .",
             "sentence",
+            "It is composed of a primary stele , secondary steles , a huge round sculpture and beacon "
+            "tower , and the Great Wall , among other things .",
         ),
-        ("A primary stele , three secondary steles , and two inscribed steles .", "sentence"),
+        ("sentence", "A primary stele , three secondary steles , and two inscribed steles ."),
         (
-            "The Hundred Regiments Offensive was the campaign of the largest scale launched "
-            "by the Eighth Route Army during the War of Resistance against Japan .",
             "sentence",
-        ),
-        (
-            "This campaign broke through the Japanese army 's blockade to reach base areas "
-            "behind enemy lines , stirring up anti-Japanese spirit throughout the nation and "
-            "influencing the situation of the anti-fascist war of the people worldwide .",
-            "sentence",
+            "The Hundred Regiments Offensive was the campaign of the largest scale launched by the "
+            "Eighth Route Army during the War of Resistance against Japan .",
         ),
         (
-            "This is Zhuanbi Village , Wuxiang County of Shanxi Province , where the Eighth "
-            "Route Army was headquartered back then .",
             "sentence",
+            "This campaign broke through the Japanese army 's blockade to reach base areas behind enemy "
+            "lines , stirring up anti-Japanese spirit throughout the nation and influencing the "
+            "situation of the anti-fascist war of the people worldwide .",
         ),
-        ("On a wall outside the headquarters we found a map .", "sentence"),
+        (
+            "sentence",
+            "This is Zhuanbi Village , Wuxiang County of Shanxi Province , where the Eighth Route "
+            "Army was headquartered back then .",
+        ),
+        ("sentence", "On a wall outside the headquarters we found a map ."),
     ]
 
 
