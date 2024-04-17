@@ -4,9 +4,8 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datasets
-from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pytorch_ie import Document
-from pytorch_ie.core import Annotation, AnnotationList, annotation_field
+from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
+from pytorch_ie.core import Annotation, AnnotationList, Document, annotation_field
 from pytorch_ie.documents import TextBasedDocument
 
 from pie_datasets import GeneratorBasedBuilder
