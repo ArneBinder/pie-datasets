@@ -60,7 +60,8 @@ jobs:
           done)
           echo "filtered datasets: $DATASETS_FILTERED"
           # Define step output named dataset base on ls command transformed to JSON thanks to jq
-          echo "datasets=$(echo "$DATASETS_FILTERED" | jq -R -s -c 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
+          # echo "datasets=$(echo "$DATASETS_FILTERED" | jq -R -s -c 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
+          echo "datasets=$(echo "$DATASETS_FILTERED" | jq -R -s -c 'split("\n")[:-1]')"
       - if: steps.changed-files.outputs.datasets_any_changed != 'true'
         run: echo "datasets=[]" >> "$GITHUB_OUTPUT"
 
