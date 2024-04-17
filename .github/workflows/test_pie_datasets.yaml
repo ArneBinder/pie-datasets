@@ -64,11 +64,22 @@ jobs:
       - if: steps.changed-files.outputs.datasets_any_changed != 'true'
         run: echo "datasets=[]" >> "$GITHUB_OUTPUT"
 
-  dataset_builder:
+  test_dataset:
     runs-on: ubuntu-latest
     needs: [ collect_datasets ] # Depends on previous job
     strategy:
       matrix:
-        dataset: ${{fromJson(needs.collect_datasets.outputs.datasets)}} # List matrix strategy from directories dynamically
+        dataset: ${{fromJson(needs.collect_datasets.outputs.datasets)}} # List matrix strategy from datasets dynamically
+    timeout-minutes: 10
     steps:
-      - run: echo ${{matrix.dataset}}
+      - run: echo "test dataset ${{matrix.dataset}}"
+      - name: Check out repository
+        uses: actions/checkout@v4
+      - name: Set up python
+        id: setup-python
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: 'pip' # caching pip dependencies
+      - name: Install dependencies
+        run: pip install -r dataset_builders/${{matrix.dataset}}/requirements.txt
