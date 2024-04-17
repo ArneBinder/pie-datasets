@@ -88,4 +88,9 @@ jobs:
           pip install -r dataset_builders/pie/${{matrix.dataset}}/requirements.txt
           pip install pytest pytest-cov
       - name: Run tests
-        run: pytest tests/dataset_builders/pie/test_${{matrix.dataset}}.py -k "not slow" --cov=dataset_builders/pie/${{matrix.dataset}} --cov-report=xml:coverage/${{matrix.dataset}}.xml
+        run: |
+          pytest \
+            tests/dataset_builders/pie/test_${{matrix.dataset}}.py \
+            -k "not slow" \
+            --cov=dataset_builders/pie/${{matrix.dataset}} \
+            --cov-report=xml:coverage/${{matrix.dataset}}.xml
