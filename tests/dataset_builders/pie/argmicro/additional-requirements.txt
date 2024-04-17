@@ -1,1 +1,1 @@
-pie-modules
+pie-modules>=0.10.3,<0.11.0    # to test tokenization
