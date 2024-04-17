@@ -83,6 +83,8 @@ jobs:
           python-version: '3.9'
           cache: 'pip' # caching pip dependencies
       - name: Install dependencies
-        run: pip install -r dataset_builders/pie/${{matrix.dataset}}/requirements.txt
+        run: |
+          pip install -r dataset_builders/pie/${{matrix.dataset}}/requirements.txt
+          pip install pytest pytest-cov
       - name: Run tests
         run: pytest tests/dataset_builders/pie/test_${{matrix.dataset}}.py -k "not slow" --cov=dataset_builders/pie/${{matrix.dataset}} --cov-report=xml:coverage/${{matrix.dataset}}.xml
