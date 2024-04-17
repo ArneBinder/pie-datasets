@@ -101,7 +101,7 @@ jobs:
             --cov=dataset_builders/pie/${{matrix.dataset}} \
             --cov-report=xml:coverage/${{matrix.dataset}}.xml
       - name: Upload coverage
-        uses: codecov/codecov-action@v2
+        uses: codecov/codecov-action@v4
         with:
           file: coverage/${{matrix.dataset}}.xml
           name: ${{matrix.dataset}}
