@@ -69,6 +69,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [ collect_datasets ] # Depends on previous job
     strategy:
+      fail-fast: false
       matrix:
         dataset: ${{fromJson(needs.collect_datasets.outputs.datasets)}} # List matrix strategy from datasets dynamically
     timeout-minutes: 10
