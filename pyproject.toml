@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "pie-datasets"
-version = "0.9.0"
+version = "0.10.0"
 description = "Building scripts for PyTorch-IE Datasets"
 authors = ["Arne Binder <arne.binder@dfki.de>"]
 readme = "README.md"
@@ -24,7 +24,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pytorch-ie = ">=0.29.4,<0.31.0"
+pytorch-ie = ">=0.30.3,<0.31.0"
 # <2.16.0 because of https://github.com/ArneBinder/pie-datasets/issues/93
 datasets = ">=2.14.0,<2.16.0"
 # this was manually added because we get a conflict with pyarrow otherwise
