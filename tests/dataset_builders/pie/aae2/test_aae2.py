@@ -33,7 +33,6 @@ SPLIT_SIZES = {"test": 80, "train": 322}
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
 def dataset_variant(request) -> str:
-    print("delete me")
     return request.param
 
 
