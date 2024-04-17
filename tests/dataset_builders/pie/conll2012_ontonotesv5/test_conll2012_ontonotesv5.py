@@ -1,10 +1,7 @@
 import json
-from typing import Any, List, Sequence
 
 import pytest
 from datasets import disable_caching, load_dataset
-from pytorch_ie import Annotation
-from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndLabeledPartitions
 
 from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
@@ -14,7 +11,6 @@ from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
     example_to_document,
 )
 from pie_datasets import load_dataset as load_pie_dataset
-from pie_datasets.builders.brat import BratAttribute
 from tests.dataset_builders.common import HF_DS_FIXTURE_DATA_PATH, PIE_BASE_PATH
 
 disable_caching()
