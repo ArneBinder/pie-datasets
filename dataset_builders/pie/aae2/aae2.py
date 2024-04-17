@@ -15,6 +15,10 @@ from pie_datasets.core.dataset import DocumentConvertersType
 from pie_datasets.document.processing import Caster, Converter, Pipeline
 
 
+def this_is_not_covered():
+    print("This is not covered by the test.")
+
+
 def get_split_paths(url_split_ids: str, subdirectory: str) -> Dict[str, str]:
     df_splits = pd.read_csv(url_split_ids, sep=";")
     splits2ids = df_splits.groupby(df_splits["SET"]).agg(list).to_dict()["ID"]
