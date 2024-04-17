@@ -63,11 +63,12 @@ jobs:
           # Define step output named dataset base on ls command transformed to JSON thanks to jq
           echo "datasets=$(echo "$DATASETS_FILTERED" | jq -R -s -c 'split("\n")[:-1]')" >> "$GITHUB_OUTPUT"
       - if: steps.changed-files.outputs.datasets_any_changed != 'true'
-        run: echo "datasets=["argmicro"]" >> "$GITHUB_OUTPUT"
+        run: echo "datasets=" >> "$GITHUB_OUTPUT"
 
   test_dataset:
     runs-on: ubuntu-latest
     needs: [ collect_datasets ] # Depends on previous job
+    if: ${{ needs.collect_datasets.outputs.datasets != '' }}
     strategy:
       fail-fast: false
       matrix:
