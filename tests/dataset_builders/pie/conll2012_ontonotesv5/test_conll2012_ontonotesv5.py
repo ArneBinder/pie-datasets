@@ -1,7 +1,10 @@
 import json
+from typing import Any, List, Sequence
 
 import pytest
 from datasets import disable_caching, load_dataset
+from pytorch_ie import Annotation
+from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndLabeledPartitions
 
 from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
@@ -11,11 +14,8 @@ from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
     example_to_document,
 )
 from pie_datasets import load_dataset as load_pie_dataset
-from tests.dataset_builders.common import (
-    HF_DS_FIXTURE_DATA_PATH,
-    PIE_BASE_PATH,
-    resolve_annotations,
-)
+from pie_datasets.builders.brat import BratAttribute
+from tests.dataset_builders.common import HF_DS_FIXTURE_DATA_PATH, PIE_BASE_PATH
 
 disable_caching()
 
@@ -37,6 +37,75 @@ DATASET_VARIANT = "english_v4"
 SPLIT_NAME = "train"
 HF_EXAMPLE_FIXTURE_PATH = HF_DS_FIXTURE_DATA_PATH / DATASET_NAME / "example.json"
 STREAM_SIZE = 2
+
+
+def resolve_annotation(annotation: Annotation) -> Any:
+    if annotation.target is None:
+        return None
+    if isinstance(annotation, LabeledSpan):
+        return annotation.target[annotation.start : annotation.end], annotation.label
+    elif isinstance(annotation, LabeledMultiSpan):
+        return (
+            tuple(annotation.target[start:end] for start, end in annotation.slices),
+            annotation.label,
+        )
+    elif isinstance(annotation, BinaryRelation):
+        return (
+            resolve_annotation(annotation.head),
+            annotation.label,
+            resolve_annotation(annotation.tail),
+        )
+    elif isinstance(annotation, BratAttribute):
+        result = (resolve_annotation(annotation.annotation), annotation.label)
+        if annotation.value is not None:
+            return result + (annotation.value,)
+        else:
+            return result
+    elif isinstance(annotation, BinaryRelation):
+        return (
+            resolve_annotation(annotation.head),
+            annotation.label,
+            resolve_annotation(annotation.tail),
+        )
+    else:
+        raise TypeError(f"Unknown annotation type: {type(annotation)}")
+
+
+def sort_annotations(annotations: Sequence[Annotation]) -> List[Annotation]:
+    if len(annotations) == 0:
+        return []
+    annotation = annotations[0]
+    if isinstance(annotation, LabeledSpan):
+        return sorted(annotations, key=lambda a: (a.start, a.end, a.label))
+    elif isinstance(annotation, Span):
+        return sorted(annotations, key=lambda a: (a.start, a.end))
+    elif isinstance(annotation, LabeledMultiSpan):
+        return sorted(annotations, key=lambda a: (a.slices, a.label))
+    elif isinstance(annotation, BinaryRelation):
+        if isinstance(annotation.head, LabeledSpan) and isinstance(annotation.tail, LabeledSpan):
+            return sorted(
+                annotations,
+                key=lambda a: (a.head.start, a.head.end, a.label, a.tail.start, a.tail.end),
+            )
+        elif isinstance(annotation.head, LabeledMultiSpan) and isinstance(
+            annotation.tail, LabeledMultiSpan
+        ):
+            return sorted(
+                annotations,
+                key=lambda a: (a.head.slices, a.label, a.tail.slices),
+            )
+        else:
+            raise ValueError(
+                f"Unsupported relation type for BinaryRelation arguments: "
+                f"{type(annotation.head)}, {type(annotation.tail)}"
+            )
+    else:
+        raise ValueError(f"Unsupported annotation type: {type(annotation)}")
+
+
+def resolve_annotations(annotations: Sequence[Annotation]) -> List[Any]:
+    sorted_annotations = sort_annotations(annotations)
+    return [resolve_annotation(a) for a in sorted_annotations]
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
