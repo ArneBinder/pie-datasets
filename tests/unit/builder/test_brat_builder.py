@@ -1,8 +1,8 @@
 from typing import Any
 
 import pytest
-from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pytorch_ie import Annotation
+from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
+from pytorch_ie.core import Annotation
 from pytorch_ie.documents import TextBasedDocument
 
 from pie_datasets.builders.brat import BratAttribute, BratBuilder
