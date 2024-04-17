@@ -4,18 +4,17 @@ from typing import Any, List, Optional, Sequence, Type
 
 import datasets
 import pytest
-from pie_modules.annotations import LabeledMultiSpan
 from pie_modules.document.processing import tokenize_document
-from pie_modules.documents import (
+from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
+from pytorch_ie.core import Annotation, AnnotationLayer, Document, annotation_field
+from pytorch_ie.documents import (
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
     TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
+    TextDocumentWithLabeledPartitions,
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+    TokenBasedDocument,
 )
-from pytorch_ie import Annotation, AnnotationLayer, annotation_field
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
-from pytorch_ie.core import Document
-from pytorch_ie.documents import TextDocumentWithLabeledPartitions, TokenBasedDocument
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.sciarg.sciarg import SciArg, remove_duplicate_relations
