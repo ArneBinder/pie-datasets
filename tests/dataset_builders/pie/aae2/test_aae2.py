@@ -3,7 +3,7 @@ from typing import List
 import pytest
 from datasets import disable_caching
 from pie_modules.document.processing import tokenize_document
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan
+from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import Document
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,

@@ -12,9 +12,8 @@ from pytorch_ie.documents import TextBasedDocument
 
 from pie_datasets import DatasetDict
 from tests import FIXTURES_ROOT
-from tests.dataset_builders.common import DATASET_BUILDER_BASE_PATH
 
-SRC_ROOTS = [Path("src"), DATASET_BUILDER_BASE_PATH]
+SRC_ROOTS = [Path("src")]
 
 # import all src files to include them in the coverage score (and report)
 # this is necessary because we calculate coverage by calling "pytest --cov"

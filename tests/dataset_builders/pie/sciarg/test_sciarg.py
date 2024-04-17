@@ -1,32 +1,35 @@
+import dataclasses
 from collections import Counter
-from typing import Optional, Type
+from typing import Any, List, Optional, Sequence, Type
 
 import datasets
 import pytest
 from pie_modules.document.processing import tokenize_document
-from pie_modules.documents import (
+from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
+from pytorch_ie.core import Annotation, AnnotationLayer, Document, annotation_field
+from pytorch_ie.documents import (
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
     TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
+    TextDocumentWithLabeledPartitions,
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+    TokenBasedDocument,
 )
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan
-from pytorch_ie.core import Document
-from pytorch_ie.documents import TextDocumentWithLabeledPartitions
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.sciarg.sciarg import SciArg, remove_duplicate_relations
 from pie_datasets import DatasetDict
-from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
+from pie_datasets.builders.brat import (
+    BratAttribute,
+    BratDocument,
+    BratDocumentWithMergedSpans,
+)
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
     PIE_DS_FIXTURE_DATA_PATH,
-    TestTokenDocumentWithLabeledMultiSpansAndBinaryRelations,
-    TestTokenDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
     TestTokenDocumentWithLabeledPartitions,
     TestTokenDocumentWithLabeledSpansAndBinaryRelations,
     TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-    resolve_annotations,
 )
 
 datasets.disable_caching()
@@ -53,6 +56,75 @@ FULL_LABEL_COUNTS = {
         "spans": {"background_claim": 2752, "data": 4093, "own_claim": 5450},
     },
 }
+
+
+def resolve_annotation(annotation: Annotation) -> Any:
+    if annotation.target is None:
+        return None
+    if isinstance(annotation, LabeledSpan):
+        return annotation.target[annotation.start : annotation.end], annotation.label
+    elif isinstance(annotation, LabeledMultiSpan):
+        return (
+            tuple(annotation.target[start:end] for start, end in annotation.slices),
+            annotation.label,
+        )
+    elif isinstance(annotation, BinaryRelation):
+        return (
+            resolve_annotation(annotation.head),
+            annotation.label,
+            resolve_annotation(annotation.tail),
+        )
+    elif isinstance(annotation, BratAttribute):
+        result = (resolve_annotation(annotation.annotation), annotation.label)
+        if annotation.value is not None:
+            return result + (annotation.value,)
+        else:
+            return result
+    elif isinstance(annotation, BinaryRelation):
+        return (
+            resolve_annotation(annotation.head),
+            annotation.label,
+            resolve_annotation(annotation.tail),
+        )
+    else:
+        raise TypeError(f"Unknown annotation type: {type(annotation)}")
+
+
+def sort_annotations(annotations: Sequence[Annotation]) -> List[Annotation]:
+    if len(annotations) == 0:
+        return []
+    annotation = annotations[0]
+    if isinstance(annotation, LabeledSpan):
+        return sorted(annotations, key=lambda a: (a.start, a.end, a.label))
+    elif isinstance(annotation, Span):
+        return sorted(annotations, key=lambda a: (a.start, a.end))
+    elif isinstance(annotation, LabeledMultiSpan):
+        return sorted(annotations, key=lambda a: (a.slices, a.label))
+    elif isinstance(annotation, BinaryRelation):
+        if isinstance(annotation.head, LabeledSpan) and isinstance(annotation.tail, LabeledSpan):
+            return sorted(
+                annotations,
+                key=lambda a: (a.head.start, a.head.end, a.label, a.tail.start, a.tail.end),
+            )
+        elif isinstance(annotation.head, LabeledMultiSpan) and isinstance(
+            annotation.tail, LabeledMultiSpan
+        ):
+            return sorted(
+                annotations,
+                key=lambda a: (a.head.slices, a.label, a.tail.slices),
+            )
+        else:
+            raise ValueError(
+                f"Unsupported relation type for BinaryRelation arguments: "
+                f"{type(annotation.head)}, {type(annotation.tail)}"
+            )
+    else:
+        raise ValueError(f"Unsupported annotation type: {type(annotation)}")
+
+
+def resolve_annotations(annotations: Sequence[Annotation]) -> List[Any]:
+    sorted_annotations = sort_annotations(annotations)
+    return [resolve_annotation(a) for a in sorted_annotations]
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
@@ -714,6 +786,22 @@ def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
     dataset, dataset_variant
 ) -> Optional[DatasetDict]:
     return dataset.to_document_type(TextDocumentWithLabeledSpansAndBinaryRelations)
+
+
+@dataclasses.dataclass
+class TestTokenDocumentWithLabeledMultiSpansAndBinaryRelations(TokenBasedDocument):
+    labeled_multi_spans: AnnotationLayer[LabeledMultiSpan] = annotation_field(target="tokens")
+    binary_relations: AnnotationLayer[BinaryRelation] = annotation_field(
+        target="labeled_multi_spans"
+    )
+
+
+@dataclasses.dataclass
+class TestTokenDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions(
+    TestTokenDocumentWithLabeledMultiSpansAndBinaryRelations,
+    TestTokenDocumentWithLabeledPartitions,
+):
+    pass
 
 
 TOKENIZED_DOCUMENT_TYPE_MAPPING = {
