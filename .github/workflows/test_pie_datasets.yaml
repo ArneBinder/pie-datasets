@@ -99,3 +99,9 @@ jobs:
             -k "not slow" \
             --cov=dataset_builders/pie/${{matrix.dataset}} \
             --cov-report=xml:coverage/${{matrix.dataset}}.xml
+      - name: Upload coverage
+        uses: codecov/codecov-action@v2
+        with:
+          file: coverage/${{matrix.dataset}}.xml
+          name: ${{matrix.dataset}}
+          fail_ci_if_error: true
