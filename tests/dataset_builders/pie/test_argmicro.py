@@ -36,6 +36,7 @@ PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 
 @pytest.fixture(scope="module", params=[config.name for config in ArgMicro.BUILDER_CONFIGS])
 def dataset_variant(request):
+    print("DELETE ME")
     return request.param
 
 
