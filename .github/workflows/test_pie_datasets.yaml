@@ -20,10 +20,10 @@ on:
       - ".github/workflows/test_pie_datasets.yaml"
 
 jobs:
-  collect_modified_datasets: # Job that list modified datasets
+  collect_modified_datasets: # Job that lists modified datasets
     runs-on: ubuntu-latest
     outputs:
-      datasets: ${{ steps.set-datasets.outputs.datasets }} # generate output name dir by using inner step output
+      datasets: ${{ steps.set-datasets.outputs.datasets }}
     steps:
       - uses: actions/checkout@v4
       - name: Get changed dataset files
@@ -37,7 +37,7 @@ jobs:
               - 'tests/dataset_builders/pie/**'
               - 'tests/fixtures/dataset_builders/pie/**'
       - name: Determine modified datasets
-        id: set-datasets # Give it an id to handle to get step outputs in the outputs key above
+        id: set-datasets # Give it an id to handle step outputs in the outputs key above
         # NOTE: Ensure all outputs are prefixed by the same key used above e.g. `datasets_(...)`
         #   when trying to access the `any_changed` output.
         if: steps.changed-files.outputs.datasets_any_changed == 'true'
