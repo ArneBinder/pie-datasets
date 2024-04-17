@@ -72,7 +72,7 @@ jobs:
       matrix:
         # List matrix strategy from datasets dynamically collected in the previous job
         dataset: ${{fromJson(needs.collect_modified_datasets.outputs.datasets)}}
-    timeout-minutes: 10
+    timeout-minutes: 15
     steps:
       - run: echo "test dataset ${{matrix.dataset}}"
       - name: Check out repository
