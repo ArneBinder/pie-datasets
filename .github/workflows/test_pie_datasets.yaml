@@ -36,15 +36,15 @@ jobs:
               - 'data/datasets/**'
               - 'tests/dataset_builders/pie/**'
               - 'tests/fixtures/dataset_builders/pie/**'
-      - name: Set datasets
+      - name: Determine modified datasets
         id: set-datasets # Give it an id to handle to get step outputs in the outputs key above
-        # NOTE: Ensure all outputs are prefixed by the same key used above e.g. `dataset_(...)`
+        # NOTE: Ensure all outputs are prefixed by the same key used above e.g. `datasets_(...)`
         #   when trying to access the `any_changed` output.
         if: steps.changed-files.outputs.datasets_any_changed == 'true'
         env:
           DATASETS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.datasets_all_changed_files }}
         run: |
-          echo "all dataset related changed files: $DATASETS_ALL_CHANGED_FILES"
+          echo "all changed dataset files: $DATASETS_ALL_CHANGED_FILES"
           DATASETS=$(ls dataset_builders/pie)
           echo "collected datasets: $DATASETS" | tr '\n' ' '
           echo "\n"
