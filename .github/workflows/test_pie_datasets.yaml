@@ -45,7 +45,8 @@ jobs:
           DATASETS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.datasets_all_changed_files }}
         run: |
           DATASETS=$(ls dataset_builders/pie)
-          echo collected datasets: $(echo $DATASETS" | tr '\n' ' ')
+          echo "collected datasets: $DATASETS" | tr '\n' ' '
+          echo "\n"
           PREFIXES="dataset_builders/pie/ data/datasets/ tests/dataset_builders/pie/ tests/fixtures/dataset_builders/pie/"
           echo "file paths to check for changes: $PREFIXES"
           # filter entries in DATASETS for which any prefix+dataset is in DATASETS_ALL_CHANGED_FILES
