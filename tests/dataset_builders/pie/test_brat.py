@@ -2,7 +2,7 @@ from typing import Any, Union
 
 import datasets
 import pytest
-from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
+from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
 from pytorch_ie.core import Annotation
 from pytorch_ie.documents import TextBasedDocument
 
