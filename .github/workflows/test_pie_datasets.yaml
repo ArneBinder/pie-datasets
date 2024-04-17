@@ -7,7 +7,7 @@ on:
     paths:
       - "dataset_builders/pie/**"
       - "data/datasets/**"
-      - "tests/dataset_builders/pie/test_**"
+      - "tests/dataset_builders/pie/**"
       - "tests/fixtures/dataset_builders/pie/**"
       - ".github/workflows/test_pie_datasets.yaml"
   pull_request:
@@ -15,7 +15,7 @@ on:
     paths:
       - "dataset_builders/pie/**"
       - "data/datasets/**"
-      - "tests/dataset_builders/pie/test_**"
+      - "tests/dataset_builders/pie/**"
       - "tests/fixtures/dataset_builders/pie/**"
       - ".github/workflows/test_pie_datasets.yaml"
 
@@ -34,7 +34,7 @@ jobs:
             datasets:
               - 'dataset_builders/pie/**'
               - 'data/datasets/**'
-              - 'tests/dataset_builders/pie/test_**'
+              - 'tests/dataset_builders/pie/**'
               - 'tests/fixtures/dataset_builders/pie/**'
       - name: Set datasets
         id: set-datasets # Give it an id to handle to get step outputs in the outputs key above
@@ -45,14 +45,13 @@ jobs:
           DATASETS_ALL_CHANGED_FILES: ${{ steps.changed-files.outputs.datasets_all_changed_files }}
         run: |
           DATASETS=$(ls dataset_builders/pie)
-          echo "collected datasets: $DATASETS" | tr '\n' ' '
-          echo "\n"
-          PREFIXES="dataset_builders/pie/ data/datasets/ tests/dataset_builders/pie/test_ tests/fixtures/dataset_builders/pie/"
+          echo collected datasets: $(echo $DATASETS" | tr '\n' ' ')
+          PREFIXES="dataset_builders/pie/ data/datasets/ tests/dataset_builders/pie/ tests/fixtures/dataset_builders/pie/"
           echo "file paths to check for changes: $PREFIXES"
           # filter entries in DATASETS for which any prefix+dataset is in DATASETS_ALL_CHANGED_FILES
           DATASETS_FILTERED=$(for dataset in ${DATASETS}; do
             for prefix in ${PREFIXES}; do
-              if [[ $DATASETS_ALL_CHANGED_FILES == *"$prefix$dataset"* ]]; then
+              if [[ $DATASETS_ALL_CHANGED_FILES == *"$prefix$dataset/"* ]]; then
                 echo $dataset
                 break
               fi
@@ -88,14 +87,14 @@ jobs:
           # install dataset requirements
           pip install -r dataset_builders/pie/${{matrix.dataset}}/requirements.txt
           # check if test requirements file exists and install it
-          TEST_REQUIREMENTS_FILE=dataset_builders/pie/${{matrix.dataset}}/requirements-test.txt
-          test -f $TEST_REQUIREMENTS_FILE && pip install -r $TEST_REQUIREMENTS_FILE
+          ADD_REQUIREMENTS_FILE=tests/dataset_builders/pie/${{matrix.dataset}}/additional-requirements.txt
+          test -f $ADD_REQUIREMENTS_FILE && pip install -r $ADD_REQUIREMENTS_FILE
           # install pytest and pytest-cov
           pip install pytest pytest-cov
       - name: Run tests
         run: |
           pytest \
-            tests/dataset_builders/pie/test_${{matrix.dataset}}.py \
+            tests/dataset_builders/pie/${{matrix.dataset}} \
             -k "not slow" \
             --cov=dataset_builders/pie/${{matrix.dataset}} \
             --cov-report=xml:coverage/${{matrix.dataset}}.xml
