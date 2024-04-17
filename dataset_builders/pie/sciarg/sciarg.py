@@ -7,13 +7,13 @@ from pie_modules.document.processing import (
     SpansViaRelationMerger,
     TextSpanTrimmer,
 )
-from pie_modules.documents import (
+from pytorch_ie.core import Document
+from pytorch_ie.documents import (
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
     TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
-from pytorch_ie.core import Document
 
 from pie_datasets.builders import BratBuilder, BratConfig
 from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans

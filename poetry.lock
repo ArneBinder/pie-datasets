@@ -1029,19 +1029,19 @@ xml = ["lxml (>=4.8.0)"]
 
 [[package]]
 name = "pie-modules"
-version = "0.11.1"
+version = "0.10.8"
 description = "Model and Taskmodule implementations for PyTorch-IE"
 optional = false
-python-versions = "<4.0,>=3.9"
+python-versions = ">=3.9,<4.0"
 files = [
-    {file = "pie_modules-0.11.1-py3-none-any.whl", hash = "sha256:32652e43983c4ccc224ff94b782046e9f524029f0a0666b3aec292fee220bf49"},
-    {file = "pie_modules-0.11.1.tar.gz", hash = "sha256:533ae6f48f3cddf5bf4f65eaa727a56e7bf45df3e4d46fc37e428e9bf753f188"},
+    {file = "pie_modules-0.10.8-py3-none-any.whl", hash = "sha256:ccf85d000598dd03a06e44a330d2ee5a822b772148d8d082e02d2b3cd9504693"},
+    {file = "pie_modules-0.10.8.tar.gz", hash = "sha256:07f725a4ed455034677388b5ed24b2ddc500c44334e7071a9ee6c2a35b7f4efc"},
 ]
 
 [package.dependencies]
 networkx = ">=3.0.0,<4.0.0"
 pytorch-crf = ">=0.7.2"
-pytorch-ie = ">=0.30.3,<0.31.0"
+pytorch-ie = ">=0.29.8,<0.31.0"
 pytorch-lightning = ">=2.1.0,<3.0.0"
 torchmetrics = ">=1,<2"
 transformers = ">=4.35.0,<5.0.0"
@@ -2165,4 +2165,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "c65065344069c68a19cebe9ad18e24d400ddf5b329c076694b0c99c684492af4"
+content-hash = "3473362d895af8c10f86c9117fbef87193cf9024f3afcf827cc2b52fe3f240a3"
