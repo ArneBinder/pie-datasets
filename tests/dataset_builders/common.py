@@ -6,9 +6,8 @@ import re
 from pathlib import Path
 from typing import Any, List, Optional, Sequence
 
-from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
-from pytorch_ie import Annotation
-from pytorch_ie.core import AnnotationList, annotation_field
+from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
+from pytorch_ie.core import Annotation, AnnotationList, annotation_field
 from pytorch_ie.documents import TokenBasedDocument
 
 from pie_datasets.builders.brat import BratAttribute
