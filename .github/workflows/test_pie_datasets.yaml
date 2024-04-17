@@ -51,7 +51,7 @@ jobs:
           # filter entries in DATASETS for which any prefix+dataset is in DATASETS_ALL_CHANGED_FILES
           DATASETS_FILTERED=$(for dataset in ${DATASETS}; do
             for prefix in ${PREFIXES}; do
-              if [[ $DATASETS_ALL_CHANGED_FILES == *"$prefix$dataset/"* ]]; then
+              if [[ $DATASETS_ALL_CHANGED_FILES == *"$prefix$dataset"* ]]; then
                 echo $dataset
                 break
               fi
