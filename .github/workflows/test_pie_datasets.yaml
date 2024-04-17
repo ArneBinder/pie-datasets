@@ -85,7 +85,12 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
+          # install dataset requirements
           pip install -r dataset_builders/pie/${{matrix.dataset}}/requirements.txt
+          # check if test requirements file exists and install it
+          TEST_REQUIREMENTS_FILE=dataset_builders/pie/${{matrix.dataset}}/requirements-test.txt
+          test -f $TEST_REQUIREMENTS_FILE && pip install -r $TEST_REQUIREMENTS_FILE
+          # install pytest and pytest-cov
           pip install pytest pytest-cov
       - name: Run tests
         run: |
