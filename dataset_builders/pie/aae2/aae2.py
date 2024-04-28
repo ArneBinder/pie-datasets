@@ -131,11 +131,12 @@ class ArgumentAnnotatedEssaysV2Config(BratConfig):
             conversion_method: either "connect_first" or "connect_all", see convert_aae2_claim_attributions_to_relations
             **kwargs: keyword arguments forwarded to super.
         """
-        super().__init__(**kwargs)
+        super().__init__(merge_fragmented_spans=True, **kwargs)
         self.conversion_method = conversion_method
 
 
 class ArgumentAnnotatedEssaysV2(BratBuilder):
+    BUILDER_CONFIG_CLASS = ArgumentAnnotatedEssaysV2Config
     BASE_DATASET_PATH = "DFKI-SLT/brat"
     BASE_DATASET_REVISION = "bb8c37d84ddf2da1e691d226c55fef48fd8149b5"
 
@@ -148,7 +149,6 @@ class ArgumentAnnotatedEssaysV2(BratBuilder):
     BUILDER_CONFIGS = [
         ArgumentAnnotatedEssaysV2Config(
             name=BratBuilder.DEFAULT_CONFIG_NAME,
-            merge_fragmented_spans=True,
             conversion_method="connect_first",
         ),
     ]
