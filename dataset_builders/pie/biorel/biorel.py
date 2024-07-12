@@ -54,8 +54,7 @@ def example_to_document(example):
 class BioRelConfig(datasets.BuilderConfig):
     """BuilderConfig for BioRel."""
 
-    def __init__(self, **kwargs):
-        super().__init__(**kwargs)
+    pass
 
 
 class BioRel(GeneratorBasedBuilder):
