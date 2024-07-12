@@ -9,7 +9,7 @@ from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )
 
-from pie_datasets import GeneratorBasedBuilder
+from pie_datasets import ArrowBasedBuilder, GeneratorBasedBuilder
 
 
 @dataclasses.dataclass(frozen=True)
@@ -48,7 +48,15 @@ def example_to_document(example):
     return document
 
 
-# def document_to_example(document): needed?
+def document_to_example(document):
+    head = document.entities[0]
+    tail = document.entities[1]
+    return {
+        "text": document.text,
+        "relation": document.relations[0].label,
+        "h": {"id": head.id, "name": head.name, "pos": [head.start, head.end]},
+        "t": {"id": tail.id, "name": tail.name, "pos": [tail.start, tail.end]},
+    }
 
 
 class BioRelConfig(datasets.BuilderConfig):
@@ -57,29 +65,19 @@ class BioRelConfig(datasets.BuilderConfig):
     pass
 
 
-class BioRel(GeneratorBasedBuilder):
+class BioRel(ArrowBasedBuilder):
     # set the correct values for the following attributes
     DOCUMENT_TYPE = BioRelDocument
     BASE_DATASET_PATH = "DFKI-SLT/BioRel"
-    BASE_DATASET_REVISION = "still need to find out"  # set to a commit hash?
+    BASE_DATASET_REVISION = "e4869c484c582cfbc7ead10d4d421bd4b275fa4e"
     # BASE_CONFIG_KWARGS_DICT = None
 
     BUILDER_CONFIGS = [
         BioRelConfig(
-            name="train",
+            name="biorel",
             version=datasets.Version("1.0.0"),
-            description="BioRel train split dataset",
-        ),
-        BioRelConfig(
-            name="test",
-            version=datasets.Version("1.0.0"),
-            description="BioRel train split dataset",
-        ),
-        BioRelConfig(
-            name="validation",
-            version=datasets.Version("1.0.0"),
-            description="BioRel train split dataset",
-        ),
+            description="BioRel dataset",
+        )
     ]
 
     DOCUMENT_CONVERTERS = {
