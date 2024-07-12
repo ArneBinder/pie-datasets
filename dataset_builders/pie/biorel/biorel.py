@@ -4,7 +4,10 @@ from typing import Any
 import datasets
 from pytorch_ie import AnnotationLayer, annotation_field
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
-from pytorch_ie.documents import TextBasedDocument, TextDocumentWithLabeledSpansAndBinaryRelations
+from pytorch_ie.documents import (
+    TextBasedDocument,
+    TextDocumentWithLabeledSpansAndBinaryRelations,
+)
 
 from pie_datasets import GeneratorBasedBuilder
 
@@ -49,7 +52,8 @@ def example_to_document(example):
 
 
 class BioRelConfig(datasets.BuilderConfig):
-    """BuilderConfig for BioRel"""
+    """BuilderConfig for BioRel."""
+
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
@@ -88,4 +92,3 @@ class BioRel(GeneratorBasedBuilder):
 
     def _generate_document(self, example, **kwargs):
         return example_to_document(example)
-
