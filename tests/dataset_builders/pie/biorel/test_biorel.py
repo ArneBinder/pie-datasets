@@ -1,5 +1,6 @@
 import datasets
 import pytest
+from datasets import disable_caching, load_dataset
 
 from dataset_builders.pie.biorel.biorel import (
     BioRel,
@@ -7,14 +8,20 @@ from dataset_builders.pie.biorel.biorel import (
     document_to_example,
     example_to_document,
 )
+from pie_datasets import IterableDataset
+from pie_datasets import load_dataset as load_pie_dataset
+from tests.dataset_builders.common import PIE_BASE_PATH
 
-datasets.disable_caching()
+disable_caching()
 
 DATASET_NAME = "biorel"
 BUILDER_CLASS = BioRel
-
+HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
+PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 SPLIT_NAMES = {"test", "train", "validation"}
 SPLIT_SIZES = {"test": 114565, "train": 534277, "validation": 114506}
+STREAM_SIZE = 3
+EXAMPLE_INDEX = 0
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
@@ -24,7 +31,7 @@ def dataset_variant(request) -> str:
 
 @pytest.fixture(scope="module")
 def hf_dataset():
-    return datasets.load_dataset("DFKI-SLT/BioRel")
+    return load_dataset(HF_DATASET_PATH)
 
 
 @pytest.fixture(scope="module", params=list(SPLIT_SIZES))
@@ -42,7 +49,7 @@ def test_hf_dataset(hf_dataset, dataset_variant):
 
 @pytest.fixture(scope="module")
 def hf_example(hf_dataset, split):
-    return hf_dataset[split][0]
+    return hf_dataset[split][EXAMPLE_INDEX]
 
 
 def test_hf_example(hf_example, split):
@@ -130,7 +137,7 @@ def builder() -> BUILDER_CLASS:
 
 
 @pytest.fixture(scope="module")
-def document(builder, hf_example):
+def generated_document(builder, hf_example):
     return builder._generate_document(hf_example)
 
 
@@ -141,6 +148,38 @@ def test_builder(builder, dataset_variant):
     assert builder.document_type == BioRelDocument
 
 
-def test_document_to_example(document, hf_example):
-    hf_example_back = document_to_example(document)
+def test_document_to_example(generated_document, hf_example):
+    hf_example_back = document_to_example(generated_document)
     assert hf_example_back == hf_example
+
+
+@pytest.fixture(scope="module")
+def pie_dataset(split):
+    ds = load_pie_dataset(str(PIE_DATASET_PATH), split=split)
+    return ds
+
+
+@pytest.mark.slow
+def test_pie_dataset(pie_dataset, split):
+    assert pie_dataset is not None
+    assert len(pie_dataset) == SPLIT_SIZES[split]
+
+
+@pytest.fixture(scope="module")
+def pie_dataset_fast(split) -> IterableDataset:
+    return load_dataset(str(PIE_DATASET_PATH), split=split, streaming=True).take(STREAM_SIZE)
+
+
+def test_pie_dataset_fast(pie_dataset_fast):
+    assert pie_dataset_fast is not None
+
+
+@pytest.fixture(scope="module")
+def document(pie_dataset_fast) -> BioRelDocument:
+    return list(pie_dataset_fast)[EXAMPLE_INDEX]
+
+
+def test_document(document, generated_document):
+    assert document.text == generated_document.text
+    assert document.entities.resolve() == generated_document.entities.resolve()
+    assert document.relations.resolve() == generated_document.relations.resolve()
