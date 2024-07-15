@@ -292,6 +292,23 @@ class Dataset(datasets.Dataset, Sequence[D]):
         )
         return document_dataset
 
+    @classmethod
+    def from_documents(
+        cls,
+        documents: List[Document],
+        document_converters: Optional[DocumentConvertersType] = None,
+        **dataset_kwargs,
+    ) -> "Dataset":
+        if len(documents) == 0:
+            raise ValueError("No documents to create dataset from")
+        document_type = type(documents[0])
+        data = [doc.asdict() for doc in documents]
+        hf_dataset = datasets.Dataset.from_list(mapping=data, **dataset_kwargs)
+        dataset = cls.from_hf_dataset(
+            hf_dataset, document_type=document_type, document_converters=document_converters
+        )
+        return dataset
+
     def apply_hf_func(self, func, **kwargs) -> "Dataset":
         return Dataset.from_hf_dataset(
             func(self, **kwargs),
@@ -469,6 +486,15 @@ class IterableDataset(datasets.IterableDataset):
             **cls.get_base_kwargs(dataset),
         )
         return dataset
+
+    @classmethod
+    def from_documents(
+        cls,
+        documents: List[Document],
+        document_converters: Optional[DocumentConvertersType] = None,
+        **dataset_kwargs,
+    ) -> "Dataset":
+        raise NotImplementedError("from_documents is not implemented for IterableDataset")
 
     def __iter__(self):
         for example in iter(super().__iter__()):
