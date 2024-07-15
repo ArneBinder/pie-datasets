@@ -1,4 +1,5 @@
 import dataclasses
+import logging
 from typing import Any
 
 import datasets
@@ -10,6 +11,8 @@ from pytorch_ie.documents import (
 )
 
 from pie_datasets import ArrowBasedBuilder, GeneratorBasedBuilder
+
+logger = logging.getLogger(__name__)
 
 
 @dataclasses.dataclass(frozen=True)
@@ -59,6 +62,39 @@ def document_to_example(document):
     }
 
 
+def convert_to_text_document_with_labeled_spans_and_binary_relations(
+    document: BioRelDocument,
+) -> TextDocumentWithLabeledSpansAndBinaryRelations:
+    text_document = TextDocumentWithLabeledSpansAndBinaryRelations(text=document.text)
+    old2new_spans = {}
+    for entity in document.entities:  # in our case two entities (head and tail)
+        # create LabeledSpan and append (required for document type)
+        labeled_span = LabeledSpan(start=entity.start, end=entity.end, label="ENTITY")
+        text_document.labeled_spans.append(labeled_span)
+
+        # check if the labeled span text is the same as the entity name
+        if str(labeled_span) != entity.name:
+            logger.warning(
+                f"Expected labeled span text to be '{entity.name}', got '{labeled_span}'"
+            )
+
+        # Map the original entity to the new labeled span
+        old2new_spans[entity] = labeled_span
+
+    if len(document.relations) != 1:  # one relation between two entities
+        raise ValueError(f"Expected exactly one relation, got {len(document.relations)}")
+    old_rel = document.relations[0]
+
+    # create BinaryRelation and append (required for document type)
+    rel = BinaryRelation(
+        head=old2new_spans[old_rel.head],
+        tail=old2new_spans[old_rel.tail],
+        label=old_rel.label,
+    )
+    text_document.binary_relations.append(rel)
+    return text_document
+
+
 class BioRelConfig(datasets.BuilderConfig):
     """BuilderConfig for BioRel."""
 
@@ -81,10 +117,7 @@ class BioRel(ArrowBasedBuilder):
     ]
 
     DOCUMENT_CONVERTERS = {
-        TextDocumentWithLabeledSpansAndBinaryRelations: {
-            "entities": "labeled_spans",
-            "relations": "binary_relations",
-        }
+        TextDocumentWithLabeledSpansAndBinaryRelations: convert_to_text_document_with_labeled_spans_and_binary_relations
     }
 
     def _generate_document(self, example, **kwargs):

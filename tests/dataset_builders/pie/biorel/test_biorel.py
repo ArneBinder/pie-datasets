@@ -84,13 +84,13 @@ def test_hf_example(hf_example, split):
 
 
 def test_example_to_document(hf_example, split):
-    document = example_to_document(hf_example)
+    doc = example_to_document(hf_example)
     if split == "train":
-        assert document.entities.resolve() == [
+        assert doc.entities.resolve() == [
             ("C0032594", "polysaccharide", "polysaccharide"),
             ("C0007289", "carrageenin", "carrageenin"),
         ]
-        assert document.relations.resolve() == [
+        assert doc.relations.resolve() == [
             (
                 "NA",
                 (
@@ -100,11 +100,11 @@ def test_example_to_document(hf_example, split):
             )
         ]
     elif split == "validation":
-        assert document.entities.resolve() == [
+        assert doc.entities.resolve() == [
             ("C0005911", "weight changes", "weight changes"),
             ("C0005910", "weight", "weight"),
         ]
-        assert document.relations.resolve() == [
+        assert doc.relations.resolve() == [
             (
                 "NA",
                 (
@@ -114,11 +114,11 @@ def test_example_to_document(hf_example, split):
             )
         ]
     elif split == "test":
-        assert document.entities.resolve() == [
+        assert doc.entities.resolve() == [
             ("C0205753", "opioid peptide", "opioid peptide"),
             ("C0013355", "dynorphin", "dynorphin"),
         ]
-        assert document.relations.resolve() == [
+        assert doc.relations.resolve() == [
             (
                 "NA",
                 (
@@ -163,6 +163,10 @@ def pie_dataset(split):
 def test_pie_dataset(pie_dataset, split):
     assert pie_dataset is not None
     assert len(pie_dataset) == SPLIT_SIZES[split]
+    for doc in pie_dataset:
+        assert isinstance(doc, BioRelDocument)
+        # check that (de-)serialization works
+        doc.copy()
 
 
 @pytest.fixture(scope="module")
@@ -183,3 +187,25 @@ def test_document(document, generated_document):
     assert document.text == generated_document.text
     assert document.entities.resolve() == generated_document.entities.resolve()
     assert document.relations.resolve() == generated_document.relations.resolve()
+
+
+@pytest.fixture(scope="module", params=list(BUILDER_CLASS.DOCUMENT_CONVERTERS))
+def converted_document_type(request):
+    return request.param
+
+
+def test_dataset_with_converted_documents_fast(pie_dataset_fast, converted_document_type):
+    dataset_with_converted_documents = pie_dataset_fast.to_document_type(converted_document_type)
+    assert dataset_with_converted_documents is not None
+    # check first document
+    doc_converted = list(dataset_with_converted_documents)[0]
+    assert isinstance(doc_converted, converted_document_type)
+
+
+@pytest.mark.slow
+def test_dataset_with_converted_documents(pie_dataset, converted_document_type):
+    dataset_with_converted_documents = pie_dataset.to_document_type(converted_document_type)
+    assert dataset_with_converted_documents is not None
+    # check documents
+    for doc in dataset_with_converted_documents:
+        assert isinstance(doc, converted_document_type)
