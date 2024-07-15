@@ -5,6 +5,7 @@ from datasets import disable_caching, load_dataset
 from dataset_builders.pie.biorel.biorel import (
     BioRel,
     BioRelDocument,
+    convert_to_text_document_with_labeled_spans_and_binary_relations,
     document_to_example,
     example_to_document,
 )
@@ -194,13 +195,64 @@ def converted_document_type(request):
     return request.param
 
 
-def test_dataset_with_converted_documents_fast(pie_dataset_fast, converted_document_type):
-    dataset_with_converted_documents = pie_dataset_fast.to_document_type(converted_document_type)
-    assert dataset_with_converted_documents is not None
-    # check first document
-    doc_converted = list(dataset_with_converted_documents)[0]
-    assert isinstance(doc_converted, converted_document_type)
-    doc_converted.copy()
+def test_dataset_with_converted_documents_fast(document, converted_document_type, split):
+    converted_doc = convert_to_text_document_with_labeled_spans_and_binary_relations(document)
+    assert isinstance(converted_doc, converted_document_type)
+    converted_doc.copy()  # check that (de-)serialization works
+
+    if split == "test":
+        assert (
+            converted_doc.text
+            == "the opioid peptide dynorphin decreased somatic calcium-dependent action potential duration in a portion of mouse dorsal root ganglion ( drg ) neurons without altering resting membrane potential or conductance ."
+        )
+        assert converted_doc.labeled_spans.resolve() == [
+            ("ENTITY", "opioid peptide"),
+            ("ENTITY", "dynorphin"),
+        ]
+        assert converted_doc.binary_relations.resolve() == [
+            ("NA", (("ENTITY", "opioid peptide"), ("ENTITY", "dynorphin")))
+        ]
+        assert converted_doc.metadata == {
+            "entity_ids": ["C0205753", "C0013355"],
+            "entity_names": ["opioid peptide", "dynorphin"],
+        }
+
+    elif split == "train":
+        assert (
+            converted_doc.text
+            == "algal polysaccharide obtained from carrageenin protects 80 to 100 percent of chicken embryos against fatal infections with the lee strain of influenza virus ."
+        )
+        assert converted_doc.labeled_spans.resolve() == [
+            ("ENTITY", "polysaccharide"),
+            ("ENTITY", "carrageenin"),
+        ]
+        assert converted_doc.binary_relations.resolve() == [
+            ("NA", (("ENTITY", "polysaccharide"), ("ENTITY", "carrageenin")))
+        ]
+        assert converted_doc.metadata == {
+            "entity_ids": ["C0032594", "C0007289"],
+            "entity_names": ["polysaccharide", "carrageenin"],
+        }
+
+    elif split == "validation":
+        assert (
+            converted_doc.text
+            == "zeranol implants did not significantly affect marketing-transit weight changes , but increased ( p less than .05 ) daily weight gains at all time periods in both trials ."
+        )
+        assert converted_doc.labeled_spans.resolve() == [
+            ("ENTITY", "weight changes"),
+            ("ENTITY", "weight"),
+        ]
+        assert converted_doc.binary_relations.resolve() == [
+            ("NA", (("ENTITY", "weight changes"), ("ENTITY", "weight")))
+        ]
+        assert converted_doc.metadata == {
+            "entity_ids": ["C0005911", "C0005910"],
+            "entity_names": ["weight changes", "weight"],
+        }
+
+    else:
+        raise ValueError(f"Unknown split variant: {split}")
 
 
 @pytest.mark.slow
@@ -210,5 +262,4 @@ def test_dataset_with_converted_documents(pie_dataset, converted_document_type):
     # check documents
     for doc in dataset_with_converted_documents:
         assert isinstance(doc, converted_document_type)
-        # check that (de-)serialization works
-        doc.copy()
+        doc.copy()  # check that (de-)serialization works

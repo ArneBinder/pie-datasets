@@ -67,6 +67,9 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
 ) -> TextDocumentWithLabeledSpansAndBinaryRelations:
     text_document = TextDocumentWithLabeledSpansAndBinaryRelations(text=document.text)
     old2new_spans = {}
+    ids = []
+    names = []
+
     for entity in document.entities:  # in our case two entities (head and tail)
         # create LabeledSpan and append (required for document type)
         labeled_span = LabeledSpan(start=entity.start, end=entity.end, label="ENTITY")
@@ -81,6 +84,9 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
         # Map the original entity to the new labeled span
         old2new_spans[entity] = labeled_span
 
+        ids.append(entity.id)
+        names.append(entity.name)
+
     if len(document.relations) != 1:  # one relation between two entities
         raise ValueError(f"Expected exactly one relation, got {len(document.relations)}")
     old_rel = document.relations[0]
@@ -92,6 +98,9 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
         label=old_rel.label,
     )
     text_document.binary_relations.append(rel)
+    text_document.metadata["entity_ids"] = ids
+    text_document.metadata["entity_names"] = names
+
     return text_document
 
 
