@@ -102,7 +102,6 @@ class BioRelConfig(datasets.BuilderConfig):
 
 
 class BioRel(ArrowBasedBuilder):
-    # set the correct values for the following attributes
     DOCUMENT_TYPE = BioRelDocument
     BASE_DATASET_PATH = "DFKI-SLT/BioRel"
     BASE_DATASET_REVISION = "e4869c484c582cfbc7ead10d4d421bd4b275fa4e"
@@ -122,3 +121,6 @@ class BioRel(ArrowBasedBuilder):
 
     def _generate_document(self, example, **kwargs):
         return example_to_document(example)
+
+    def _generate_example(self, document: BioRelDocument, **kwargs):
+        return document_to_example(document)

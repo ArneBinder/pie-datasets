@@ -148,8 +148,8 @@ def test_builder(builder, dataset_variant):
     assert builder.document_type == BioRelDocument
 
 
-def test_document_to_example(generated_document, hf_example):
-    hf_example_back = document_to_example(generated_document)
+def test_document_to_example(generated_document, builder, hf_example):
+    hf_example_back = builder._generate_example(generated_document)
     assert hf_example_back == hf_example
 
 
@@ -200,6 +200,7 @@ def test_dataset_with_converted_documents_fast(pie_dataset_fast, converted_docum
     # check first document
     doc_converted = list(dataset_with_converted_documents)[0]
     assert isinstance(doc_converted, converted_document_type)
+    doc_converted.copy()
 
 
 @pytest.mark.slow
@@ -209,3 +210,5 @@ def test_dataset_with_converted_documents(pie_dataset, converted_document_type):
     # check documents
     for doc in dataset_with_converted_documents:
         assert isinstance(doc, converted_document_type)
+        # check that (de-)serialization works
+        doc.copy()
