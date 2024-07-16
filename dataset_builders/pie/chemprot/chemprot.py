@@ -34,7 +34,7 @@ def example_to_chemprot_doc(example) -> ChemprotDocument:
         metadata=metadata,
     )
 
-    for idx in range(len(example["entities"]['id'])):
+    for idx in range(len(example["entities"]["id"])):
         # entities have "text" field: already included through the offset?
         labeled_span = LabeledSpan(
             start=example["entities"]["offsets"][idx][0],
@@ -100,6 +100,37 @@ def example_to_chemprot_bigbio_doc(example) -> ChemprotBigbioDocument:
     return doc
 
 
+def chemprot_doc_to_example(doc: ChemprotDocument) -> Dict[str, Any]:
+    # still in the process of being implemented
+    entities = {
+        "id": [],
+        "offsets": [],
+        "text": [],
+        "type": [],
+    }
+    relations = {
+        "arg1": [],
+        "arg2": [],
+        "type": [],
+    }
+
+    entities["id"] = doc.metadata["entity_ids"]
+    for entity in doc.entities:
+        entities["offsets"].append([entity.start, entity.end])
+        entities["text"].append(doc.text[entity.start : entity.end])
+        entities["type"].append(entity.label)
+
+    for relation in doc.relations:
+        # relations["arg1"].append(relation.head.id)
+        # relations["arg2"].append(relation.tail.id)
+        relations["type"].append(relation.label)
+
+    return {
+        "text": doc.text,
+        "pmid": doc.id,
+        "entities": entities,
+        "relations": relations,
+    }
 
 
 class ChemprotConfig(datasets.BuilderConfig):
@@ -107,14 +138,14 @@ class ChemprotConfig(datasets.BuilderConfig):
 
 
 class Chemprot(GeneratorBasedBuilder):
-    DOCUMENT_TYPES = {
+    DOCUMENT_TYPES = {  # Note ChemprotDocument is used twice
         "chemprot_full_source": ChemprotDocument,
         "chemprot_bigbio_kb": ChemprotBigbioDocument,
         "chemprot_shared_task_eval_source": ChemprotDocument,
     }
 
     BASE_DATASET_PATH = "bigbio/chemprot"
-    BASE_DATASET_REVISION = "xyz"  # TODO
+    BASE_DATASET_REVISION = "86afccf3ccc614f817a7fad0692bf62fbc5ce469"
 
     BUILDER_CONFIGS = [
         ChemprotConfig(
@@ -135,7 +166,10 @@ class Chemprot(GeneratorBasedBuilder):
     ]
 
     def _generate_document(self, example, **kwargs):
-        pass
+        if self.config.name == "chemprot_bigbio_kb":
+            return example_to_chemprot_bigbio_doc(example)
+        else:
+            return example_to_chemprot_doc(example)
 
     def _generate_example(self, document: Document, **kwargs) -> Dict[str, Any]:
         pass

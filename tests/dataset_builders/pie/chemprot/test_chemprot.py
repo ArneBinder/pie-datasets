@@ -1,8 +1,13 @@
 import datasets
 import pytest
 
-from dataset_builders.pie.chemprot.chemprot import Chemprot, example_to_chemprot_doc, example_to_chemprot_bigbio_doc, \
-    ChemprotBigbioDocument, ChemprotDocument
+from dataset_builders.pie.chemprot.chemprot import (
+    Chemprot,
+    ChemprotBigbioDocument,
+    ChemprotDocument,
+    example_to_chemprot_bigbio_doc,
+    example_to_chemprot_doc,
+)
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 datasets.disable_caching()
@@ -114,27 +119,66 @@ def test_hf_example(hf_example, dataset_variant):
 
 def test_example_to_document(hf_example, dataset_variant):
     assert hf_example is not None
-    if dataset_variant == "chemprot_full_source" or dataset_variant == "chemprot_shared_task_eval_source":
+    if (
+        dataset_variant == "chemprot_full_source"
+        or dataset_variant == "chemprot_shared_task_eval_source"
+    ):
         doc = example_to_chemprot_doc(hf_example)
         assert isinstance(doc, ChemprotDocument)
         assert doc.text == hf_example["text"]
         assert len(doc.entities) == 5
         assert len(doc.relations) == 0
-        assert doc.entities.resolve() == [('CHEMICAL', 'methotrexate'), ('GENE-N', 'tumor necrosis factor'), ('GENE-Y', 'CD80'), ('GENE-Y', 'CD86'), ('GENE-N', 'CD28 receptor')]
+        assert doc.entities.resolve() == [
+            ("CHEMICAL", "methotrexate"),
+            ("GENE-N", "tumor necrosis factor"),
+            ("GENE-Y", "CD80"),
+            ("GENE-Y", "CD86"),
+            ("GENE-N", "CD28 receptor"),
+        ]
         assert doc.relations.resolve() == []
 
     elif dataset_variant == "chemprot_bigbio_kb":
         doc = example_to_chemprot_bigbio_doc(hf_example)
         assert isinstance(doc, ChemprotBigbioDocument)
-        assert doc.passages.resolve() == [('title and abstract', 'Selective costimulation modulators: a novel approach for the treatment of rheumatoid arthritis.\nT cells have a central role in the orchestration of the immune pathways that contribute to the inflammation and joint destruction characteristic of rheumatoid arthritis (RA). The requirement for a dual signal for T-cell activation and the construction of a fusion protein that prevents engagement of the costimulatory molecules required for this activation has led to a new approach to RA therapy. This approach is mechanistically distinct from other currently used therapies; it targets events early rather than late in the immune cascade, and it results in immunomodulation rather than complete immunosuppression. The fusion protein abatacept is a selective costimulation modulator that avidly binds to the CD80/CD86 ligands on an antigen-presenting cell, resulting in the inability of these ligands to engage the CD28 receptor on the T cell. Abatacept dose-dependently reduces T-cell proliferation, serum concentrations of acute-phase reactants, and other markers of inflammation, including the production of rheumatoid factor by B cells. Recent studies have provided consistent evidence that treatment with abatacept results in a rapid onset of efficacy that is maintained over the course of treatment in patients with inadequate response to methotrexate and anti-tumor necrosis factor therapies. This efficacy includes patient-centered outcomes and radiographic measurement of disease progression. Abatacept has also demonstrated a very favorable safety profile to date. This article reviews the rationale for this therapeutic approach and highlights some of the recent studies that demonstrate the benefits obtained by using abatacept. This clinical experience indicates that abatacept is a significant addition to the therapeutic armamentarium for the management of patients with RA.')]
+        assert doc.passages.resolve() == [
+            (
+                "title and abstract",
+                "Selective costimulation modulators: a novel approach for the treatment of rheumatoid arthritis.\nT cells have a central role in the orchestration of the immune pathways that contribute to the inflammation and joint destruction characteristic of rheumatoid arthritis (RA). The requirement for a dual signal for T-cell activation and the construction of a fusion protein that prevents engagement of the costimulatory molecules required for this activation has led to a new approach to RA therapy. This approach is mechanistically distinct from other currently used therapies; it targets events early rather than late in the immune cascade, and it results in immunomodulation rather than complete immunosuppression. The fusion protein abatacept is a selective costimulation modulator that avidly binds to the CD80/CD86 ligands on an antigen-presenting cell, resulting in the inability of these ligands to engage the CD28 receptor on the T cell. Abatacept dose-dependently reduces T-cell proliferation, serum concentrations of acute-phase reactants, and other markers of inflammation, including the production of rheumatoid factor by B cells. Recent studies have provided consistent evidence that treatment with abatacept results in a rapid onset of efficacy that is maintained over the course of treatment in patients with inadequate response to methotrexate and anti-tumor necrosis factor therapies. This efficacy includes patient-centered outcomes and radiographic measurement of disease progression. Abatacept has also demonstrated a very favorable safety profile to date. This article reviews the rationale for this therapeutic approach and highlights some of the recent studies that demonstrate the benefits obtained by using abatacept. This clinical experience indicates that abatacept is a significant addition to the therapeutic armamentarium for the management of patients with RA.",
+            )
+        ]
         assert len(doc.entities) == 5
         assert len(doc.relations) == 0
-        assert doc.entities.resolve() == [('CHEMICAL', 'methotrexate'), ('GENE-N', 'tumor necrosis factor'), ('GENE-Y', 'CD80'), ('GENE-Y', 'CD86'), ('GENE-N', 'CD28 receptor')]
+        assert doc.entities.resolve() == [
+            ("CHEMICAL", "methotrexate"),
+            ("GENE-N", "tumor necrosis factor"),
+            ("GENE-Y", "CD80"),
+            ("GENE-Y", "CD86"),
+            ("GENE-N", "CD28 receptor"),
+        ]
         assert doc.relations.resolve() == []
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
 
+@pytest.fixture(scope="module")
+def builder(dataset_variant) -> BUILDER_CLASS:
+    return BUILDER_CLASS(config_name=dataset_variant)
 
 
+@pytest.fixture(scope="module")
+def generated_document(builder, hf_example):
+    return builder._generate_document(hf_example)
 
+
+def test_builder(builder, dataset_variant):
+    assert builder is not None
+    assert builder.config_id == dataset_variant
+    assert builder.dataset_name == "chemprot"
+    assert (
+        builder.document_type == ChemprotDocument
+        or builder.document_type == ChemprotBigbioDocument
+    )
+
+
+def test_document_to_example(generated_document, builder, hf_example):
+    pass
