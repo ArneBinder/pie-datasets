@@ -11,9 +11,7 @@ from pie_datasets import GeneratorBasedBuilder
 
 @dataclass
 class ChemprotDocument(TextBasedDocument):
-    # check if correct
-    title: Optional[str] = None
-    abstract: Optional[str] = None
+    # used by chemprot_full_source and chemprot_shared_task_eval_source
     entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
     relations: AnnotationLayer[BinaryRelation] = annotation_field(target="entities")
 
@@ -26,10 +24,82 @@ class ChemprotBigbioDocument(TextBasedDocument):
     relations: AnnotationLayer[BinaryRelation] = annotation_field(target="entities")
 
 
-@dataclass
-class ChemprotTaskEvalDocument(TextBasedDocument):
-    # TODO
-    pass
+def example_to_chemprot_doc(example) -> ChemprotDocument:
+    metadata = {"entity_ids": []}
+    id_to_labeled_span: Dict[str, LabeledSpan] = {}
+
+    doc = ChemprotDocument(
+        text=example["text"],
+        id=example["pmid"],
+        metadata=metadata,
+    )
+
+    for idx in range(len(example["entities"]['id'])):
+        # entities have "text" field: already included through the offset?
+        labeled_span = LabeledSpan(
+            start=example["entities"]["offsets"][idx][0],
+            end=example["entities"]["offsets"][idx][1],
+            label=example["entities"]["type"][idx],
+        )
+        doc.entities.append(labeled_span)
+        doc.metadata["entity_ids"].append(example["entities"]["id"][idx])
+        id_to_labeled_span[example["entities"]["id"][idx]] = labeled_span
+
+    for idx in range(len(example["relations"]["type"])):
+        doc.relations.append(
+            BinaryRelation(
+                head=id_to_labeled_span[example["relations"]["arg1"][idx]],
+                tail=id_to_labeled_span[example["relations"]["arg2"][idx]],
+                label=example["relations"]["type"][idx],
+            )
+        )
+
+    return doc
+
+
+def example_to_chemprot_bigbio_doc(example) -> ChemprotBigbioDocument:
+    text = " ".join([" ".join(passage["text"]) for passage in example["passages"]])
+    metadata = {"entity_ids": []}
+    id_to_labeled_span: Dict[str, LabeledSpan] = {}
+
+    doc = ChemprotBigbioDocument(
+        text=text,
+        id=example["document_id"],
+        metadata=metadata,
+    )
+
+    for passage in example["passages"]:
+        doc.passages.append(
+            LabeledSpan(
+                start=passage["offsets"][0][0],
+                end=passage["offsets"][0][1],
+                label=passage["type"],
+            )
+        )
+
+    for span in example["entities"]:
+        # entities have "text" field: already included through the offset?
+        labeled_span = LabeledSpan(
+            start=span["offsets"][0][0],
+            end=span["offsets"][0][1],
+            label=span["type"],
+        )
+        doc.entities.append(labeled_span)
+        doc.metadata["entity_ids"].append(span["id"])
+        id_to_labeled_span[span["id"]] = labeled_span
+
+    for relation in example["relations"]:
+        doc.relations.append(
+            BinaryRelation(
+                head=id_to_labeled_span[relation["arg1_id"]],
+                tail=id_to_labeled_span[relation["arg2_id"]],
+                label=relation["type"],
+            )
+        )
+
+    return doc
+
+
 
 
 class ChemprotConfig(datasets.BuilderConfig):
@@ -40,7 +110,7 @@ class Chemprot(GeneratorBasedBuilder):
     DOCUMENT_TYPES = {
         "chemprot_full_source": ChemprotDocument,
         "chemprot_bigbio_kb": ChemprotBigbioDocument,
-        "chemprot_shared_task_eval_source": ChemprotTaskEvalDocument,
+        "chemprot_shared_task_eval_source": ChemprotDocument,
     }
 
     BASE_DATASET_PATH = "bigbio/chemprot"
