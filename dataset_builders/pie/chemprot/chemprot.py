@@ -37,7 +37,6 @@ class ChemprotConfig(datasets.BuilderConfig):
 
 
 class Chemprot(GeneratorBasedBuilder):
-
     DOCUMENT_TYPES = {
         "chemprot_full_source": ChemprotDocument,
         "chemprot_bigbio_kb": ChemprotBigbioDocument,
