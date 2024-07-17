@@ -76,12 +76,6 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
         labeled_span = LabeledSpan(start=entity.start, end=entity.end, label="ENTITY")
         text_document.labeled_spans.append(labeled_span)
 
-        # check if the labeled span text is the same as the entity name
-        if str(labeled_span) != entity.name:
-            logger.warning(
-                f"Expected labeled span text to be '{entity.name}', got '{labeled_span}'"
-            )
-
         # Map the original entity to the new labeled span
         old2new_spans[entity] = labeled_span
 
