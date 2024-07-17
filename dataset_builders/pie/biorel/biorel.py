@@ -13,6 +13,7 @@ from pytorch_ie.documents import (
 from pie_datasets import ArrowBasedBuilder, GeneratorBasedBuilder
 
 logger = logging.getLogger(__name__)
+warning_counter = 0
 
 
 @dataclasses.dataclass(frozen=True)
@@ -30,7 +31,7 @@ class BioRelDocument(TextBasedDocument):
     relations: AnnotationLayer[BinaryRelation] = annotation_field(target="entities")
 
 
-def example_to_document(example):
+def example_to_document(example) -> BioRelDocument:
     document = BioRelDocument(text=example["text"])
     head = SpanWithIdAndName(
         id=example["h"]["id"],
@@ -71,7 +72,7 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
     names = []
 
     for entity in document.entities:  # in our case two entities (head and tail)
-        # create LabeledSpan and append (required for document type)
+        # create LabeledSpan and append
         labeled_span = LabeledSpan(start=entity.start, end=entity.end, label="ENTITY")
         text_document.labeled_spans.append(labeled_span)
 
@@ -91,7 +92,7 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
         raise ValueError(f"Expected exactly one relation, got {len(document.relations)}")
     old_rel = document.relations[0]
 
-    # create BinaryRelation and append (required for document type)
+    # create BinaryRelation and append
     rel = BinaryRelation(
         head=old2new_spans[old_rel.head],
         tail=old2new_spans[old_rel.tail],
@@ -104,12 +105,6 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
     return text_document
 
 
-class BioRelConfig(datasets.BuilderConfig):
-    """BuilderConfig for BioRel."""
-
-    pass
-
-
 class BioRel(ArrowBasedBuilder):
     DOCUMENT_TYPE = BioRelDocument
     BASE_DATASET_PATH = "DFKI-SLT/BioRel"
@@ -117,8 +112,7 @@ class BioRel(ArrowBasedBuilder):
     # BASE_CONFIG_KWARGS_DICT = None
 
     BUILDER_CONFIGS = [
-        BioRelConfig(
-            name="biorel",
+        datasets.BuilderConfig(
             version=datasets.Version("1.0.0"),
             description="BioRel dataset",
         )

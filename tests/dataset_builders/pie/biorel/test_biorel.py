@@ -1,6 +1,7 @@
 import datasets
 import pytest
 from datasets import disable_caching, load_dataset
+from pytorch_ie import Document
 
 from dataset_builders.pie.biorel.biorel import (
     BioRel,
@@ -40,9 +41,8 @@ def split(request):
     return request.param
 
 
-def test_hf_dataset(hf_dataset, dataset_variant):
+def test_hf_dataset(hf_dataset):
     assert hf_dataset is not None
-    assert dataset_variant == "biorel"
     assert set(hf_dataset) == SPLIT_NAMES
     split_sizes = {split_name: len(ds) for split_name, ds in hf_dataset.items()}
     assert split_sizes == SPLIT_SIZES
@@ -142,9 +142,8 @@ def generated_document(builder, hf_example):
     return builder._generate_document(hf_example)
 
 
-def test_builder(builder, dataset_variant):
+def test_builder(builder):
     assert builder is not None
-    assert builder.config_id == dataset_variant
     assert builder.dataset_name == DATASET_NAME
     assert builder.document_type == BioRelDocument
 
@@ -165,7 +164,8 @@ def test_pie_dataset(pie_dataset, split):
     assert pie_dataset is not None
     assert len(pie_dataset) == SPLIT_SIZES[split]
     for doc in pie_dataset:
-        assert isinstance(doc, BioRelDocument)
+        # cannot assert real document type "BioRelDocument" (look also test_imdb.py)
+        assert isinstance(doc, Document)
         # check that (de-)serialization works
         doc.copy()
 
