@@ -4,7 +4,13 @@ from typing import Any, Dict
 import datasets
 from pytorch_ie import Document
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
-from pytorch_ie.documents import AnnotationLayer, TextBasedDocument, annotation_field
+from pytorch_ie.documents import (
+    AnnotationLayer,
+    TextBasedDocument,
+    TextDocumentWithLabeledSpansAndBinaryRelations,
+    TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+    annotation_field,
+)
 
 from pie_datasets import GeneratorBasedBuilder
 
@@ -35,7 +41,6 @@ def example_to_chemprot_doc(example) -> ChemprotDocument:
     )
 
     for idx in range(len(example["entities"]["id"])):
-        # entities have "text" field: already included through the offset?
         labeled_span = LabeledSpan(
             start=example["entities"]["offsets"][idx][0],
             end=example["entities"]["offsets"][idx][1],
@@ -78,7 +83,6 @@ def example_to_chemprot_bigbio_doc(example) -> ChemprotBigbioDocument:
         )
 
     for span in example["entities"]:
-        # entities have "text" field: already included through the offset?
         labeled_span = LabeledSpan(
             start=span["offsets"][0][0],
             end=span["offsets"][0][1],
@@ -102,7 +106,6 @@ def example_to_chemprot_bigbio_doc(example) -> ChemprotBigbioDocument:
 
 
 def chemprot_doc_to_example(doc: ChemprotDocument) -> Dict[str, Any]:
-    # still in the process of being implemented
     entities = {
         "id": [],
         "offsets": [],
@@ -144,7 +147,6 @@ def chemprot_doc_to_example(doc: ChemprotDocument) -> Dict[str, Any]:
 
 
 def chemprot_bigbio_doc_to_example(doc: ChemprotBigbioDocument) -> Dict[str, Any]:
-    # still in the process of being implemented
     id = int(doc.metadata["id"])
     passages = []
     entities = []
@@ -238,6 +240,29 @@ class Chemprot(GeneratorBasedBuilder):
         ),
     ]
 
+    @property
+    def document_converters(self):
+        if (
+            self.config.name == "chemprot_full_source"
+            or self.config.name == "chemprot_shared_task_eval_source"
+        ):
+            return {
+                TextDocumentWithLabeledSpansAndBinaryRelations: {
+                    "entities": "labeled_spans",
+                    "relations": "binary_relations",
+                }
+            }
+        elif self.config.name == "chemprot_bigbio_kb":
+            return {
+                TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions: {
+                    "passages": "labeled_partitions",
+                    "entities": "labeled_spans",
+                    "relations": "binary_relations",
+                }
+            }
+        else:
+            raise ValueError(f"Unknown dataset name: {self.config.name}")
+
     def _generate_document(self, example, **kwargs):
         if self.config.name == "chemprot_bigbio_kb":
             return example_to_chemprot_bigbio_doc(example)
@@ -246,8 +271,8 @@ class Chemprot(GeneratorBasedBuilder):
 
     def _generate_example(self, document: Document, **kwargs) -> Dict[str, Any]:
         if self.config.name == "chemprot_bigbio_kb":
-            assert isinstance(document, ChemprotBigbioDocument)  # might need to adjust
+            assert isinstance(document, ChemprotBigbioDocument)
             return chemprot_bigbio_doc_to_example(document)
         else:
-            assert isinstance(document, ChemprotDocument)  # might need to adjust
+            assert isinstance(document, ChemprotDocument)
             return chemprot_doc_to_example(document)
