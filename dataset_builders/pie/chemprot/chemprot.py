@@ -1,5 +1,5 @@
 from dataclasses import dataclass
-from typing import Any, Dict, Optional, Union
+from typing import Any, Dict
 
 import datasets
 from pytorch_ie import Document
@@ -59,7 +59,7 @@ def example_to_chemprot_doc(example) -> ChemprotDocument:
 
 def example_to_chemprot_bigbio_doc(example) -> ChemprotBigbioDocument:
     text = " ".join([" ".join(passage["text"]) for passage in example["passages"]])
-    metadata = {"entity_ids": []}
+    metadata = {"id": example["id"], "entity_ids": []}
     id_to_labeled_span: Dict[str, LabeledSpan] = {}
 
     doc = ChemprotBigbioDocument(
@@ -133,6 +133,57 @@ def chemprot_doc_to_example(doc: ChemprotDocument) -> Dict[str, Any]:
     }
 
 
+def chemprot_bigbio_doc_to_example(doc: ChemprotBigbioDocument) -> Dict[str, Any]:
+    # still in the process of being implemented
+    id = int(doc.metadata["id"])
+    passages = []
+    entities = []
+    relations = []
+
+    for passage in doc.passages:
+        id += 1
+        passages.append(
+            {
+                "id": str(id),
+                "offsets": [[passage.start, passage.end]],
+                "text": [doc.text[passage.start : passage.end]],
+                "type": passage.label,
+            }
+        )
+
+    for entity in doc.entities:
+        id += 1
+        entities.append(
+            {
+                "id": str(id),
+                "normalized": [],
+                "offsets": [[entity.start, entity.end]],
+                "text": [doc.text[entity.start : entity.end]],
+                "type": entity.label,
+            }
+        )
+
+    for relation in doc.relations:
+        relations.append(
+            {
+                # still missing: mapping from entity to entity id needed
+                # "arg1_id": relation.head.id,
+                # "arg2_id": relation.tail.id,
+                "type": relation.label,
+            }
+        )
+
+    return {
+        "id": doc.metadata["id"],
+        "document_id": doc.id,
+        "passages": passages,
+        "entities": entities,
+        "events": [],
+        "coreferences": [],
+        "relations": relations,
+    }
+
+
 class ChemprotConfig(datasets.BuilderConfig):
     pass
 
@@ -172,4 +223,9 @@ class Chemprot(GeneratorBasedBuilder):
             return example_to_chemprot_doc(example)
 
     def _generate_example(self, document: Document, **kwargs) -> Dict[str, Any]:
-        pass
+        if self.config.name == "chemprot_bigbio_kb":
+            assert isinstance(document, ChemprotBigbioDocument)  # might need to adjust
+            return chemprot_bigbio_doc_to_example(document)
+        else:
+            assert isinstance(document, ChemprotDocument)  # might need to adjust
+            return chemprot_doc_to_example(document)

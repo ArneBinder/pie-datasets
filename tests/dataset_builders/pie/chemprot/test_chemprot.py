@@ -1,3 +1,5 @@
+from typing import Union
+
 import datasets
 import pytest
 
@@ -8,6 +10,7 @@ from dataset_builders.pie.chemprot.chemprot import (
     example_to_chemprot_bigbio_doc,
     example_to_chemprot_doc,
 )
+from pie_datasets import load_dataset as load_pie_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 datasets.disable_caching()
@@ -166,7 +169,7 @@ def builder(dataset_variant) -> BUILDER_CLASS:
 
 
 @pytest.fixture(scope="module")
-def generated_document(builder, hf_example):
+def generated_document(builder, hf_example) -> Union[ChemprotDocument, ChemprotBigbioDocument]:
     return builder._generate_document(hf_example)
 
 
@@ -181,4 +184,20 @@ def test_builder(builder, dataset_variant):
 
 
 def test_document_to_example(generated_document, builder, hf_example):
+    hf_example_back = builder._generate_example(generated_document)
+    assert hf_example_back == hf_example
+
+
+@pytest.fixture(scope="module")
+def pie_dataset(dataset_variant):
+    ds = load_pie_dataset(str(PIE_DATASET_PATH), name=dataset_variant)
+    return ds
+
+
+# might be slow
+def test_pie_dataset(pie_dataset):
+    pass
+
+
+def test_document_converters():
     pass
