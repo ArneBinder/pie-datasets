@@ -109,7 +109,6 @@ class BioRel(ArrowBasedBuilder):
     DOCUMENT_TYPE = BioRelDocument
     BASE_DATASET_PATH = "DFKI-SLT/BioRel"
     BASE_DATASET_REVISION = "e4869c484c582cfbc7ead10d4d421bd4b275fa4e"
-    # BASE_CONFIG_KWARGS_DICT = None
 
     BUILDER_CONFIGS = [
         datasets.BuilderConfig(
