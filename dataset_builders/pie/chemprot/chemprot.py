@@ -59,7 +59,7 @@ def example_to_chemprot_doc(example) -> ChemprotDocument:
 
 def example_to_chemprot_bigbio_doc(example) -> ChemprotBigbioDocument:
     text = " ".join([" ".join(passage["text"]) for passage in example["passages"]])
-    metadata = {"id": example["id"], "entity_ids": []}
+    metadata = {"id": example["id"], "entity_ids": [], "relation_ids": []}
     id_to_labeled_span: Dict[str, LabeledSpan] = {}
 
     doc = ChemprotBigbioDocument(
@@ -96,6 +96,7 @@ def example_to_chemprot_bigbio_doc(example) -> ChemprotBigbioDocument:
                 label=relation["type"],
             )
         )
+        doc.metadata["relation_ids"].append([relation["arg1_id"], relation["arg2_id"]])
 
     return doc
 
@@ -114,15 +115,24 @@ def chemprot_doc_to_example(doc: ChemprotDocument) -> Dict[str, Any]:
         "type": [],
     }
 
-    entities["id"] = doc.metadata["entity_ids"]
-    for entity in doc.entities:
+    entity_id2entity = {
+        ent_id: entity for ent_id, entity in zip(doc.metadata["entity_ids"], doc.entities)
+    }
+
+    for entity_id, entity in zip(doc.metadata["entity_ids"], doc.entities):
+        entities["id"].append(entity_id)
         entities["offsets"].append([entity.start, entity.end])
         entities["text"].append(doc.text[entity.start : entity.end])
         entities["type"].append(entity.label)
 
+        if entity in entity_id2entity:
+            raise ValueError("Entity already exists in entity_id2entity")
+
+        entity_id2entity[entity] = entity_id
+
     for relation in doc.relations:
-        # relations["arg1"].append(relation.head.id)
-        # relations["arg2"].append(relation.tail.id)
+        relations["arg1"].append(entity_id2entity[relation.head])
+        relations["arg2"].append(entity_id2entity[relation.tail])
         relations["type"].append(relation.label)
 
     return {
@@ -140,6 +150,10 @@ def chemprot_bigbio_doc_to_example(doc: ChemprotBigbioDocument) -> Dict[str, Any
     entities = []
     relations = []
 
+    entity_id2entity = {
+        ent_id: entity for ent_id, entity in zip(doc.metadata["entity_ids"], doc.entities)
+    }
+
     for passage in doc.passages:
         id += 1
         passages.append(
@@ -151,25 +165,33 @@ def chemprot_bigbio_doc_to_example(doc: ChemprotBigbioDocument) -> Dict[str, Any
             }
         )
 
-    for entity in doc.entities:
+    entity2entity_id = dict()
+
+    for entity_id, entity in zip(doc.metadata["entity_ids"], doc.entities):
         id += 1
         entities.append(
             {
-                "id": str(id),
+                "id": entity_id,  # entity_id = str(id)
                 "normalized": [],
                 "offsets": [[entity.start, entity.end]],
                 "text": [doc.text[entity.start : entity.end]],
                 "type": entity.label,
             }
         )
+        if entity in entity_id2entity:
+            raise ValueError("Entity already exists in entity_id2entity")
+
+        entity2entity_id[entity] = entity_id
 
     for relation in doc.relations:
+        id += 1
         relations.append(
             {
-                # still missing: mapping from entity to entity id needed
-                # "arg1_id": relation.head.id,
-                # "arg2_id": relation.tail.id,
+                "id": str(id),  # save in metadata?
+                "arg1_id": entity2entity_id[relation.head],
+                "arg2_id": entity2entity_id[relation.tail],
                 "type": relation.label,
+                "normalized": [],
             }
         )
 

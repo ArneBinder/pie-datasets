@@ -2,6 +2,7 @@ from typing import Union
 
 import datasets
 import pytest
+from pytorch_ie import Document
 
 from dataset_builders.pie.chemprot.chemprot import (
     Chemprot,
@@ -1220,9 +1221,27 @@ def pie_dataset(dataset_variant):
     return ds
 
 
-# might be slow
-def test_pie_dataset(pie_dataset):
-    pass
+def test_pie_dataset(pie_dataset, dataset_variant):
+    assert pie_dataset is not None
+    assert pie_dataset.num_rows == SPLIT_SIZES
+    for split in pie_dataset.data:
+        for doc in pie_dataset[split]:
+            assert isinstance(doc, Document)
+
+            if (
+                dataset_variant == "chemprot_full_source"
+                or dataset_variant == "chemprot_shared_task_eval_source"
+            ):
+                cast = doc.as_type(ChemprotDocument)
+                assert isinstance(cast, ChemprotDocument)
+            elif dataset_variant == "chemprot_bigbio_kb":
+                cast = doc.as_type(ChemprotBigbioDocument)
+                assert isinstance(cast, ChemprotBigbioDocument)
+            else:
+                raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+            # test deserialization
+            doc.copy()
 
 
 def test_document_converters():
