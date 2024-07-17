@@ -24,7 +24,6 @@ class ChemprotDocument(TextBasedDocument):
 
 @dataclass
 class ChemprotBigbioDocument(TextBasedDocument):
-    # check if correct
     passages: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
     entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
     relations: AnnotationLayer[BinaryRelation] = annotation_field(target="entities")
@@ -208,10 +207,6 @@ def chemprot_bigbio_doc_to_example(doc: ChemprotBigbioDocument) -> Dict[str, Any
     }
 
 
-class ChemprotConfig(datasets.BuilderConfig):
-    pass
-
-
 class Chemprot(GeneratorBasedBuilder):
     DOCUMENT_TYPES = {  # Note ChemprotDocument is used twice
         "chemprot_full_source": ChemprotDocument,
@@ -223,17 +218,17 @@ class Chemprot(GeneratorBasedBuilder):
     BASE_DATASET_REVISION = "86afccf3ccc614f817a7fad0692bf62fbc5ce469"
 
     BUILDER_CONFIGS = [
-        ChemprotConfig(
+        datasets.BuilderConfig(
             name="chemprot_full_source",
             version=datasets.Version("1.0.0"),
             description="ChemProt full source version",
         ),
-        ChemprotConfig(
+        datasets.BuilderConfig(
             name="chemprot_bigbio_kb",
             version=datasets.Version("1.0.0"),
             description="ChemProt BigBio kb version",
         ),
-        ChemprotConfig(
+        datasets.BuilderConfig(
             name="chemprot_shared_task_eval_source",
             version=datasets.Version("1.0.0"),
             description="ChemProt shared task eval source version",
