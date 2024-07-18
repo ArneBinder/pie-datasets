@@ -16,6 +16,27 @@ class SpanWithIdAndName(Span):
 
 
 @dataclasses.dataclass
-class BioRelDocument(TextBasedDocument):
+class TbgaDocument(TextBasedDocument):
     entities: AnnotationLayer[SpanWithIdAndName] = annotation_field(target="text")
     relations: AnnotationLayer[BinaryRelation] = annotation_field(target="entities")
+
+
+def example_to_document(example) -> TbgaDocument:
+    document = TbgaDocument(text=example["text"])
+    head = SpanWithIdAndName(
+        id=example["h"]["id"],
+        name=example["h"]["name"],
+        start=example["h"]["pos"][0],
+        end=example["h"]["pos"][1],
+    )
+    tail = SpanWithIdAndName(
+        id=example["t"]["id"],
+        name=example["t"]["name"],
+        start=example["t"]["pos"][0],
+        end=example["t"]["pos"][1],
+    )
+    document.entities.extend([head, tail])
+
+    relation = BinaryRelation(head=head, tail=tail, label=example["relation"])
+    document.relations.append(relation)
+    return document
