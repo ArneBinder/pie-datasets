@@ -1,15 +1,19 @@
 import pytest
 from datasets import disable_caching, load_dataset
+from pytorch_ie import Document
 
-from dataset_builders.pie.tbga.tbga import example_to_document
+from dataset_builders.pie.tbga.tbga import Tbga, TbgaDocument, example_to_document
+from pie_datasets import IterableDataset
+from pie_datasets import load_dataset as load_pie_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 DATASET_NAME = "tbga"
-
-HF_DATASET_PATH = "DFKI-SLT/tbga"
+BUILDER_CLASS = Tbga
+HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 SPLIT_NAMES = {"test", "train", "validation"}
 SPLIT_SIZES = {"test": 20516, "train": 178264, "validation": 20193}
+
 
 disable_caching()
 
@@ -69,16 +73,91 @@ def test_hf_example(hf_example, split):
 def test_example_to_document(hf_example, split):
     doc = example_to_document(hf_example)
     if split == "test":
-        assert doc.entities.resolve() == [(50940, 'PDE11A', ''), ('C0006826', 'Malignant Neoplasms', '')]
-        assert doc.relations.resolve() == [('NA', ((50940, 'PDE11A', ''), ('C0006826', 'Malignant Neoplasms', '')))]
+        assert doc.entities.resolve() == [
+            (50940, "PDE11A", ""),
+            ("C0006826", "Malignant Neoplasms", ""),
+        ]
+        assert doc.relations.resolve() == [
+            ("NA", ((50940, "PDE11A", ""), ("C0006826", "Malignant Neoplasms", "")))
+        ]
 
     elif split == "train":
-        assert doc.entities.resolve() == [(6347, 'CCL2', 'monocyte chemoattractant protein'), ('C0231221', 'Asymptomatic', '')]
-        assert doc.relations.resolve() == [('NA', ((6347, 'CCL2', 'monocyte chemoattractant protein'), ('C0231221', 'Asymptomatic', '')))]
+        assert doc.entities.resolve() == [
+            (6347, "CCL2", "monocyte chemoattractant protein"),
+            ("C0231221", "Asymptomatic", ""),
+        ]
+        assert doc.relations.resolve() == [
+            (
+                "NA",
+                (
+                    (6347, "CCL2", "monocyte chemoattractant protein"),
+                    ("C0231221", "Asymptomatic", ""),
+                ),
+            )
+        ]
 
     elif split == "validation":
-        assert doc.entities.resolve() == [(51726, 'DNAJB11', ''), ('C0000768', 'Congenital Abnormality', '')]
-        assert doc.relations.resolve() == [('NA', ((51726, 'DNAJB11', ''), ('C0000768', 'Congenital Abnormality', '')))]
+        assert doc.entities.resolve() == [
+            (51726, "DNAJB11", ""),
+            ("C0000768", "Congenital Abnormality", ""),
+        ]
+        assert doc.relations.resolve() == [
+            ("NA", ((51726, "DNAJB11", ""), ("C0000768", "Congenital Abnormality", "")))
+        ]
 
     else:
         raise ValueError(f"Unknown split variant: {split}")
+
+
+@pytest.mark.slow
+def test_example_to_document_all(hf_dataset, split):
+    for example in hf_dataset[split]:
+        doc = example_to_document(example)
+        assert doc is not None
+
+
+@pytest.fixture(scope="module")
+def builder() -> BUILDER_CLASS:
+    return BUILDER_CLASS()
+
+
+@pytest.fixture(scope="module")
+def generated_document(builder, hf_example):
+    return builder._generate_document(hf_example)
+
+
+def test_builder(builder):
+    assert builder is not None
+    assert builder.dataset_name == DATASET_NAME
+    assert builder.document_type == TbgaDocument
+
+
+def test_document_to_example(generated_document, builder, hf_example):
+    hf_example_back = builder._generate_example(generated_document)
+    assert hf_example_back == hf_example
+
+
+@pytest.fixture(scope="module")
+def pie_dataset(split):
+    ds = load_pie_dataset(str(PIE_DATASET_PATH), split=split)
+    return ds
+
+
+@pytest.mark.slow
+def test_pie_dataset(pie_dataset, split):
+    assert pie_dataset is not None
+    assert len(pie_dataset) == SPLIT_SIZES[split]
+    for doc in pie_dataset:
+        # cannot assert real document type "BioRelDocument" (look also test_imdb.py)
+        assert isinstance(doc, Document)
+        # check that (de-)serialization works
+        doc.copy()
+
+
+@pytest.fixture(scope="module")
+def pie_dataset_fast(split) -> IterableDataset:
+    return load_pie_dataset(str(PIE_DATASET_PATH), split=split, streaming=True).take(3)
+
+
+def test_pie_dataset_fast(pie_dataset_fast):
+    assert pie_dataset_fast is not None
