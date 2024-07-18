@@ -20,7 +20,6 @@ and the following annotation layers:
 - `entities` (annotation type: `LabeledSpan`, target: `text`)
 - `relations` (annotation type: `BinaryRelation`, target: `entities`)
 
-
 #### `ChemprotBigbioDocument` for `chemprot_bigbio_kb`
 
 defines following fields:
@@ -37,7 +36,6 @@ and the following annotation layers:
 
 See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) for the annotation
 type definitions.
-
 
 ## Document Converters
 
