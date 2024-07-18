@@ -265,9 +265,9 @@ class Chemprot(GeneratorBasedBuilder):
             return example_to_chemprot_doc(example)
 
     def _generate_example(self, document: Document, **kwargs) -> Dict[str, Any]:
-        if self.config.name == "chemprot_bigbio_kb":
-            assert isinstance(document, ChemprotBigbioDocument)
+        if isinstance(document, ChemprotBigbioDocument):
             return chemprot_bigbio_doc_to_example(document)
-        else:
-            assert isinstance(document, ChemprotDocument)
+        elif isinstance(document, ChemprotDocument):
             return chemprot_doc_to_example(document)
+        else:
+            raise ValueError(f"Unknown document type: {type(document)}")
