@@ -74,23 +74,23 @@ def test_example_to_document(hf_example, split):
     doc = example_to_document(hf_example)
     if split == "test":
         assert doc.entities.resolve() == [
-            (50940, "PDE11A", ""),
+            ("50940", "PDE11A", ""),
             ("C0006826", "Malignant Neoplasms", ""),
         ]
         assert doc.relations.resolve() == [
-            ("NA", ((50940, "PDE11A", ""), ("C0006826", "Malignant Neoplasms", "")))
+            ("NA", (("50940", "PDE11A", ""), ("C0006826", "Malignant Neoplasms", "")))
         ]
 
     elif split == "train":
         assert doc.entities.resolve() == [
-            (6347, "CCL2", "monocyte chemoattractant protein"),
+            ("6347", "CCL2", "monocyte chemoattractant protein"),
             ("C0231221", "Asymptomatic", ""),
         ]
         assert doc.relations.resolve() == [
             (
                 "NA",
                 (
-                    (6347, "CCL2", "monocyte chemoattractant protein"),
+                    ("6347", "CCL2", "monocyte chemoattractant protein"),
                     ("C0231221", "Asymptomatic", ""),
                 ),
             )
@@ -98,11 +98,11 @@ def test_example_to_document(hf_example, split):
 
     elif split == "validation":
         assert doc.entities.resolve() == [
-            (51726, "DNAJB11", ""),
+            ("51726", "DNAJB11", ""),
             ("C0000768", "Congenital Abnormality", ""),
         ]
         assert doc.relations.resolve() == [
-            ("NA", ((51726, "DNAJB11", ""), ("C0000768", "Congenital Abnormality", "")))
+            ("NA", (("51726", "DNAJB11", ""), ("C0000768", "Congenital Abnormality", "")))
         ]
 
     else:
