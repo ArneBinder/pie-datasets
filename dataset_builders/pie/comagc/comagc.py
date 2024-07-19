@@ -1,8 +1,12 @@
 from dataclasses import dataclass
+from typing import Any, Dict
 
-from pytorch_ie import AnnotationLayer, annotation_field
+import datasets
+from pytorch_ie import AnnotationLayer, Document, annotation_field
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.documents import TextBasedDocument
+
+from pie_datasets import ArrowBasedBuilder
 
 
 @dataclass
@@ -47,6 +51,50 @@ def example_to_document(example) -> ComagcDocument:
     relation = BinaryRelation(head=head, tail=tail, label=get_relation(example))
     doc.relations.append(relation)
     return doc
+
+
+def document_to_example(doc: ComagcDocument) -> Dict[str, Any]:
+    gene = {
+        "name": doc.text[doc.entities[0].start : doc.entities[0].end],
+        "pos": [doc.entities[0].start, doc.entities[0].end - 1],
+    }
+    cancer = {
+        "name": doc.text[doc.entities[1].start : doc.entities[1].end],
+        "pos": [doc.entities[1].start, doc.entities[1].end - 1],
+    }
+
+    return {
+        "pmid": doc.id,
+        "sentence": doc.text,
+        "cancer_type": doc.metadata["cancer_type"],
+        "gene": gene,
+        "cancer": cancer,
+        "CGE": doc.metadata["annotation"]["CGE"],
+        "CCS": doc.metadata["annotation"]["CCS"],
+        "PT": doc.metadata["annotation"]["PT"],
+        "IGE": doc.metadata["annotation"]["IGE"],
+        "expression_change_keyword_1": doc.metadata["expression_change_keywords"][0],
+        "expression_change_keyword_2": doc.metadata["expression_change_keywords"][1],
+    }
+
+
+class Comagc(ArrowBasedBuilder):
+    DOCUMENT_TYPE = ComagcDocument
+    BASE_DATASET_PATH = "DFKI-SLT/CoMAGC"
+    BASE_DATASET_REVISION = "8e2950b8a3967c2f45de86f60dd5c8ccb9ad3815"
+
+    BUILDER_CONFIGS = [
+        datasets.BuilderConfig(
+            version=datasets.Version("1.0.0"),
+            description="CoMAGC dataset",
+        )
+    ]
+
+    def _generate_document(self, example, **kwargs):
+        return example_to_document(example)
+
+    def _generate_example(self, document: Document, **kwargs) -> Dict[str, Any]:
+        return document_to_example(document)
 
 
 def get_relation(example):
