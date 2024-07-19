@@ -237,12 +237,12 @@ def test_dataset_with_converted_documents_fast(document, converted_document_type
             == "These results suggest that the inside-out activation of the α5β1-integrin mediated by ERdj3/Prtg/Radil signaling is crucial for proper functions of R-CNCCs, and the deficiency of this pathway causes premature apoptosis of a subset of R-CNCCs and malformation of craniofacial structures."
         )
         assert converted_doc.labeled_spans.resolve() == [
-            ("NA", (("ENTITY", "ERdj3"), ("ENTITY", "malformation")))
+            ("ENTITY", "ERdj3"),
+            ("ENTITY", "malformation"),
         ]
 
         assert converted_doc.binary_relations.resolve() == [
-            ("ENTITY", "ERdj3"),
-            ("ENTITY", "malformation"),
+            ("NA", (("ENTITY", "ERdj3"), ("ENTITY", "malformation")))
         ]
 
         assert converted_doc.metadata == {
