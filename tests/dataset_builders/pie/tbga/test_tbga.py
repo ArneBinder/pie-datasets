@@ -159,7 +159,7 @@ def test_pie_dataset(pie_dataset, split):
     assert pie_dataset is not None
     assert len(pie_dataset) == SPLIT_SIZES[split]
     for doc in pie_dataset:
-        # cannot assert real document type "BioRelDocument" (look also test_imdb.py)
+        # cannot assert real document type "TbgaDocument" because it comes from dataset script copied to the huggingface cache folder (and not from its origin in dataset_builders/pie/tbga)
         assert isinstance(doc, Document)
         # check that (de-)serialization works
         doc.copy()
