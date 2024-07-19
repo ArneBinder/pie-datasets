@@ -1,6 +1,7 @@
 import datasets
 import pytest
 
+from dataset_builders.pie.comagc.comagc import example_to_document
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 DATASET_NAME = "comagc"
@@ -48,3 +49,31 @@ def test_hf_example(hf_example):
             "type": "Positive_regulation",
         },
     }
+
+
+def test_example_to_document(hf_example):
+    doc = example_to_document(hf_example)
+
+    assert doc is not None
+    assert (
+        doc.text
+        == "Thus, FGF6 is increased in PIN and prostate cancer and can promote the proliferation of the transformed prostatic epithelial cells via paracrine and autocrine mechanisms."
+    )
+    assert doc.id == hf_example["pmid"]
+    assert doc.metadata == {
+        "cancer_type": hf_example["cancer_type"],
+        "annotation": {
+            "CGE": hf_example["CGE"],
+            "CCS": hf_example["CCS"],
+            "PT": hf_example["PT"],
+            "IGE": hf_example["IGE"],
+        },
+        "expression_change_keywords": [
+            hf_example["expression_change_keyword_1"],
+            hf_example["expression_change_keyword_2"],
+        ],
+    }
+    assert doc.entities.resolve() == [("GENE", "FGF6"), ("CANCER", "prostate cancer")]
+    assert doc.relations.resolve() == [
+        ("oncogene", (("GENE", "FGF6"), ("CANCER", "prostate cancer")))
+    ]
