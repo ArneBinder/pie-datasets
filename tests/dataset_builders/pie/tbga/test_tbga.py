@@ -2,7 +2,12 @@ import pytest
 from datasets import disable_caching, load_dataset
 from pytorch_ie import Document
 
-from dataset_builders.pie.tbga.tbga import Tbga, TbgaDocument, example_to_document
+from dataset_builders.pie.tbga.tbga import (
+    Tbga,
+    TbgaDocument,
+    convert_to_text_document_with_labeled_spans_and_binary_relations,
+    example_to_document,
+)
 from pie_datasets import IterableDataset
 from pie_datasets import load_dataset as load_pie_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
@@ -74,35 +79,41 @@ def test_example_to_document(hf_example, split):
     doc = example_to_document(hf_example)
     if split == "test":
         assert doc.entities.resolve() == [
-            ("50940", "PDE11A", ""),
-            ("C0006826", "Malignant Neoplasms", ""),
+            ("50940", "PDE11A", "PDE11A"),
+            ("C0006826", "Malignant Neoplasms", "cancer"),
         ]
         assert doc.relations.resolve() == [
-            ("NA", (("50940", "PDE11A", ""), ("C0006826", "Malignant Neoplasms", "")))
+            ("NA", (("50940", "PDE11A", "PDE11A"), ("C0006826", "Malignant Neoplasms", "cancer")))
         ]
 
     elif split == "train":
         assert doc.entities.resolve() == [
-            ("6347", "CCL2", "monocyte chemoattractant protein"),
-            ("C0231221", "Asymptomatic", ""),
+            ("6347", "CCL2", "monocyte chemoattractant protein-1"),
+            ("C0231221", "Asymptomatic", "asymptomatic"),
         ]
         assert doc.relations.resolve() == [
             (
                 "NA",
                 (
-                    ("6347", "CCL2", "monocyte chemoattractant protein"),
-                    ("C0231221", "Asymptomatic", ""),
+                    ("6347", "CCL2", "monocyte chemoattractant protein-1"),
+                    ("C0231221", "Asymptomatic", "asymptomatic"),
                 ),
             )
         ]
 
     elif split == "validation":
         assert doc.entities.resolve() == [
-            ("51726", "DNAJB11", ""),
-            ("C0000768", "Congenital Abnormality", ""),
+            ("51726", "DNAJB11", "ERdj3"),
+            ("C0000768", "Congenital Abnormality", "malformation"),
         ]
         assert doc.relations.resolve() == [
-            ("NA", (("51726", "DNAJB11", ""), ("C0000768", "Congenital Abnormality", "")))
+            (
+                "NA",
+                (
+                    ("51726", "DNAJB11", "ERdj3"),
+                    ("C0000768", "Congenital Abnormality", "malformation"),
+                ),
+            )
         ]
 
     else:
@@ -161,3 +172,93 @@ def pie_dataset_fast(split) -> IterableDataset:
 
 def test_pie_dataset_fast(pie_dataset_fast):
     assert pie_dataset_fast is not None
+
+
+@pytest.fixture(scope="module")
+def document(pie_dataset_fast) -> TbgaDocument:
+    return list(pie_dataset_fast)[0]
+
+
+def test_document(document, generated_document):
+    assert document.text == generated_document.text
+    assert document.entities.resolve() == generated_document.entities.resolve()
+    assert document.relations.resolve() == generated_document.relations.resolve()
+
+
+@pytest.fixture(scope="module", params=list(BUILDER_CLASS.DOCUMENT_CONVERTERS))
+def converted_document_type(request):
+    return request.param
+
+
+def test_dataset_with_converted_documents_fast(document, converted_document_type, split):
+    converted_doc = convert_to_text_document_with_labeled_spans_and_binary_relations(document)
+    assert isinstance(converted_doc, converted_document_type)
+    converted_doc.copy()  # check that (de-)serialization works
+
+    if split == "test":
+        assert (
+            converted_doc.text
+            == "In addition, the combined cancer genome expression metaanalysis datasets included PDE11A among the top 1% down-regulated genes in PCa."
+        )
+        assert converted_doc.labeled_spans.resolve() == [
+            ("ENTITY", "PDE11A"),
+            ("ENTITY", "cancer"),
+        ]
+        assert converted_doc.binary_relations.resolve() == [
+            ("NA", (("ENTITY", "PDE11A"), ("ENTITY", "cancer")))
+        ]
+        assert converted_doc.metadata == {
+            "entity_ids": ["50940", "C0006826"],
+            "entity_names": ["PDE11A", "Malignant Neoplasms"],
+        }
+
+    elif split == "train":
+        assert (
+            converted_doc.text
+            == "A monocyte chemoattractant protein-1 gene polymorphism is associated with occult ischemia in a high-risk asymptomatic population."
+        )
+        assert converted_doc.labeled_spans.resolve() == [
+            ("ENTITY", "monocyte chemoattractant protein-1"),
+            ("ENTITY", "asymptomatic"),
+        ]
+
+        assert converted_doc.binary_relations.resolve() == [
+            ("NA", (("ENTITY", "monocyte chemoattractant protein-1"), ("ENTITY", "asymptomatic")))
+        ]
+
+        assert converted_doc.metadata == {
+            "entity_ids": ["6347", "C0231221"],
+            "entity_names": ["CCL2", "Asymptomatic"],
+        }
+
+    elif split == "validation":
+        assert (
+            converted_doc.text
+            == "These results suggest that the inside-out activation of the α5β1-integrin mediated by ERdj3/Prtg/Radil signaling is crucial for proper functions of R-CNCCs, and the deficiency of this pathway causes premature apoptosis of a subset of R-CNCCs and malformation of craniofacial structures."
+        )
+        assert converted_doc.labeled_spans.resolve() == [
+            ("NA", (("ENTITY", "ERdj3"), ("ENTITY", "malformation")))
+        ]
+
+        assert converted_doc.binary_relations.resolve() == [
+            ("ENTITY", "ERdj3"),
+            ("ENTITY", "malformation"),
+        ]
+
+        assert converted_doc.metadata == {
+            "entity_ids": ["51726", "C0000768"],
+            "entity_names": ["DNAJB11", "Congenital Abnormality"],
+        }
+
+    else:
+        raise ValueError(f"Unknown split variant: {split}")
+
+
+@pytest.mark.slow
+def test_dataset_with_converted_documents(pie_dataset, converted_document_type):
+    dataset_with_converted_documents = pie_dataset.to_document_type(converted_document_type)
+    assert dataset_with_converted_documents is not None
+    # check documents
+    for doc in dataset_with_converted_documents:
+        assert isinstance(doc, converted_document_type)
+        doc.copy()  # check that (de-)serialization works
