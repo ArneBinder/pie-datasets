@@ -1,0 +1,50 @@
+import datasets
+import pytest
+
+from tests.dataset_builders.common import PIE_BASE_PATH
+
+DATASET_NAME = "comagc"
+BUILDER_CLASS = None
+PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
+HF_DATASET_PATH = "DFKI-SLT/CoMAGC"
+# Note: The dataset does only have a train split
+SPLIT_NAMES = {"train"}
+SPLIT_SIZES = {"train": 821}
+
+
+@pytest.fixture(scope="module")
+def hf_dataset():
+    return datasets.load_dataset(HF_DATASET_PATH)
+
+
+def test_dataset_shape(hf_dataset):
+    assert hf_dataset is not None
+    assert set(hf_dataset) == SPLIT_NAMES
+    split_sizes = {split_name: len(ds) for split_name, ds in hf_dataset.items()}
+    assert split_sizes == SPLIT_SIZES
+
+
+@pytest.fixture(scope="module")
+def hf_example(hf_dataset):
+    return hf_dataset["train"][0]
+
+
+def test_hf_example(hf_example):
+    assert hf_example is not None
+    assert hf_example == {
+        "pmid": "10945637.s12",
+        "sentence": "Thus, FGF6 is increased in PIN and prostate cancer and can promote the proliferation of the transformed prostatic epithelial cells via paracrine and autocrine mechanisms.",
+        "cancer_type": "prostate",
+        "gene": {"name": "FGF6", "pos": [6, 9]},
+        "cancer": {"name": "prostate cancer", "pos": [35, 49]},
+        "CGE": "increased",
+        "CCS": "normalTOcancer",
+        "PT": "causality",
+        "IGE": "unchanged",
+        "expression_change_keyword_1": {"name": "\nNone\n", "pos": None, "type": None},
+        "expression_change_keyword_2": {
+            "name": "increased",
+            "pos": [14, 22],
+            "type": "Positive_regulation",
+        },
+    }
