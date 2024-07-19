@@ -1,13 +1,13 @@
 import datasets
 import pytest
 
-from dataset_builders.pie.comagc.comagc import example_to_document
+from dataset_builders.pie.comagc.comagc import Comagc, example_to_document
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 DATASET_NAME = "comagc"
-BUILDER_CLASS = None
+BUILDER_CLASS = Comagc
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
-HF_DATASET_PATH = "DFKI-SLT/CoMAGC"
+HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 # Note: The dataset does only have a train split
 SPLIT_NAMES = {"train"}
 SPLIT_SIZES = {"train": 821}
@@ -18,7 +18,7 @@ def hf_dataset():
     return datasets.load_dataset(HF_DATASET_PATH)
 
 
-def test_dataset_shape(hf_dataset):
+def test_hf_dataset(hf_dataset):
     assert hf_dataset is not None
     assert set(hf_dataset) == SPLIT_NAMES
     split_sizes = {split_name: len(ds) for split_name, ds in hf_dataset.items()}
@@ -57,7 +57,8 @@ def test_example_to_document(hf_example):
     assert doc is not None
     assert (
         doc.text
-        == "Thus, FGF6 is increased in PIN and prostate cancer and can promote the proliferation of the transformed prostatic epithelial cells via paracrine and autocrine mechanisms."
+        == "Thus, FGF6 is increased in PIN and prostate cancer and can promote the proliferation of the transformed "
+        "prostatic epithelial cells via paracrine and autocrine mechanisms."
     )
     assert doc.id == hf_example["pmid"]
     assert doc.metadata == {
@@ -77,3 +78,21 @@ def test_example_to_document(hf_example):
     assert doc.relations.resolve() == [
         ("oncogene", (("GENE", "FGF6"), ("CANCER", "prostate cancer")))
     ]
+
+
+@pytest.fixture(scope="module")
+def builder():
+    return BUILDER_CLASS()
+
+
+def test_example_to_document_all(builder, hf_dataset):
+    for example in hf_dataset["train"]:
+        doc = builder._generate_document(example)
+        assert doc is not None
+        assert isinstance(doc, BUILDER_CLASS.DOCUMENT_TYPE)
+
+
+def test_document_to_example(builder, hf_example):
+    generated_document = builder._generate_document(hf_example)
+    hf_example_back = builder._generate_example(generated_document)
+    assert hf_example_back == hf_example
