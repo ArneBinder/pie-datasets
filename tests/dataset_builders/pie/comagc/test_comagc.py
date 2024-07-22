@@ -92,11 +92,13 @@ def builder():
     return BUILDER_CLASS()
 
 
-def test_example_to_document_all(builder, hf_dataset):
+def test_example_to_document_and_back_all(builder, hf_dataset):
     for example in hf_dataset["train"]:
         doc = builder._generate_document(example)
         assert doc is not None
         assert isinstance(doc, BUILDER_CLASS.DOCUMENT_TYPE)
+        ex_back = builder._generate_example(doc)
+        assert ex_back == example
 
 
 def test_document_to_example(builder, hf_example):
