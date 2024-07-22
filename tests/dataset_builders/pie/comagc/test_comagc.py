@@ -1,7 +1,12 @@
 import datasets
 import pytest
+from pytorch_ie import Document
 
-from dataset_builders.pie.comagc.comagc import Comagc, example_to_document
+from dataset_builders.pie.comagc.comagc import (
+    Comagc,
+    ComagcDocument,
+    example_to_document,
+)
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 DATASET_NAME = "comagc"
@@ -96,3 +101,19 @@ def test_document_to_example(builder, hf_example):
     generated_document = builder._generate_document(hf_example)
     hf_example_back = builder._generate_example(generated_document)
     assert hf_example_back == hf_example
+
+
+@pytest.fixture(scope="module")
+def pie_dataset():
+    ds = datasets.load_dataset(str(PIE_DATASET_PATH))
+    return ds
+
+
+def test_pie_dataset(pie_dataset):
+    assert pie_dataset is not None
+    assert len(pie_dataset["train"]) == SPLIT_SIZES["train"]
+    for doc in pie_dataset["train"]:
+        assert doc is not None
+        assert isinstance(doc, Document)
+        cast = doc.as_type(ComagcDocument)
+        assert isinstance(cast, ComagcDocument)

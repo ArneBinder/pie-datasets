@@ -4,7 +4,10 @@ from typing import Any, Dict
 import datasets
 from pytorch_ie import AnnotationLayer, Document, annotation_field
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
-from pytorch_ie.documents import TextBasedDocument
+from pytorch_ie.documents import (
+    TextBasedDocument,
+    TextDocumentWithLabeledSpansAndBinaryRelations,
+)
 
 from pie_datasets import ArrowBasedBuilder
 
@@ -89,6 +92,15 @@ class Comagc(ArrowBasedBuilder):
             description="CoMAGC dataset",
         )
     ]
+
+    @property
+    def document_converters(self):
+        return {
+            TextDocumentWithLabeledSpansAndBinaryRelations: {
+                "entities": "labeled_spans",
+                "relations": "binary_relations",
+            }
+        }
 
     def _generate_document(self, example, **kwargs):
         return example_to_document(example)
