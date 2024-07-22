@@ -3,9 +3,7 @@ from typing import Any, Dict
 import datasets
 import pytest
 
-from dataset_builders.hf.drugprot.drugprot import (
-    DrugProtDataset,
-)
+from dataset_builders.hf.drugprot.drugprot import DrugProtDataset
 from tests.dataset_builders.common import HF_BASE_PATH
 
 DATASET_NAME = "drugprot"
@@ -260,4 +258,3 @@ def test_hf_example(hf_example, dataset_variant):
         }
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
-
