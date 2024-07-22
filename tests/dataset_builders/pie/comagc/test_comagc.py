@@ -1,12 +1,14 @@
 import datasets
 import pytest
 from pytorch_ie import Document
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 from dataset_builders.pie.comagc.comagc import (
     Comagc,
     ComagcDocument,
     example_to_document,
 )
+from pie_datasets import load_dataset as load_pie_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 DATASET_NAME = "comagc"
@@ -105,7 +107,7 @@ def test_document_to_example(builder, hf_example):
 
 @pytest.fixture(scope="module")
 def pie_dataset():
-    ds = datasets.load_dataset(str(PIE_DATASET_PATH))
+    ds = load_pie_dataset(str(PIE_DATASET_PATH))
     return ds
 
 
@@ -117,3 +119,52 @@ def test_pie_dataset(pie_dataset):
         assert isinstance(doc, Document)
         cast = doc.as_type(ComagcDocument)
         assert isinstance(cast, ComagcDocument)
+        doc.copy()
+
+
+@pytest.fixture(scope="module")
+def converted_pie_dataset(pie_dataset):
+    pie_dataset_converted = pie_dataset.to_document_type(
+        TextDocumentWithLabeledSpansAndBinaryRelations
+    )
+    return pie_dataset_converted
+
+
+def test_converted_pie_dataset(converted_pie_dataset):
+    assert converted_pie_dataset is not None
+    assert len(converted_pie_dataset["train"]) == SPLIT_SIZES["train"]
+    for doc in converted_pie_dataset["train"]:
+        assert doc is not None
+        assert isinstance(doc, TextDocumentWithLabeledSpansAndBinaryRelations)
+        doc.copy()
+
+
+def test_converted_document_from_pie_dataset(converted_pie_dataset):
+    converted_doc = converted_pie_dataset["train"][0]
+    assert converted_doc is not None
+    assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndBinaryRelations)
+
+    assert (
+        converted_doc.text
+        == "Thus, FGF6 is increased in PIN and prostate cancer and can promote the proliferation of the transformed prostatic epithelial cells via paracrine and autocrine mechanisms."
+    )
+    assert converted_doc.labeled_spans.resolve() == [
+        ("GENE", "FGF6"),
+        ("CANCER", "prostate cancer"),
+    ]
+    assert converted_doc.binary_relations.resolve() == [
+        ("oncogene", (("GENE", "FGF6"), ("CANCER", "prostate cancer")))
+    ]
+    assert converted_doc.metadata == {
+        "annotation": {
+            "CCS": "normalTOcancer",
+            "CGE": "increased",
+            "IGE": "unchanged",
+            "PT": "causality",
+        },
+        "cancer_type": "prostate",
+        "expression_change_keywords": [
+            {"name": "\nNone\n", "pos": None, "type": None},
+            {"name": "increased", "pos": [14, 22], "type": "Positive_regulation"},
+        ],
+    }
