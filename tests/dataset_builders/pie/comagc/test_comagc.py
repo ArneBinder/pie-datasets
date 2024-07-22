@@ -58,8 +58,8 @@ def test_hf_example(hf_example):
     }
 
 
-def test_example_to_document(hf_example):
-    doc = example_to_document(hf_example)
+def test_example_to_document(hf_example, builder):
+    doc = builder._generate_document(hf_example)
 
     assert doc is not None
     assert (
