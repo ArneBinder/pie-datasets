@@ -101,7 +101,7 @@ def test_example_to_document_and_back_all(builder, hf_dataset):
         assert ex_back == example
 
 
-def test_document_to_example(builder, hf_example):
+def test_document_to_example_and_back(builder, hf_example):
     generated_document = builder._generate_document(hf_example)
     hf_example_back = builder._generate_example(generated_document)
     assert hf_example_back == hf_example
