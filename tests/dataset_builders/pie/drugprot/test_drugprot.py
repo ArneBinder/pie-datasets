@@ -24,6 +24,7 @@ from tests.dataset_builders.common import PIE_BASE_PATH
 DATASET_NAME = "drugprot"
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 HF_DATASET_PATH = Drugprot.BASE_DATASET_PATH
+HF_DATASET_REVISION = Drugprot.BASE_DATASET_REVISION
 SPLIT_NAMES = {"train", "validation", "test_background"}
 SPLIT_SIZES = {"train": 3500, "validation": 750, "test_background": 10750}
 
@@ -35,7 +36,7 @@ def dataset_variant(request) -> str:
 
 @pytest.fixture(scope="module")
 def hf_dataset(dataset_variant) -> datasets.DatasetDict:
-    return datasets.load_dataset(HF_DATASET_PATH, name=dataset_variant)
+    return datasets.load_dataset(HF_DATASET_PATH, revision=HF_DATASET_REVISION, name=dataset_variant)
 
 
 def test_hf_dataset(hf_dataset):
