@@ -164,6 +164,7 @@ class DrugProtDataset(datasets.GeneratorBasedBuilder):
 
     def _read_source_examples(self, input_dir: Path, split: str) -> Dict:
         """ """
+        # Note: The split "test-background" does not contain any relations
         split_dir = input_dir / split
         if split == "training" or split == "development":
             abstracts_file = split_dir / f"drugprot_{split}_abstracs.tsv"
