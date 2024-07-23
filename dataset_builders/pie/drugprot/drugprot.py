@@ -12,7 +12,6 @@ from pytorch_ie.documents import (
 )
 
 from pie_datasets import GeneratorBasedBuilder
-from tests.dataset_builders.common import HF_BASE_PATH
 
 
 @dataclass

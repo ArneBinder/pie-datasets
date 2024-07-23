@@ -36,7 +36,9 @@ def dataset_variant(request) -> str:
 
 @pytest.fixture(scope="module")
 def hf_dataset(dataset_variant) -> datasets.DatasetDict:
-    return datasets.load_dataset(HF_DATASET_PATH, revision=HF_DATASET_REVISION, name=dataset_variant)
+    return datasets.load_dataset(
+        HF_DATASET_PATH, revision=HF_DATASET_REVISION, name=dataset_variant
+    )
 
 
 def test_hf_dataset(hf_dataset):
