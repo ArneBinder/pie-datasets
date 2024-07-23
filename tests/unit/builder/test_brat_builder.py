@@ -5,7 +5,7 @@ from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
 from pytorch_ie.core import Annotation
 from pytorch_ie.documents import TextBasedDocument
 
-from pie_datasets.builders.brat import BratAttribute, BratBuilder
+from src.pie_datasets.builders.brat import BratAttribute, BratBuilder, BratNote
 
 HF_EXAMPLES = [
     {
@@ -28,7 +28,12 @@ HF_EXAMPLES = [
             "resource_id": [],
             "entity_id": [],
         },
-        "notes": {"id": [], "type": [], "target": [], "note": []},
+        "notes": {
+            "id": ["#1"],
+            "type": ["AnnotatorNotes"],
+            "target": ["T1"],
+            "note": ["last name is omitted"],
+        },
     },
     {
         "context": "Seattle is a rainy city. Jenny Durkan is the city's mayor.\n",
@@ -59,7 +64,12 @@ HF_EXAMPLES = [
             "resource_id": [],
             "entity_id": [],
         },
-        "notes": {"id": [], "type": [], "target": [], "note": []},
+        "notes": {
+            "id": ["#1"],
+            "type": ["AnnotatorNotes"],
+            "target": ["R1"],
+            "note": ["single relation"],
+        },
     },
 ]
 
@@ -81,6 +91,12 @@ def resolve_annotation(annotation: Annotation) -> Any:
             resolve_annotation(annotation.tail),
         )
     elif isinstance(annotation, BratAttribute):
+        result = (resolve_annotation(annotation.annotation), annotation.label)
+        if annotation.value is not None:
+            return result + (annotation.value,)
+        else:
+            return result
+    elif isinstance(annotation, BratNote):
         result = (resolve_annotation(annotation.annotation), annotation.label)
         if annotation.value is not None:
             return result + (annotation.value,)
@@ -125,13 +141,27 @@ def test_generate_document(builder, hf_example):
         assert len(generated_document.relations) == 0
         assert len(generated_document.span_attributes) == 0
         assert len(generated_document.relation_attributes) == 0
+        assert len(generated_document.span_notes) == 1
+        assert len(generated_document.relation_notes) == 0
+
+        resolved_span_notes = [resolve_annotation(note) for note in generated_document.span_notes]
 
         if builder.config.name == "default":
             assert resolved_spans[0] == (["Jane"], "person")
             assert resolved_spans[1] == (["Berlin"], "city")
+            assert resolved_span_notes[0] == (
+                (["Jane"], "person"),
+                "AnnotatorNotes",
+                "last name is omitted",
+            )
         elif builder.config.name == "merge_fragmented_spans":
             assert resolved_spans[0] == ("Jane", "person")
             assert resolved_spans[1] == ("Berlin", "city")
+            assert resolved_span_notes[0] == (
+                ("Jane", "person"),
+                "AnnotatorNotes",
+                "last name is omitted",
+            )
         else:
             raise ValueError(f"Unknown builder variant: {builder.name}")
 
@@ -140,12 +170,17 @@ def test_generate_document(builder, hf_example):
         assert len(generated_document.relations) == 1
         assert len(generated_document.span_attributes) == 1
         assert len(generated_document.relation_attributes) == 1
+        assert len(generated_document.span_notes) == 0
+        assert len(generated_document.relation_notes) == 1
 
         resolved_span_attributes = [
             resolve_annotation(attribute) for attribute in generated_document.span_attributes
         ]
         resolved_relation_attributes = [
             resolve_annotation(attribute) for attribute in generated_document.relation_attributes
+        ]
+        resolved_relation_notes = [
+            resolve_annotation(note) for note in generated_document.relation_notes
         ]
 
         if builder.config.name == "default":
@@ -162,6 +197,11 @@ def test_generate_document(builder, hf_example):
                 "statement",
                 "true",
             )
+            assert resolved_relation_notes[0] == (
+                ((["Jenny Durkan"], "person"), "mayor_of", (["Seattle"], "city")),
+                "AnnotatorNotes",
+                "single relation",
+            )
         elif builder.config.name == "merge_fragmented_spans":
             assert resolved_spans[0] == ("Seattle", "city")
             assert resolved_spans[1] == ("Jenny Durkan", "person")
@@ -175,6 +215,11 @@ def test_generate_document(builder, hf_example):
                 (("Jenny Durkan", "person"), "mayor_of", ("Seattle", "city")),
                 "statement",
                 "true",
+            )
+            assert resolved_relation_notes[0] == (
+                (("Jenny Durkan", "person"), "mayor_of", ("Seattle", "city")),
+                "AnnotatorNotes",
+                "single relation",
             )
         else:
             raise ValueError(f"Unknown builder variant: {config_name}")
