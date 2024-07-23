@@ -8,8 +8,8 @@ from tests.dataset_builders.common import HF_BASE_PATH
 
 DATASET_NAME = "drugprot"
 HF_DATASET_PATH = str(HF_BASE_PATH / DATASET_NAME)
-SPLIT_NAMES = {"train", "validation"}
-SPLIT_SIZES = {"train": 3500, "validation": 750}
+SPLIT_NAMES = {"train", "validation", "test_background"}
+SPLIT_SIZES = {"train": 3500, "validation": 750, "test_background": 10750}
 
 
 @pytest.fixture(params=[config.name for config in DrugProtDataset.BUILDER_CONFIGS], scope="module")
@@ -26,6 +26,11 @@ def test_hf_dataset(hf_dataset):
     assert set(hf_dataset) == SPLIT_NAMES
     split_sizes = {split_name: len(ds) for split_name, ds in hf_dataset.items()}
     assert split_sizes == SPLIT_SIZES
+
+
+@pytest.fixture(scope="module", params=list(SPLIT_NAMES))
+def split(request) -> str:
+    return request.param
 
 
 @pytest.fixture(scope="module")
@@ -258,3 +263,31 @@ def test_hf_example(hf_example, dataset_variant):
         }
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
+def test_hf_example_for_every_split(hf_dataset, dataset_variant, split):
+    # covers both dataset variants
+    example = hf_dataset[split][0]
+    if split == "train" and dataset_variant == "drugprot_bigbio_kb":
+        assert example["document_id"] == "17512723"
+        assert len(example["entities"]) == 13
+        assert len(example["relations"]) == 1
+    elif split == "validation":
+        assert example["document_id"] == "17651117"
+        assert len(example["entities"]) == 18
+        assert len(example["relations"]) == 0
+    elif split == "test_background":
+        assert example["document_id"] == "32733640"
+        assert len(example["entities"]) == 37
+        assert len(example["relations"]) == 0
+
+
+def test_hf_dataset_all(hf_dataset, split):
+    # covers both dataset variants
+    for example in hf_dataset[split]:
+        assert example["document_id"] is not None
+        assert example["entities"] is not None
+        if split != "test_background":
+            assert example["relations"] is not None
+        else:
+            assert example["relations"] == []

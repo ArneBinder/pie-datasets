@@ -145,6 +145,10 @@ class DrugProtDataset(datasets.GeneratorBasedBuilder):
                 name=datasets.Split.VALIDATION,
                 gen_kwargs={"data_dir": data_dir, "split": "development"},
             ),
+            datasets.SplitGenerator(
+                name=datasets.Split("test_background"),
+                gen_kwargs={"data_dir": data_dir, "split": "test-background"},
+            ),
         ]
 
     def _generate_examples(self, data_dir: Path, split: str) -> Iterator[Tuple[str, Dict]]:
@@ -161,9 +165,15 @@ class DrugProtDataset(datasets.GeneratorBasedBuilder):
     def _read_source_examples(self, input_dir: Path, split: str) -> Dict:
         """ """
         split_dir = input_dir / split
-        abstracts_file = split_dir / f"drugprot_{split}_abstracs.tsv"
-        entities_file = split_dir / f"drugprot_{split}_entities.tsv"
-        relations_file = split_dir / f"drugprot_{split}_relations.tsv"
+        if split == "training" or split == "development":
+            abstracts_file = split_dir / f"drugprot_{split}_abstracs.tsv"
+            entities_file = split_dir / f"drugprot_{split}_entities.tsv"
+            relations_file = split_dir / f"drugprot_{split}_relations.tsv"
+        elif split == "test-background":
+            abstracts_file = split_dir / f"test_background_abstracts.tsv"
+            entities_file = split_dir / f"test_background_entities.tsv"
+        else:
+            raise ValueError(f"Unknown split: {split}")
 
         document_to_entities = collections.defaultdict(list)
         for line in entities_file.read_text().splitlines():
@@ -180,20 +190,22 @@ class DrugProtDataset(datasets.GeneratorBasedBuilder):
             )
 
         document_to_relations = collections.defaultdict(list)
-        for line in relations_file.read_text().splitlines():
-            columns = line.split("\t")
-            document_id = columns[0]
 
-            document_relations = document_to_relations[document_id]
+        if split == "training" or split == "development":
+            for line in relations_file.read_text().splitlines():
+                columns = line.split("\t")
+                document_id = columns[0]
 
-            document_relations.append(
-                {
-                    "id": document_id + "_" + str(len(document_relations)),
-                    "type": columns[1],
-                    "arg1_id": document_id + "_" + columns[2][5:],
-                    "arg2_id": document_id + "_" + columns[3][5:],
-                }
-            )
+                document_relations = document_to_relations[document_id]
+
+                document_relations.append(
+                    {
+                        "id": document_id + "_" + str(len(document_relations)),
+                        "type": columns[1],
+                        "arg1_id": document_id + "_" + columns[2][5:],
+                        "arg2_id": document_id + "_" + columns[3][5:],
+                    }
+                )
 
         document_to_source = {}
         for line in abstracts_file.read_text().splitlines():
