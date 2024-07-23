@@ -1,7 +1,7 @@
 import dataclasses
 import logging
 from collections import defaultdict
-from typing import Any, Dict, List, Optional, Tuple, Union
+from typing import Any, Dict, Hashable, List, Optional, Tuple, Union
 
 import datasets
 from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
@@ -20,12 +20,21 @@ class BratAttribute(Annotation):
     value: Optional[str] = None
     score: Optional[float] = dataclasses.field(default=None, compare=False)
 
+    def resolve(self) -> Hashable:
+        if self.value is None:
+            return self.label, self.annotation.resolve()
+        else:
+            return self.value, self.label, self.annotation.resolve()
+
 
 @dataclasses.dataclass(eq=True, frozen=True)
 class BratNote(Annotation):
     annotation: Annotation
     label: str
     value: str
+
+    def resolve(self) -> Hashable:
+        return self.value, self.label, self.annotation.resolve()
 
 
 @dataclasses.dataclass

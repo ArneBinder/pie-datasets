@@ -1,16 +1,12 @@
-from typing import Any, Union
+from typing import Union
 
 import pytest
-from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pytorch_ie.core import Annotation
 from pytorch_ie.documents import TextBasedDocument
 
 from pie_datasets.builders.brat import (
-    BratAttribute,
     BratBuilder,
     BratDocument,
     BratDocumentWithMergedSpans,
-    BratNote,
 )
 
 HF_EXAMPLES = [
@@ -80,38 +76,6 @@ HF_EXAMPLES = [
 ]
 
 
-def resolve_annotation(annotation: Annotation) -> Any:
-    if not annotation.is_attached:
-        return None
-    if isinstance(annotation, LabeledMultiSpan):
-        return (
-            [annotation.target[start:end] for start, end in annotation.slices],
-            annotation.label,
-        )
-    elif isinstance(annotation, LabeledSpan):
-        return (annotation.target[annotation.start : annotation.end], annotation.label)
-    elif isinstance(annotation, BinaryRelation):
-        return (
-            resolve_annotation(annotation.head),
-            annotation.label,
-            resolve_annotation(annotation.tail),
-        )
-    elif isinstance(annotation, BratAttribute):
-        result = (resolve_annotation(annotation.annotation), annotation.label)
-        if annotation.value is not None:
-            return result + (annotation.value,)
-        else:
-            return result
-    elif isinstance(annotation, BratNote):
-        result = (resolve_annotation(annotation.annotation), annotation.label)
-        if annotation.value is not None:
-            return result + (annotation.value,)
-        else:
-            return result
-    else:
-        raise TypeError(f"Unknown annotation type: {type(annotation)}")
-
-
 @pytest.fixture(scope="module", params=BratBuilder.BUILDER_CONFIGS)
 def config_name(request) -> str:
     return request.param.name
@@ -140,91 +104,79 @@ def test_generate_document(builder, hf_example):
     generated_document: Union[
         BratDocument, BratDocumentWithMergedSpans
     ] = builder._generate_document(example=hf_example, **kwargs)
-    resolved_spans = [resolve_annotation(annotation=span) for span in generated_document.spans]
-    resolved_relations = [
-        resolve_annotation(relation) for relation in generated_document.relations
-    ]
+
     if hf_example == HF_EXAMPLES[0]:
-        assert len(generated_document.spans) == 2
         assert len(generated_document.relations) == 0
         assert len(generated_document.span_attributes) == 0
         assert len(generated_document.relation_attributes) == 0
-        assert len(generated_document.notes) == 1
-
-        resolved_notes = [resolve_annotation(note) for note in generated_document.notes]
 
         if builder.config.name == "default":
-            assert resolved_spans[0] == (["Jane"], "person")
-            assert resolved_spans[1] == (["Berlin"], "city")
-            assert resolved_notes[0] == (
-                (["Jane"], "person"),
-                "AnnotatorNotes",
-                "last name is omitted",
-            )
+            assert generated_document.spans.resolve() == [
+                ("person", ("Jane",)),
+                ("city", ("Berlin",)),
+            ]
+            assert generated_document.notes.resolve() == [
+                ("last name is omitted", "AnnotatorNotes", ("person", ("Jane",)))
+            ]
         elif builder.config.name == "merge_fragmented_spans":
-            assert resolved_spans[0] == ("Jane", "person")
-            assert resolved_spans[1] == ("Berlin", "city")
-            assert resolved_notes[0] == (
-                ("Jane", "person"),
-                "AnnotatorNotes",
-                "last name is omitted",
-            )
+            assert generated_document.spans.resolve() == [("person", "Jane"), ("city", "Berlin")]
+            assert generated_document.notes.resolve() == [
+                ("last name is omitted", "AnnotatorNotes", ("person", "Jane"))
+            ]
         else:
             raise ValueError(f"Unknown builder variant: {builder.name}")
 
     elif hf_example == HF_EXAMPLES[1]:
-        assert len(generated_document.spans) == 2
-        assert len(generated_document.relations) == 1
-        assert len(generated_document.span_attributes) == 1
-        assert len(generated_document.relation_attributes) == 1
-        assert len(generated_document.notes) == 1
-
-        resolved_span_attributes = [
-            resolve_annotation(attribute) for attribute in generated_document.span_attributes
-        ]
-        resolved_relation_attributes = [
-            resolve_annotation(attribute) for attribute in generated_document.relation_attributes
-        ]
-        resolved_notes = [resolve_annotation(note) for note in generated_document.notes]
-
         if builder.config.name == "default":
-            assert resolved_spans[0] == (["Seattle"], "city")
-            assert resolved_spans[1] == (["Jenny Durkan"], "person")
-            assert resolved_relations[0] == (
-                (["Jenny Durkan"], "person"),
-                "mayor_of",
-                (["Seattle"], "city"),
-            )
-            assert resolved_span_attributes[0] == ((["Seattle"], "city"), "factuality", "actual")
-            assert resolved_relation_attributes[0] == (
-                ((["Jenny Durkan"], "person"), "mayor_of", (["Seattle"], "city")),
-                "statement",
-                "true",
-            )
-            assert resolved_notes[0] == (
-                ((["Jenny Durkan"], "person"), "mayor_of", (["Seattle"], "city")),
-                "AnnotatorNotes",
-                "single relation",
-            )
+            assert generated_document.spans.resolve() == [
+                ("city", ("Seattle",)),
+                ("person", ("Jenny Durkan",)),
+            ]
+            assert generated_document.relations.resolve() == [
+                ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",))))
+            ]
+            assert generated_document.span_attributes.resolve() == [
+                ("actual", "factuality", ("city", ("Seattle",)))
+            ]
+            assert generated_document.relation_attributes.resolve() == [
+                (
+                    "true",
+                    "statement",
+                    ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",)))),
+                )
+            ]
+            assert generated_document.notes.resolve() == [
+                (
+                    "single relation",
+                    "AnnotatorNotes",
+                    ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",)))),
+                )
+            ]
         elif builder.config.name == "merge_fragmented_spans":
-            assert resolved_spans[0] == ("Seattle", "city")
-            assert resolved_spans[1] == ("Jenny Durkan", "person")
-            assert resolved_relations[0] == (
-                ("Jenny Durkan", "person"),
-                "mayor_of",
-                ("Seattle", "city"),
-            )
-            assert resolved_span_attributes[0] == (("Seattle", "city"), "factuality", "actual")
-            assert resolved_relation_attributes[0] == (
-                (("Jenny Durkan", "person"), "mayor_of", ("Seattle", "city")),
-                "statement",
-                "true",
-            )
-            assert resolved_notes[0] == (
-                (("Jenny Durkan", "person"), "mayor_of", ("Seattle", "city")),
-                "AnnotatorNotes",
-                "single relation",
-            )
+            assert generated_document.spans.resolve() == [
+                ("city", "Seattle"),
+                ("person", "Jenny Durkan"),
+            ]
+            assert generated_document.relations.resolve() == [
+                ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle")))
+            ]
+            assert generated_document.span_attributes.resolve() == [
+                ("actual", "factuality", ("city", "Seattle"))
+            ]
+            assert generated_document.relation_attributes.resolve() == [
+                (
+                    "true",
+                    "statement",
+                    ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))),
+                )
+            ]
+            assert generated_document.notes.resolve() == [
+                (
+                    "single relation",
+                    "AnnotatorNotes",
+                    ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))),
+                )
+            ]
         else:
             raise ValueError(f"Unknown builder variant: {config_name}")
     else:
