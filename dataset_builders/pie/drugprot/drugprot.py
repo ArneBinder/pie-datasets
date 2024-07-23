@@ -12,6 +12,7 @@ from pytorch_ie.documents import (
 )
 
 from pie_datasets import GeneratorBasedBuilder
+from tests.dataset_builders.common import HF_BASE_PATH
 
 
 @dataclass
@@ -106,8 +107,8 @@ class Drugprot(GeneratorBasedBuilder):
         "drugprot_bigbio_kb": DrugprotBigbioDocument,
     }
 
-    BASE_DATASET_PATH = "bigbio/drugprot"
-    BASE_DATASET_REVISION = "38ff03d68347aaf694e598c50cb164191f50f61c"
+    BASE_DATASET_PATH = str(HF_BASE_PATH / "drugprot") # "bigbio/drugprot"
+    # BASE_DATASET_REVISION = "38ff03d68347aaf694e598c50cb164191f50f61c"
 
     BUILDER_CONFIGS = [
         datasets.BuilderConfig(
