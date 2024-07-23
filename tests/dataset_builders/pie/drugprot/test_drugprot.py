@@ -304,11 +304,14 @@ def test_hf_dataset_all(hf_dataset, split):
     # covers both dataset variants
     for example in hf_dataset[split]:
         assert example["document_id"] is not None
-        assert example["entities"] is not None
-        assert example["relations"] is not None
+        assert len(example["entities"]) > 0
+
         # The split "test-background" does not contain any relations
         if split == "test_background":
-            assert example["relations"] == []
+            assert len(example["relations"]) == 0
+        # The splits "train" and "validation" sometimes contain no relation
+        else:
+            assert len(example["relations"]) >= 0
 
 
 @pytest.fixture(scope="module")

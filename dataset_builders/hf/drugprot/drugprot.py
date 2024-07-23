@@ -22,7 +22,7 @@ https://biocreative.bioinformatics.udel.edu/tasks/biocreative-vii/track-1/
 """
 import collections
 from pathlib import Path
-from typing import Dict, Iterator, Tuple
+from typing import Dict, Iterator, Tuple, Optional
 
 import datasets
 
@@ -139,43 +139,44 @@ class DrugProtDataset(datasets.GeneratorBasedBuilder):
         return [
             datasets.SplitGenerator(
                 name=datasets.Split.TRAIN,
-                gen_kwargs={"data_dir": data_dir, "split": "training"},
+                gen_kwargs={
+                    "abstracts_file": data_dir / "training" / "drugprot_training_abstracs.tsv",
+                    "entities_file": data_dir / "training" / "drugprot_training_entities.tsv",
+                    "relations_file": data_dir / "training" / "drugprot_training_relations.tsv",
+                },
             ),
             datasets.SplitGenerator(
                 name=datasets.Split.VALIDATION,
-                gen_kwargs={"data_dir": data_dir, "split": "development"},
+                gen_kwargs={
+                    "abstracts_file": data_dir / "development" / "drugprot_development_abstracs.tsv",
+                    "entities_file": data_dir / "development" / "drugprot_development_entities.tsv",
+                    "relations_file": data_dir / "development" / "drugprot_development_relations.tsv",
+                },
             ),
             datasets.SplitGenerator(
                 name=datasets.Split("test_background"),
-                gen_kwargs={"data_dir": data_dir, "split": "test-background"},
+                gen_kwargs={
+                    "abstracts_file": data_dir / "test-background" / "test_background_abstracts.tsv",
+                    "entities_file": data_dir / "test-background" / "test_background_entities.tsv",
+                    "relations_file": None,
+                },
             ),
         ]
 
-    def _generate_examples(self, data_dir: Path, split: str) -> Iterator[Tuple[str, Dict]]:
+    def _generate_examples(self, **kwargs) -> Iterator[Tuple[str, Dict]]:
         if self.config.name == "drugprot_source":
-            documents = self._read_source_examples(data_dir, split)
+            documents = self._read_source_examples(**kwargs)
             for document_id, document in documents.items():
                 yield document_id, document
 
         elif self.config.name == "drugprot_bigbio_kb":
-            documents = self._read_source_examples(data_dir, split)
+            documents = self._read_source_examples(**kwargs)
             for document_id, document in documents.items():
                 yield document_id, self._transform_source_to_kb(document)
 
-    def _read_source_examples(self, input_dir: Path, split: str) -> Dict:
+    def _read_source_examples(self, abstracts_file: Path, entities_file: Path, relations_file: Optional[Path]) -> Dict:
         """ """
         # Note: The split "test-background" does not contain any relations
-        split_dir = input_dir / split
-        if split == "training" or split == "development":
-            abstracts_file = split_dir / f"drugprot_{split}_abstracs.tsv"
-            entities_file = split_dir / f"drugprot_{split}_entities.tsv"
-            relations_file = split_dir / f"drugprot_{split}_relations.tsv"
-        elif split == "test-background":
-            abstracts_file = split_dir / f"test_background_abstracts.tsv"
-            entities_file = split_dir / f"test_background_entities.tsv"
-        else:
-            raise ValueError(f"Unknown split: {split}")
-
         document_to_entities = collections.defaultdict(list)
         for line in entities_file.read_text().splitlines():
             columns = line.split("\t")
@@ -192,7 +193,7 @@ class DrugProtDataset(datasets.GeneratorBasedBuilder):
 
         document_to_relations = collections.defaultdict(list)
 
-        if split == "training" or split == "development":
+        if relations_file is not None:
             for line in relations_file.read_text().splitlines():
                 columns = line.split("\t")
                 document_id = columns[0]
