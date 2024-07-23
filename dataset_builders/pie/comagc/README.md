@@ -16,6 +16,11 @@ and the following annotation layers:
 - `entities` (annotation type: `LabeledSpan`, target: `text`)
 - `relations` (annotation type: `BinaryRelation`, target: `entities`)
 
+Note: The _labels_ for the relations are defined using a rule-based approach,
+which is described in detail in the `get_relation_label()` method. The label
+`"UNIDENTIFIED"` for relations is introduced for the sake of completeness and
+is not part of the original dataset.
+
 See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) and
 [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/annotations.py) for the annotation
 type definitions.

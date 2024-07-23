@@ -3,11 +3,7 @@ import pytest
 from pytorch_ie import Document
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
-from dataset_builders.pie.comagc.comagc import (
-    Comagc,
-    ComagcDocument,
-    example_to_document,
-)
+from dataset_builders.pie.comagc.comagc import Comagc, ComagcDocument
 from pie_datasets import load_dataset as load_pie_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
@@ -81,15 +77,27 @@ def test_example_to_document(hf_example, builder):
             hf_example["expression_change_keyword_2"],
         ],
     }
-    assert doc.entities.resolve() == [("GENE", "FGF6"), ("CANCER", "prostate cancer")]
+    assert doc.entities.resolve() == [("FGF6", "FGF6"), ("prostate cancer", "prostate cancer")]
     assert doc.relations.resolve() == [
-        ("oncogene", (("GENE", "FGF6"), ("CANCER", "prostate cancer")))
+        ("oncogene", (("FGF6", "FGF6"), ("prostate cancer", "prostate cancer")))
     ]
 
 
 @pytest.fixture(scope="module")
 def builder():
     return BUILDER_CLASS()
+
+
+def test_builder(builder):
+    assert builder is not None
+    assert builder.dataset_name == DATASET_NAME
+    assert builder.document_type == ComagcDocument
+
+
+def test_example_to_document_and_back(builder, hf_example):
+    generated_document = builder._generate_document(hf_example)
+    hf_example_back = builder._generate_example(generated_document)
+    assert hf_example_back == hf_example
 
 
 def test_example_to_document_and_back_all(builder, hf_dataset):
@@ -99,12 +107,6 @@ def test_example_to_document_and_back_all(builder, hf_dataset):
         assert isinstance(doc, BUILDER_CLASS.DOCUMENT_TYPE)
         ex_back = builder._generate_example(doc)
         assert ex_back == example
-
-
-def test_document_to_example_and_back(builder, hf_example):
-    generated_document = builder._generate_document(hf_example)
-    hf_example_back = builder._generate_example(generated_document)
-    assert hf_example_back == hf_example
 
 
 @pytest.fixture(scope="module")
@@ -151,11 +153,11 @@ def test_converted_document_from_pie_dataset(converted_pie_dataset):
         == "Thus, FGF6 is increased in PIN and prostate cancer and can promote the proliferation of the transformed prostatic epithelial cells via paracrine and autocrine mechanisms."
     )
     assert converted_doc.labeled_spans.resolve() == [
-        ("GENE", "FGF6"),
-        ("CANCER", "prostate cancer"),
+        ("FGF6", "FGF6"),
+        ("prostate cancer", "prostate cancer"),
     ]
     assert converted_doc.binary_relations.resolve() == [
-        ("oncogene", (("GENE", "FGF6"), ("CANCER", "prostate cancer")))
+        ("oncogene", (("FGF6", "FGF6"), ("prostate cancer", "prostate cancer")))
     ]
     assert converted_doc.metadata == {
         "annotation": {
