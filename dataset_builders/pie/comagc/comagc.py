@@ -1,15 +1,18 @@
+import logging
 from dataclasses import dataclass
 from typing import Any, Dict
 
 import datasets
 from pytorch_ie import AnnotationLayer, Document, annotation_field
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
 from pytorch_ie.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )
 
 from pie_datasets import ArrowBasedBuilder
+
+logger = logging.getLogger(__name__)
 
 
 @dataclass
@@ -38,31 +41,31 @@ def example_to_document(example) -> ComagcDocument:
         id=example["pmid"],
         metadata=metadata,
     )
-    # entity name is the text of the entity (between the start and end positions)
+    # entity name is (almost) always the text of the entity (between the start and end positions)
     head = LabeledSpan(
         start=example["gene"]["pos"][0],
         end=example["gene"]["pos"][1] + 1,
-        label="GENE",
+        label=example["gene"]["name"],  # GENE
     )
     tail = LabeledSpan(
         start=example["cancer"]["pos"][0],
         end=example["cancer"]["pos"][1] + 1,
-        label="CANCER",
+        label=example["cancer"]["name"],  # CANCER
     )
     doc.entities.extend([head, tail])
 
-    relation = BinaryRelation(head=head, tail=tail, label=get_relation(example))
+    relation = BinaryRelation(head=head, tail=tail, label=get_relation_label(example))
     doc.relations.append(relation)
     return doc
 
 
 def document_to_example(doc: ComagcDocument) -> Dict[str, Any]:
     gene = {
-        "name": doc.text[doc.entities[0].start : doc.entities[0].end],
+        "name": doc.entities[0].label,
         "pos": [doc.entities[0].start, doc.entities[0].end - 1],
     }
     cancer = {
-        "name": doc.text[doc.entities[1].start : doc.entities[1].end],
+        "name": doc.entities[1].label,
         "pos": [doc.entities[1].start, doc.entities[1].end - 1],
     }
 
@@ -109,9 +112,17 @@ class Comagc(ArrowBasedBuilder):
         return document_to_example(document)
 
 
-def get_relation(example):
-    """Simple rule-based function to determine the relation between the gene and the cancer."""
-    # https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-323/tables/3
+def get_relation_label(example: Dict) -> str:
+    """Simple rule-based function to determine the relation between the gene and the cancer.
+
+    As this dataset contains a multi-faceted annotation scheme
+    for gene-cancer relations, it does not only label the relation
+    between gene and cancer, but provides further information.
+    However, the relation of interest stays the gene-class,
+    which can be derived from inference rules
+    (https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-323/tables/3), based on the
+    information given in columns CGE, CCS, IGE, PT.
+    """
 
     rules = [
         {
@@ -195,4 +206,6 @@ def get_relation(example):
         ):
             return rule["Gene class"]
 
-    return "unidentified"
+    # logger.warning("No rule matched.") # turned off to avoid spamming the logs
+    # NOTE: The label "UNIDENTIFIED" is not part of the original dataset, but added for the sake of completeness
+    return "UNIDENTIFIED"
