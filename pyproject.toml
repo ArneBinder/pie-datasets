@@ -36,9 +36,11 @@ pyarrow = "^13"
 pie-modules = ">=0.11.1,<0.13.0"
 torch = [
     # default
-    {version = "^2.1.0+cpu", source = "pytorch", markers = "sys_platform != 'darwin' or platform_machine != 'x86_64'"},
+    {version = "^2.1.0+cpu", source = "pytorch", markers = "sys_platform != 'darwin' or platform_machine != 'arm64' and platform_machine != 'x86_64'"},
     # torch >= 2.3.0 is not available for macOS on intel
     {version = ">=2.1.0,<2.3.0", source = "pypi", markers = "sys_platform == 'darwin' and platform_machine == 'x86_64'"},
+    # macOS with M-series
+    {version = "^2.1.0", source = "pypi", markers = "sys_platform == 'darwin' and platform_machine == 'arm64'"},
 ]
 pytest = "^7.4.2"
 pytest-cov = "^4.1.0"
