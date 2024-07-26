@@ -1,10 +1,14 @@
+import dataclasses
 import logging
 from typing import Union
 
 import pytest
+from pytorch_ie import AnnotationLayer, AnnotationList, annotation_field
+from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.documents import TextBasedDocument
 
 from pie_datasets.builders.brat import (
+    BratAttribute,
     BratBuilder,
     BratDocument,
     BratDocumentWithMergedSpans,
@@ -234,3 +238,23 @@ def test_document_to_example_warnings(builder, caplog):
     with caplog.at_level(logging.WARNING):
         builder._generate_example(doc)
     assert caplog.messages == ["document 1: annotation exists twice: #1 and #2 are identical"]
+
+
+def test_brat_attribute():
+    @dataclasses.dataclass
+    class ExampleDocument(TextBasedDocument):
+        spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+        attributes: AnnotationList[BratAttribute] = annotation_field(target="spans")
+
+    doc = ExampleDocument(text="Jane lives in Berlin.")
+    span = LabeledSpan(start=0, end=4, label="person")
+    doc.spans.append(span)
+
+    span_attribute = BratAttribute(annotation=span, label="actual")
+    doc.attributes.append(span_attribute)
+
+    assert span_attribute.resolve() == (True, "actual", ("person", "Jane"))
+
+    attribute_with_value = BratAttribute(annotation=span, label="actual", value="maybe")
+    doc.attributes.append(attribute_with_value)
+    assert attribute_with_value.resolve() == ("maybe", "actual", ("person", "Jane"))
