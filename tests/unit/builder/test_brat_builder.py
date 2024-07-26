@@ -1,11 +1,19 @@
-from typing import Any
+import dataclasses
+import logging
+from typing import Union
 
 import pytest
-from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pytorch_ie.core import Annotation
+from pytorch_ie import AnnotationLayer, AnnotationList, annotation_field
+from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.documents import TextBasedDocument
 
-from pie_datasets.builders.brat import BratAttribute, BratBuilder
+from pie_datasets.builders.brat import (
+    BratAttribute,
+    BratBuilder,
+    BratDocument,
+    BratDocumentWithMergedSpans,
+    BratNote,
+)
 
 HF_EXAMPLES = [
     {
@@ -28,7 +36,12 @@ HF_EXAMPLES = [
             "resource_id": [],
             "entity_id": [],
         },
-        "notes": {"id": [], "type": [], "target": [], "note": []},
+        "notes": {
+            "id": ["#1"],
+            "type": ["AnnotatorNotes"],
+            "target": ["T1"],
+            "note": ["last name is omitted"],
+        },
     },
     {
         "context": "Seattle is a rainy city. Jenny Durkan is the city's mayor.\n",
@@ -59,35 +72,14 @@ HF_EXAMPLES = [
             "resource_id": [],
             "entity_id": [],
         },
-        "notes": {"id": [], "type": [], "target": [], "note": []},
+        "notes": {
+            "id": ["#1"],
+            "type": ["AnnotatorNotes"],
+            "target": ["R1"],
+            "note": ["single relation"],
+        },
     },
 ]
-
-
-def resolve_annotation(annotation: Annotation) -> Any:
-    if annotation.target is None:
-        return None
-    if isinstance(annotation, LabeledMultiSpan):
-        return (
-            [annotation.target[start:end] for start, end in annotation.slices],
-            annotation.label,
-        )
-    elif isinstance(annotation, LabeledSpan):
-        return (annotation.target[annotation.start : annotation.end], annotation.label)
-    elif isinstance(annotation, BinaryRelation):
-        return (
-            resolve_annotation(annotation.head),
-            annotation.label,
-            resolve_annotation(annotation.tail),
-        )
-    elif isinstance(annotation, BratAttribute):
-        result = (resolve_annotation(annotation.annotation), annotation.label)
-        if annotation.value is not None:
-            return result + (annotation.value,)
-        else:
-            return result
-    else:
-        raise TypeError(f"Unknown annotation type: {type(annotation)}")
 
 
 @pytest.fixture(scope="module", params=BratBuilder.BUILDER_CONFIGS)
@@ -115,67 +107,82 @@ def hf_example(request) -> dict:
 
 def test_generate_document(builder, hf_example):
     kwargs = dict()
-    generated_document = builder._generate_document(example=hf_example, **kwargs)
-    resolved_spans = [resolve_annotation(annotation=span) for span in generated_document.spans]
-    resolved_relations = [
-        resolve_annotation(relation) for relation in generated_document.relations
-    ]
+    generated_document: Union[
+        BratDocument, BratDocumentWithMergedSpans
+    ] = builder._generate_document(example=hf_example, **kwargs)
+
     if hf_example == HF_EXAMPLES[0]:
-        assert len(generated_document.spans) == 2
         assert len(generated_document.relations) == 0
         assert len(generated_document.span_attributes) == 0
         assert len(generated_document.relation_attributes) == 0
 
         if builder.config.name == "default":
-            assert resolved_spans[0] == (["Jane"], "person")
-            assert resolved_spans[1] == (["Berlin"], "city")
+            assert generated_document.spans.resolve() == [
+                ("person", ("Jane",)),
+                ("city", ("Berlin",)),
+            ]
+            assert generated_document.notes.resolve() == [
+                ("last name is omitted", "AnnotatorNotes", ("person", ("Jane",)))
+            ]
         elif builder.config.name == "merge_fragmented_spans":
-            assert resolved_spans[0] == ("Jane", "person")
-            assert resolved_spans[1] == ("Berlin", "city")
+            assert generated_document.spans.resolve() == [("person", "Jane"), ("city", "Berlin")]
+            assert generated_document.notes.resolve() == [
+                ("last name is omitted", "AnnotatorNotes", ("person", "Jane"))
+            ]
         else:
             raise ValueError(f"Unknown builder variant: {builder.name}")
 
     elif hf_example == HF_EXAMPLES[1]:
-        assert len(generated_document.spans) == 2
-        assert len(generated_document.relations) == 1
-        assert len(generated_document.span_attributes) == 1
-        assert len(generated_document.relation_attributes) == 1
-
-        resolved_span_attributes = [
-            resolve_annotation(attribute) for attribute in generated_document.span_attributes
-        ]
-        resolved_relation_attributes = [
-            resolve_annotation(attribute) for attribute in generated_document.relation_attributes
-        ]
-
         if builder.config.name == "default":
-            assert resolved_spans[0] == (["Seattle"], "city")
-            assert resolved_spans[1] == (["Jenny Durkan"], "person")
-            assert resolved_relations[0] == (
-                (["Jenny Durkan"], "person"),
-                "mayor_of",
-                (["Seattle"], "city"),
-            )
-            assert resolved_span_attributes[0] == ((["Seattle"], "city"), "factuality", "actual")
-            assert resolved_relation_attributes[0] == (
-                ((["Jenny Durkan"], "person"), "mayor_of", (["Seattle"], "city")),
-                "statement",
-                "true",
-            )
+            assert generated_document.spans.resolve() == [
+                ("city", ("Seattle",)),
+                ("person", ("Jenny Durkan",)),
+            ]
+            assert generated_document.relations.resolve() == [
+                ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",))))
+            ]
+            assert generated_document.span_attributes.resolve() == [
+                ("actual", "factuality", ("city", ("Seattle",)))
+            ]
+            assert generated_document.relation_attributes.resolve() == [
+                (
+                    "true",
+                    "statement",
+                    ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",)))),
+                )
+            ]
+            assert generated_document.notes.resolve() == [
+                (
+                    "single relation",
+                    "AnnotatorNotes",
+                    ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",)))),
+                )
+            ]
         elif builder.config.name == "merge_fragmented_spans":
-            assert resolved_spans[0] == ("Seattle", "city")
-            assert resolved_spans[1] == ("Jenny Durkan", "person")
-            assert resolved_relations[0] == (
-                ("Jenny Durkan", "person"),
-                "mayor_of",
-                ("Seattle", "city"),
-            )
-            assert resolved_span_attributes[0] == (("Seattle", "city"), "factuality", "actual")
-            assert resolved_relation_attributes[0] == (
-                (("Jenny Durkan", "person"), "mayor_of", ("Seattle", "city")),
-                "statement",
-                "true",
-            )
+            assert generated_document.spans.resolve() == [
+                ("city", "Seattle"),
+                ("person", "Jenny Durkan"),
+            ]
+            assert generated_document.relations.resolve() == [
+                ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle")))
+            ]
+            assert generated_document.span_attributes.resolve() == [
+                ("actual", "factuality", ("city", "Seattle"))
+            ]
+            assert generated_document.relation_attributes.resolve() == [
+                (
+                    "true",
+                    "statement",
+                    ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))),
+                )
+            ]
+            assert generated_document.notes.resolve() == [
+                (
+                    "single relation",
+                    "AnnotatorNotes",
+                    ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))),
+                )
+            ]
         else:
             raise ValueError(f"Unknown builder variant: {config_name}")
     else:
@@ -196,3 +203,75 @@ def test_document_to_example_wrong_type(builder):
     with pytest.raises(TypeError) as exc_info:
         builder._generate_example(doc)
     assert str(exc_info.value) == f"document type {type(doc)} is not supported"
+
+
+def test_example_to_document_exceptions(builder):
+    example = HF_EXAMPLES[0].copy()
+    example["notes"] = {
+        "id": ["#1"],
+        "type": ["AnnotatorNotes"],
+        "target": ["T3"],
+        "note": ["last name is omitted"],
+    }
+
+    kwargs = dict()
+
+    with pytest.raises(Exception) as exc_info:
+        builder._generate_document(example=example, **kwargs)
+    assert str(exc_info.value) == "note target T3 not found in any of the target layers"
+
+
+def test_document_to_example_warnings(builder, caplog):
+    example = HF_EXAMPLES[0].copy()
+    example["notes"] = {
+        "id": ["#1", "#2"],
+        "type": ["AnnotatorNotes", "AnnotatorNotes"],
+        "target": ["T1", "T1"],
+        "note": ["last name is omitted", "last name is omitted"],
+    }
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        doc = builder._generate_document(example)
+    assert caplog.messages == ["document 1: annotation exists twice: #1 and #2 are identical"]
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        builder._generate_example(doc)
+    assert caplog.messages == ["document 1: annotation exists twice: #1 and #2 are identical"]
+
+
+def test_brat_attribute():
+    @dataclasses.dataclass
+    class ExampleDocument(TextBasedDocument):
+        spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+        attributes: AnnotationList[BratAttribute] = annotation_field(target="spans")
+
+    doc = ExampleDocument(text="Jane lives in Berlin.")
+    span = LabeledSpan(start=0, end=4, label="person")
+    doc.spans.append(span)
+
+    span_attribute = BratAttribute(annotation=span, label="actual")
+    doc.attributes.append(span_attribute)
+
+    assert span_attribute.resolve() == (True, "actual", ("person", "Jane"))
+
+    attribute_with_value = BratAttribute(annotation=span, label="actual", value="maybe")
+    doc.attributes.append(attribute_with_value)
+    assert attribute_with_value.resolve() == ("maybe", "actual", ("person", "Jane"))
+
+
+def test_brat_note():
+    @dataclasses.dataclass
+    class ExampleDocument(TextBasedDocument):
+        spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+        notes: AnnotationList[BratNote] = annotation_field(target="spans")
+
+    doc = ExampleDocument(text="Jane lives in Berlin.")
+    span = LabeledSpan(start=0, end=4, label="person")
+    doc.spans.append(span)
+
+    note = BratNote(annotation=span, label="AnnotatorNotes", value="not sure if this is correct")
+    doc.notes.append(note)
+
+    assert note.resolve() == ("not sure if this is correct", "AnnotatorNotes", ("person", "Jane"))
