@@ -210,14 +210,21 @@ def test_example_to_document_exceptions(builder):
     assert str(exc_info.value) == "note target T3 not found in any of the target layers"
 
 
-def test_document_to_example_warnings(builder):
+def test_document_to_example_warnings(builder, caplog):
     example = HF_EXAMPLES[0].copy()
     example["notes"] = {
-        "id": ["#1", "#1"],
+        "id": ["#1", "#2"],
         "type": ["AnnotatorNotes", "AnnotatorNotes"],
         "target": ["T1", "T1"],
         "note": ["last name is omitted", "last name is omitted"],
     }
 
-    doc = builder._generate_document(example)
-    builder._generate_example(doc)
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        doc = builder._generate_document(example)
+    assert caplog.messages == []
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        builder._generate_example(doc)
+    assert caplog.messages == ['document 1: annotation exists twice: #1 and #2 are identical']
