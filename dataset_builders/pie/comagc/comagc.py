@@ -151,7 +151,6 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
     document: ComagcDocument,
 ) -> TextDocumentWithLabeledSpansAndBinaryRelations:
     metadata = {
-        "pmid": document.pmid,
         "cancer_type": document.cancer_type,
         "CGE": document.cge,
         "CCS": document.ccs,
@@ -166,7 +165,7 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
     }
 
     text_document = TextDocumentWithLabeledSpansAndBinaryRelations(
-        text=document.sentence, metadata=metadata
+        id=document.pmid, text=document.sentence, metadata=metadata
     )
 
     gene = LabeledSpan(
