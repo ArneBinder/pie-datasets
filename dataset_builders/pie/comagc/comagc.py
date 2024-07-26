@@ -1,6 +1,6 @@
 import logging
 from dataclasses import dataclass
-from typing import Any, Dict
+from typing import Any, Dict, Optional
 
 import datasets
 from pytorch_ie import AnnotationLayer, Document, annotation_field
@@ -15,37 +15,43 @@ from pie_datasets import ArrowBasedBuilder
 logger = logging.getLogger(__name__)
 
 
+@dataclass(frozen=True)
+class NamedSpan(Span):
+    name: str
+
+    def resolve(self) -> Any:
+        return self.name, super().resolve()
+
+
+@dataclass(frozen=True)
+class SpanWithNameAndType(Span):
+    name: str
+    type: str
+
+    def resolve(self) -> Any:
+        return self.name, self.type, super().resolve()
+
+
 @dataclass
-class ComagcDocument(TextBasedDocument):
-    cancer_type: str = None
-    gene: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
-    cancer: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
-    cge: str = None
-    ccs: str = None
-    pt: str = None
-    ige: str = None
-    expression_change_keywords: AnnotationLayer[MultiLabeledSpan] = annotation_field(target="text")
+class ComagcDocument(Document):
+    pmid: str
+    sentence: str
+    cge: str
+    ccs: str
+    cancer_type: str
+    gene: AnnotationLayer[NamedSpan] = annotation_field(target="sentence")
+    cancer: AnnotationLayer[NamedSpan] = annotation_field(target="sentence")
+    pt: Optional[str] = None
+    ige: Optional[str] = None
+    expression_change_keyword1: AnnotationLayer[SpanWithNameAndType] = annotation_field(target="sentence")
+    expression_change_keyword2: AnnotationLayer[SpanWithNameAndType] = annotation_field(target="sentence")
 
 
 def example_to_document(example) -> ComagcDocument:
-    metadata = {
-        "cancer_type": example["cancer_type"],
-        "annotation": {
-            "CGE": example["CGE"],
-            "CCS": example["CCS"],
-            "PT": example["PT"],
-            "IGE": example["IGE"],
-        },
-        "expression_change_keywords": [
-            example["expression_change_keyword_1"],
-            example["expression_change_keyword_2"],
-        ],
-    }
 
     doc = ComagcDocument(
-        text=example["sentence"],
-        id=example["pmid"],
-        metadata=metadata,
+        pmid=example["pmid"],
+        sentence=example["sentence"],
         cancer_type=example["cancer_type"],
         cge=example["CGE"],
         ccs=example["CCS"],
@@ -53,46 +59,69 @@ def example_to_document(example) -> ComagcDocument:
         ige=example["IGE"],
     )
 
+    # Gene and cancer entities
     # name is (almost) always the text of the gene/cancer (between the start and end position)
-    gene = LabeledSpan(
+    gene = NamedSpan(
         start=example["gene"]["pos"][0],
         end=example["gene"]["pos"][1] + 1,
-        label=example["gene"]["name"],
+        name=example["gene"]["name"],
     )
     doc.gene.extend([gene])
 
-    cancer = LabeledSpan(
+    cancer = NamedSpan(
         start=example["cancer"]["pos"][0],
         end=example["cancer"]["pos"][1] + 1,
-        label=example["cancer"]["name"],
+        name=example["cancer"]["name"],
     )
     doc.cancer.extend([cancer])
 
-    # expression_change_keyword can have None for ["pos"]
-    """expression_change_keyword1 = MultiLabeledSpan(
-        start=example["expression_change_keyword_1"]["pos"][0],
-        end=example["expression_change_keyword_1"]["pos"][1] + 1,
-        label=(example["expression_change_keyword_1"]["name"], example["expression_change_keyword_1"]["type"]),
-    )
-    expression_change_keyword2 = MultiLabeledSpan(
+    # Expression change keywords
+    # expression_change_keyword_1 might have no values
+    if example["expression_change_keyword_1"]["pos"] is not None:
+        expression_change_keyword1 = SpanWithNameAndType(
+            start=example["expression_change_keyword_1"]["pos"][0],
+            end=example["expression_change_keyword_1"]["pos"][1] + 1,
+            name=example["expression_change_keyword_1"]["name"],
+            type=example["expression_change_keyword_1"]["type"],
+        )
+        doc.expression_change_keyword1.extend([expression_change_keyword1])
+
+    expression_change_keyword2 = SpanWithNameAndType(
         start=example["expression_change_keyword_2"]["pos"][0],
         end=example["expression_change_keyword_2"]["pos"][1] + 1,
-        label=(example["expression_change_keyword_2"]["name"], example["expression_change_keyword_2"]["type"]),
+        name=example["expression_change_keyword_2"]["name"],
+        type=example["expression_change_keyword_2"]["type"],
     )
-    doc.expression_change_keywords.extend([expression_change_keyword1, expression_change_keyword2])"""
+    doc.expression_change_keyword2.extend([expression_change_keyword2])
 
     return doc
 
 
 def document_to_example(doc: ComagcDocument) -> Dict[str, Any]:
-    # still need to adjust
+
     gene = {
-        "name": doc.entities[0].label,
-        "pos": [doc.entities[0].start, doc.entities[0].end - 1],
+        "name": doc.gene[0].name,
+        "pos": [doc.gene[0].start, doc.gene[0].end - 1],
     }
     cancer = {
-        "name": doc.entities[1].label,
-        "pos": [doc.entities[1].start, doc.entities[1].end - 1],
+        "name": doc.cancer[0].name,
+        "pos": [doc.cancer[0].start, doc.cancer[0].end - 1],
+    }
+
+    if doc.expression_change_keyword1[0].end == 0:
+        pos = None
+    else:
+        pos = [doc.expression_change_keyword1[0].start, doc.expression_change_keyword1[0].end - 1]
+
+    expression_change_keyword_1 = {
+        "name": doc.expression_change_keyword1[0].name,
+        "pos": pos,
+        "type": doc.expression_change_keyword1[0].type,
+    }
+    expression_change_keyword_2 = {
+        "name": doc.expression_change_keyword2[0].label[0],
+        "pos": [doc.expression_change_keyword2[0].start, doc.expression_change_keyword2[0].end - 1],
+        "type": doc.expression_change_keyword2[0].label[1],
     }
 
     return {
@@ -101,12 +130,12 @@ def document_to_example(doc: ComagcDocument) -> Dict[str, Any]:
         "cancer_type": doc.metadata["cancer_type"],
         "gene": gene,
         "cancer": cancer,
-        "CGE": doc.metadata["annotation"]["CGE"],
-        "CCS": doc.metadata["annotation"]["CCS"],
-        "PT": doc.metadata["annotation"]["PT"],
-        "IGE": doc.metadata["annotation"]["IGE"],
-        "expression_change_keyword_1": doc.metadata["expression_change_keywords"][0],
-        "expression_change_keyword_2": doc.metadata["expression_change_keywords"][1],
+        "CGE": doc.cge,
+        "CCS": doc.ccs,
+        "PT": doc.pt,
+        "IGE": doc.ige,
+        "expression_change_keyword_1": expression_change_keyword_1,
+        "expression_change_keyword_2": expression_change_keyword_2,
     }
 
 
