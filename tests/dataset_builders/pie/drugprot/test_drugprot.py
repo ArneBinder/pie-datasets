@@ -24,8 +24,9 @@ from tests.dataset_builders.common import PIE_BASE_PATH
 DATASET_NAME = "drugprot"
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 HF_DATASET_PATH = Drugprot.BASE_DATASET_PATH
-SPLIT_NAMES = {"train", "validation"}
-SPLIT_SIZES = {"train": 3500, "validation": 750}
+HF_DATASET_REVISION = Drugprot.BASE_DATASET_REVISION
+SPLIT_NAMES = {"train", "validation", "test_background"}
+SPLIT_SIZES = {"train": 3500, "validation": 750, "test_background": 10750}
 
 
 @pytest.fixture(params=[config.name for config in Drugprot.BUILDER_CONFIGS], scope="module")
@@ -35,13 +36,20 @@ def dataset_variant(request) -> str:
 
 @pytest.fixture(scope="module")
 def hf_dataset(dataset_variant) -> datasets.DatasetDict:
-    return datasets.load_dataset(HF_DATASET_PATH, name=dataset_variant)
+    return datasets.load_dataset(
+        HF_DATASET_PATH, revision=HF_DATASET_REVISION, name=dataset_variant
+    )
 
 
 def test_hf_dataset(hf_dataset):
     assert set(hf_dataset) == SPLIT_NAMES
     split_sizes = {split_name: len(ds) for split_name, ds in hf_dataset.items()}
     assert split_sizes == SPLIT_SIZES
+
+
+@pytest.fixture(scope="module", params=list(SPLIT_NAMES))
+def split(request) -> str:
+    return request.param
 
 
 @pytest.fixture(scope="module")
@@ -274,6 +282,39 @@ def test_hf_example(hf_example, dataset_variant):
         }
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
+def test_hf_example_for_every_split(hf_dataset, dataset_variant, split):
+    # covers both dataset variants
+    example = hf_dataset[split][0]
+    if split == "train":
+        assert example["document_id"] == "17512723"
+        assert len(example["entities"]) == 13
+        assert len(example["relations"]) == 1
+    elif split == "validation":
+        assert example["document_id"] == "17651117"
+        assert len(example["entities"]) == 18
+        assert len(example["relations"]) == 0
+    elif split == "test_background":
+        assert example["document_id"] == "32733640"
+        assert len(example["entities"]) == 37
+        assert len(example["relations"]) == 0
+    else:
+        raise ValueError(f"Unknown dataset split: {split}")
+
+
+def test_hf_dataset_all(hf_dataset, split):
+    # covers both dataset variants
+    for example in hf_dataset[split]:
+        assert example["document_id"] is not None
+        assert len(example["entities"]) > 0
+
+        # The split "test_background" does not contain any relations
+        if split == "test_background":
+            assert len(example["relations"]) == 0
+        # The splits "train" and "validation" sometimes contain no relation
+        else:
+            assert len(example["relations"]) >= 0
 
 
 @pytest.fixture(scope="module")

@@ -107,7 +107,8 @@ class Drugprot(GeneratorBasedBuilder):
     }
 
     BASE_DATASET_PATH = "bigbio/drugprot"
-    BASE_DATASET_REVISION = "38ff03d68347aaf694e598c50cb164191f50f61c"
+    # This revision includes the "test_background" split (see https://github.com/bigscience-workshop/biomedical/pull/928)
+    BASE_DATASET_REVISION = "0cc98b3d292242e69adcfd2c3e5eea94baaca8ea"
 
     BUILDER_CONFIGS = [
         datasets.BuilderConfig(
