@@ -58,29 +58,21 @@ def test_example_to_document(hf_example, builder):
     doc = builder._generate_document(hf_example)
 
     assert doc is not None
+    assert doc.pmid == hf_example["pmid"]
     assert (
-        doc.text
+        doc.sentence
         == "Thus, FGF6 is increased in PIN and prostate cancer and can promote the proliferation of the transformed "
         "prostatic epithelial cells via paracrine and autocrine mechanisms."
     )
-    assert doc.id == hf_example["pmid"]
-    assert doc.metadata == {
-        "cancer_type": hf_example["cancer_type"],
-        "annotation": {
-            "CGE": hf_example["CGE"],
-            "CCS": hf_example["CCS"],
-            "PT": hf_example["PT"],
-            "IGE": hf_example["IGE"],
-        },
-        "expression_change_keywords": [
-            hf_example["expression_change_keyword_1"],
-            hf_example["expression_change_keyword_2"],
-        ],
-    }
-    assert doc.entities.resolve() == [("FGF6", "FGF6"), ("prostate cancer", "prostate cancer")]
-    assert doc.relations.resolve() == [
-        ("oncogene", (("FGF6", "FGF6"), ("prostate cancer", "prostate cancer")))
-    ]
+    assert doc.cancer_type == hf_example["cancer_type"]
+    assert doc.gene.resolve() == [('FGF6', 'FGF6')]
+    assert doc.cancer.resolve() == [('prostate cancer', 'prostate cancer')]
+    assert doc.cge == hf_example["CGE"]
+    assert doc.ccs == hf_example["CCS"]
+    assert doc.pt == hf_example["PT"]
+    assert doc.ige == hf_example["IGE"]
+    assert doc.expression_change_keyword1.resolve() == []
+    assert doc.expression_change_keyword2.resolve() == [('increased', 'Positive_regulation', 'increased')]
 
 
 @pytest.fixture(scope="module")
