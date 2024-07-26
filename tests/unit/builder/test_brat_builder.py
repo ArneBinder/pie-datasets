@@ -3,7 +3,7 @@ from typing import Union
 import pytest
 from pytorch_ie.documents import TextBasedDocument
 
-from pie_datasets.builders.brat import (
+from src.pie_datasets.builders.brat import (
     BratBuilder,
     BratDocument,
     BratDocumentWithMergedSpans,
@@ -57,7 +57,7 @@ HF_EXAMPLES = [
             "id": ["A1", "A2"],
             "type": ["factuality", "statement"],
             "target": ["T1", "R1"],
-            "value": ["actual", "true"],
+            "value": ["actual", None],
         },
         "normalizations": {
             "id": [],
@@ -140,7 +140,6 @@ def test_generate_document(builder, hf_example):
             ]
             assert generated_document.relation_attributes.resolve() == [
                 (
-                    "true",
                     "statement",
                     ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",)))),
                 )
@@ -164,11 +163,7 @@ def test_generate_document(builder, hf_example):
                 ("actual", "factuality", ("city", "Seattle"))
             ]
             assert generated_document.relation_attributes.resolve() == [
-                (
-                    "true",
-                    "statement",
-                    ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))),
-                )
+                ("statement", ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))))
             ]
             assert generated_document.notes.resolve() == [
                 (
@@ -197,3 +192,32 @@ def test_document_to_example_wrong_type(builder):
     with pytest.raises(TypeError) as exc_info:
         builder._generate_example(doc)
     assert str(exc_info.value) == f"document type {type(doc)} is not supported"
+
+
+def test_example_to_document_exceptions(builder):
+    example = HF_EXAMPLES[0].copy()
+    example["notes"] = {
+        "id": ["#1"],
+        "type": ["AnnotatorNotes"],
+        "target": ["T3"],
+        "note": ["last name is omitted"],
+    }
+
+    kwargs = dict()
+
+    with pytest.raises(Exception) as exc_info:
+        builder._generate_document(example=example, **kwargs)
+    assert str(exc_info.value) == "note target T3 not found in any of the target layers"
+
+
+def test_document_to_example_warnings(builder):
+    example = HF_EXAMPLES[0].copy()
+    example["notes"] = {
+        "id": ["#1", "#1"],
+        "type": ["AnnotatorNotes", "AnnotatorNotes"],
+        "target": ["T1", "T1"],
+        "note": ["last name is omitted", "last name is omitted"],
+    }
+
+    doc = builder._generate_document(example)
+    builder._generate_example(doc)

@@ -322,9 +322,8 @@ def document_to_example(
         }
         if note_annotation in notes_dicts:
             prev_ann_dict = notes_dicts[note_annotation]
-            ann_dict = note_annotation
             logger.warning(
-                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {ann_dict['id']} "
+                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {note_dict['id']} "
                 f"are identical"
             )
         notes_dicts[note_annotation] = note_dict
