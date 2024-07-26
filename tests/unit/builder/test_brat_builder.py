@@ -12,6 +12,7 @@ from pie_datasets.builders.brat import (
     BratBuilder,
     BratDocument,
     BratDocumentWithMergedSpans,
+    BratNote,
 )
 
 HF_EXAMPLES = [
@@ -258,3 +259,19 @@ def test_brat_attribute():
     attribute_with_value = BratAttribute(annotation=span, label="actual", value="maybe")
     doc.attributes.append(attribute_with_value)
     assert attribute_with_value.resolve() == ("maybe", "actual", ("person", "Jane"))
+
+
+def test_brat_note():
+    @dataclasses.dataclass
+    class ExampleDocument(TextBasedDocument):
+        spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+        notes: AnnotationList[BratNote] = annotation_field(target="spans")
+
+    doc = ExampleDocument(text="Jane lives in Berlin.")
+    span = LabeledSpan(start=0, end=4, label="person")
+    doc.spans.append(span)
+
+    note = BratNote(annotation=span, label="AnnotatorNotes", value="not sure if this is correct")
+    doc.notes.append(note)
+
+    assert note.resolve() == ("not sure if this is correct", "AnnotatorNotes", ("person", "Jane"))
