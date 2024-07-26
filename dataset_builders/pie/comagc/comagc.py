@@ -4,11 +4,8 @@ from typing import Any, Dict, Optional
 
 import datasets
 from pytorch_ie import AnnotationLayer, Document, annotation_field
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span, MultiLabeledSpan
-from pytorch_ie.documents import (
-    TextBasedDocument,
-    TextDocumentWithLabeledSpansAndBinaryRelations,
-)
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 from pie_datasets import ArrowBasedBuilder
 
@@ -43,12 +40,15 @@ class ComagcDocument(Document):
     cancer: AnnotationLayer[NamedSpan] = annotation_field(target="sentence")
     pt: Optional[str] = None
     ige: Optional[str] = None
-    expression_change_keyword1: AnnotationLayer[SpanWithNameAndType] = annotation_field(target="sentence")
-    expression_change_keyword2: AnnotationLayer[SpanWithNameAndType] = annotation_field(target="sentence")
+    expression_change_keyword1: AnnotationLayer[SpanWithNameAndType] = annotation_field(
+        target="sentence"
+    )
+    expression_change_keyword2: AnnotationLayer[SpanWithNameAndType] = annotation_field(
+        target="sentence"
+    )
 
 
 def example_to_document(example) -> ComagcDocument:
-
     doc = ComagcDocument(
         pmid=example["pmid"],
         sentence=example["sentence"],
@@ -98,7 +98,6 @@ def example_to_document(example) -> ComagcDocument:
 
 
 def document_to_example(doc: ComagcDocument) -> Dict[str, Any]:
-
     gene = {
         "name": doc.gene[0].name,
         "pos": [doc.gene[0].start, doc.gene[0].end - 1],
@@ -108,26 +107,35 @@ def document_to_example(doc: ComagcDocument) -> Dict[str, Any]:
         "pos": [doc.cancer[0].start, doc.cancer[0].end - 1],
     }
 
-    if doc.expression_change_keyword1[0].end == 0:
-        pos = None
+    if not doc.expression_change_keyword1.resolve():
+        expression_change_keyword_1 = {
+            "name": "\nNone\n",
+            "pos": None,
+            "type": None,
+        }
     else:
-        pos = [doc.expression_change_keyword1[0].start, doc.expression_change_keyword1[0].end - 1]
+        expression_change_keyword_1 = {
+            "name": doc.expression_change_keyword1[0].name,
+            "pos": [
+                doc.expression_change_keyword1[0].start,
+                doc.expression_change_keyword1[0].end - 1,
+            ],
+            "type": doc.expression_change_keyword1[0].type,
+        }
 
-    expression_change_keyword_1 = {
-        "name": doc.expression_change_keyword1[0].name,
-        "pos": pos,
-        "type": doc.expression_change_keyword1[0].type,
-    }
     expression_change_keyword_2 = {
-        "name": doc.expression_change_keyword2[0].label[0],
-        "pos": [doc.expression_change_keyword2[0].start, doc.expression_change_keyword2[0].end - 1],
-        "type": doc.expression_change_keyword2[0].label[1],
+        "name": doc.expression_change_keyword2[0].name,
+        "pos": [
+            doc.expression_change_keyword2[0].start,
+            doc.expression_change_keyword2[0].end - 1,
+        ],
+        "type": doc.expression_change_keyword2[0].type,
     }
 
     return {
-        "pmid": doc.id,
-        "sentence": doc.text,
-        "cancer_type": doc.metadata["cancer_type"],
+        "pmid": doc.pmid,
+        "sentence": doc.sentence,
+        "cancer_type": doc.cancer_type,
         "gene": gene,
         "cancer": cancer,
         "CGE": doc.cge,
@@ -137,6 +145,55 @@ def document_to_example(doc: ComagcDocument) -> Dict[str, Any]:
         "expression_change_keyword_1": expression_change_keyword_1,
         "expression_change_keyword_2": expression_change_keyword_2,
     }
+
+
+def convert_to_text_document_with_labeled_spans_and_binary_relations(
+    document: ComagcDocument,
+) -> TextDocumentWithLabeledSpansAndBinaryRelations:
+    metadata = {
+        "pmid": document.pmid,
+        "cancer_type": document.cancer_type,
+        "CGE": document.cge,
+        "CCS": document.ccs,
+        "PT": document.pt,
+        "IGE": document.ige,
+        "expression_change_keyword_1": document_to_example(document)[
+            "expression_change_keyword_1"
+        ],
+        "expression_change_keyword_2": document_to_example(document)[
+            "expression_change_keyword_2"
+        ],
+    }
+
+    text_document = TextDocumentWithLabeledSpansAndBinaryRelations(
+        text=document.sentence, metadata=metadata
+    )
+
+    gene = LabeledSpan(
+        start=document.gene[0].start,
+        end=document.gene[0].end,
+        label="GENE",
+    )
+    text_document.labeled_spans.append(gene)
+
+    cancer = LabeledSpan(
+        start=document.cancer[0].start,
+        end=document.cancer[0].end,
+        label="CANCER",
+    )
+    text_document.labeled_spans.append(cancer)
+
+    label = get_relation_label(
+        cge=document.cge, ccs=document.ccs, ige=document.ige, pt=document.pt
+    )
+    relation = BinaryRelation(
+        head=gene,
+        tail=cancer,
+        label=label,
+    )
+    text_document.binary_relations.append(relation)
+
+    return text_document
 
 
 class Comagc(ArrowBasedBuilder):
@@ -151,23 +208,18 @@ class Comagc(ArrowBasedBuilder):
         )
     ]
 
-    @property
-    def document_converters(self):
-        return {
-            TextDocumentWithLabeledSpansAndBinaryRelations: {
-                "entities": "labeled_spans",
-                "relations": "binary_relations",
-            }
-        }
+    DOCUMENT_CONVERTERS = {
+        TextDocumentWithLabeledSpansAndBinaryRelations: convert_to_text_document_with_labeled_spans_and_binary_relations
+    }
 
     def _generate_document(self, example, **kwargs):
         return example_to_document(example)
 
-    def _generate_example(self, document: Document, **kwargs) -> Dict[str, Any]:
+    def _generate_example(self, document: ComagcDocument, **kwargs) -> Dict[str, Any]:
         return document_to_example(document)
 
 
-def get_relation_label(example: Dict) -> str:
+def get_relation_label(cge: str, ccs: str, pt: str, ige: str) -> str:
     """Simple rule-based function to determine the relation between the gene and the cancer.
 
     As this dataset contains a multi-faceted annotation scheme
@@ -254,10 +306,10 @@ def get_relation_label(example: Dict) -> str:
 
     for rule in rules:
         if (
-            (rule["CGE"] == "*" or example["CGE"] == rule["CGE"])
-            and (rule["CCS"] == "*" or example["CCS"] == rule["CCS"])
-            and (rule["IGE"] == "*" or example["IGE"] == rule["IGE"])
-            and (rule["PT"] == "*" or example["PT"] == rule["PT"])
+            (rule["CGE"] == "*" or cge == rule["CGE"])
+            and (rule["CCS"] == "*" or ccs == rule["CCS"])
+            and (rule["IGE"] == "*" or ige == rule["IGE"])
+            and (rule["PT"] == "*" or pt == rule["PT"])
         ):
             return rule["Gene class"]
 
