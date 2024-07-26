@@ -22,10 +22,8 @@ class BratAttribute(Annotation):
     score: Optional[float] = dataclasses.field(default=None, compare=False)
 
     def resolve(self) -> Hashable:
-        if self.value is None:
-            return self.label, self.annotation.resolve()
-        else:
-            return self.value, self.label, self.annotation.resolve()
+        value = self.value if self.value is not None else True
+        return value, self.label, self.annotation.resolve()
 
 
 @dataclasses.dataclass(eq=True, frozen=True)

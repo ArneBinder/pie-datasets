@@ -58,7 +58,7 @@ HF_EXAMPLES = [
             "id": ["A1", "A2"],
             "type": ["factuality", "statement"],
             "target": ["T1", "R1"],
-            "value": ["actual", None],
+            "value": ["actual", "true"],
         },
         "normalizations": {
             "id": [],
@@ -141,6 +141,7 @@ def test_generate_document(builder, hf_example):
             ]
             assert generated_document.relation_attributes.resolve() == [
                 (
+                    "true",
                     "statement",
                     ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",)))),
                 )
@@ -164,7 +165,11 @@ def test_generate_document(builder, hf_example):
                 ("actual", "factuality", ("city", "Seattle"))
             ]
             assert generated_document.relation_attributes.resolve() == [
-                ("statement", ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))))
+                (
+                    "true",
+                    "statement",
+                    ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))),
+                )
             ]
             assert generated_document.notes.resolve() == [
                 (
