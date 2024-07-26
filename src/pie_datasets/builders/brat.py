@@ -1,8 +1,7 @@
 import dataclasses
-import json
 import logging
 from collections import defaultdict
-from typing import Any, Dict, Hashable, List, Optional, Tuple, Union
+from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datasets
 from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
@@ -21,7 +20,7 @@ class BratAttribute(Annotation):
     value: Optional[str] = None
     score: Optional[float] = dataclasses.field(default=None, compare=False)
 
-    def resolve(self) -> Hashable:
+    def resolve(self) -> Any:
         value = self.value if self.value is not None else True
         return value, self.label, self.annotation.resolve()
 
@@ -32,7 +31,7 @@ class BratNote(Annotation):
     label: str
     value: str
 
-    def resolve(self) -> Hashable:
+    def resolve(self) -> Any:
         return self.value, self.label, self.annotation.resolve()
 
 
@@ -181,7 +180,7 @@ def example_to_document(
     }
 
     doc.metadata["note_ids"] = []
-    notes_dicts: Dict[Hashable, Dict[str, Any]] = dict()
+    notes_dicts: Dict[Annotation, Dict[str, Any]] = dict()
     for note_dict in dl2ld(example["notes"]):
         target_id = note_dict["target"]
         if target_id not in id2annotation:
