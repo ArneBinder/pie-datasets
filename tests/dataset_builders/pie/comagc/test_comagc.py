@@ -65,14 +65,16 @@ def test_example_to_document(hf_example, builder):
         "prostatic epithelial cells via paracrine and autocrine mechanisms."
     )
     assert doc.cancer_type == hf_example["cancer_type"]
-    assert doc.gene.resolve() == [('FGF6', 'FGF6')]
-    assert doc.cancer.resolve() == [('prostate cancer', 'prostate cancer')]
+    assert doc.gene.resolve() == [("FGF6", "FGF6")]
+    assert doc.cancer.resolve() == [("prostate cancer", "prostate cancer")]
     assert doc.cge == hf_example["CGE"]
     assert doc.ccs == hf_example["CCS"]
     assert doc.pt == hf_example["PT"]
     assert doc.ige == hf_example["IGE"]
     assert doc.expression_change_keyword1.resolve() == []
-    assert doc.expression_change_keyword2.resolve() == [('increased', 'Positive_regulation', 'increased')]
+    assert doc.expression_change_keyword2.resolve() == [
+        ("increased", "Positive_regulation", "increased")
+    ]
 
 
 @pytest.fixture(scope="module")
@@ -118,20 +120,23 @@ def test_pie_dataset(pie_dataset):
         doc.copy()
 
 
+@pytest.fixture(scope="module", params=list(BUILDER_CLASS.DOCUMENT_CONVERTERS))
+def converted_document_type(request):
+    return request.param
+
+
 @pytest.fixture(scope="module")
-def converted_pie_dataset(pie_dataset):
-    pie_dataset_converted = pie_dataset.to_document_type(
-        TextDocumentWithLabeledSpansAndBinaryRelations
-    )
+def converted_pie_dataset(pie_dataset, converted_document_type):
+    pie_dataset_converted = pie_dataset.to_document_type(document_type=converted_document_type)
     return pie_dataset_converted
 
 
-def test_converted_pie_dataset(converted_pie_dataset):
+def test_converted_pie_dataset(converted_pie_dataset, converted_document_type):
     assert converted_pie_dataset is not None
     assert len(converted_pie_dataset["train"]) == SPLIT_SIZES["train"]
     for doc in converted_pie_dataset["train"]:
         assert doc is not None
-        assert isinstance(doc, TextDocumentWithLabeledSpansAndBinaryRelations)
+        assert isinstance(doc, converted_document_type)
         doc.copy()
 
 
@@ -145,22 +150,23 @@ def test_converted_document_from_pie_dataset(converted_pie_dataset):
         == "Thus, FGF6 is increased in PIN and prostate cancer and can promote the proliferation of the transformed prostatic epithelial cells via paracrine and autocrine mechanisms."
     )
     assert converted_doc.labeled_spans.resolve() == [
-        ("FGF6", "FGF6"),
-        ("prostate cancer", "prostate cancer"),
+        ("GENE", "FGF6"),
+        ("CANCER", "prostate cancer"),
     ]
     assert converted_doc.binary_relations.resolve() == [
-        ("oncogene", (("FGF6", "FGF6"), ("prostate cancer", "prostate cancer")))
+        ("oncogene", (("GENE", "FGF6"), ("CANCER", "prostate cancer")))
     ]
     assert converted_doc.metadata == {
-        "annotation": {
-            "CCS": "normalTOcancer",
-            "CGE": "increased",
-            "IGE": "unchanged",
-            "PT": "causality",
-        },
+        "CCS": "normalTOcancer",
+        "CGE": "increased",
+        "IGE": "unchanged",
+        "PT": "causality",
         "cancer_type": "prostate",
-        "expression_change_keywords": [
-            {"name": "\nNone\n", "pos": None, "type": None},
-            {"name": "increased", "pos": [14, 22], "type": "Positive_regulation"},
-        ],
+        "expression_change_keyword_1": {"name": "\nNone\n", "pos": None, "type": None},
+        "expression_change_keyword_2": {
+            "name": "increased",
+            "pos": [14, 22],
+            "type": "Positive_regulation",
+        },
+        "pmid": "10945637.s12",
     }
