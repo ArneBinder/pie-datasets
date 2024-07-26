@@ -4,7 +4,7 @@ from typing import Any, Dict
 
 import datasets
 from pytorch_ie import AnnotationLayer, Document, annotation_field
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span, MultiLabeledSpan
 from pytorch_ie.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
@@ -17,8 +17,14 @@ logger = logging.getLogger(__name__)
 
 @dataclass
 class ComagcDocument(TextBasedDocument):
-    entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
-    relations: AnnotationLayer[BinaryRelation] = annotation_field(target="entities")
+    cancer_type: str = None
+    gene: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+    cancer: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+    cge: str = None
+    ccs: str = None
+    pt: str = None
+    ige: str = None
+    expression_change_keywords: AnnotationLayer[MultiLabeledSpan] = annotation_field(target="text")
 
 
 def example_to_document(example) -> ComagcDocument:
@@ -40,26 +46,46 @@ def example_to_document(example) -> ComagcDocument:
         text=example["sentence"],
         id=example["pmid"],
         metadata=metadata,
+        cancer_type=example["cancer_type"],
+        cge=example["CGE"],
+        ccs=example["CCS"],
+        pt=example["PT"],
+        ige=example["IGE"],
     )
-    # entity name is (almost) always the text of the entity (between the start and end positions)
-    head = LabeledSpan(
+
+    # name is (almost) always the text of the gene/cancer (between the start and end position)
+    gene = LabeledSpan(
         start=example["gene"]["pos"][0],
         end=example["gene"]["pos"][1] + 1,
-        label=example["gene"]["name"],  # GENE
+        label=example["gene"]["name"],
     )
-    tail = LabeledSpan(
+    doc.gene.extend([gene])
+
+    cancer = LabeledSpan(
         start=example["cancer"]["pos"][0],
         end=example["cancer"]["pos"][1] + 1,
-        label=example["cancer"]["name"],  # CANCER
+        label=example["cancer"]["name"],
     )
-    doc.entities.extend([head, tail])
+    doc.cancer.extend([cancer])
 
-    relation = BinaryRelation(head=head, tail=tail, label=get_relation_label(example))
-    doc.relations.append(relation)
+    # expression_change_keyword can have None for ["pos"]
+    """expression_change_keyword1 = MultiLabeledSpan(
+        start=example["expression_change_keyword_1"]["pos"][0],
+        end=example["expression_change_keyword_1"]["pos"][1] + 1,
+        label=(example["expression_change_keyword_1"]["name"], example["expression_change_keyword_1"]["type"]),
+    )
+    expression_change_keyword2 = MultiLabeledSpan(
+        start=example["expression_change_keyword_2"]["pos"][0],
+        end=example["expression_change_keyword_2"]["pos"][1] + 1,
+        label=(example["expression_change_keyword_2"]["name"], example["expression_change_keyword_2"]["type"]),
+    )
+    doc.expression_change_keywords.extend([expression_change_keyword1, expression_change_keyword2])"""
+
     return doc
 
 
 def document_to_example(doc: ComagcDocument) -> Dict[str, Any]:
+    # still need to adjust
     gene = {
         "name": doc.entities[0].label,
         "pos": [doc.entities[0].start, doc.entities[0].end - 1],
