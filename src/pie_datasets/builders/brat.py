@@ -182,6 +182,7 @@ def example_to_document(
     }
 
     doc.metadata["note_ids"] = []
+    notes_dicts: Dict[Hashable, Dict[str, Any]] = dict()
     for note_dict in dl2ld(example["notes"]):
         target_id = note_dict["target"]
         if target_id not in id2annotation:
@@ -192,6 +193,13 @@ def example_to_document(
             label=note_dict["type"],
             value=note_dict["note"],
         )
+        if note.resolve() in notes_dicts:
+            prev_note = notes_dicts[note.resolve()]
+            logger.warning(
+                f"document {doc.id}: annotation exists twice: {prev_note['id']} and {note_dict['id']} "
+                f"are identical"
+            )
+        notes_dicts[note.resolve()] = note_dict
         doc.notes.append(note)
         doc.metadata["note_ids"].append(note_dict["id"])
 
