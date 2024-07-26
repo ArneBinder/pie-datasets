@@ -150,6 +150,7 @@ def test_converted_document_from_pie_dataset(hf_example, builder):
     assert converted_doc is not None
     assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndBinaryRelations)
 
+    assert converted_doc.id == "10945637.s12"
     assert (
         converted_doc.text
         == "Thus, FGF6 is increased in PIN and prostate cancer and can promote the proliferation of the transformed prostatic epithelial cells via paracrine and autocrine mechanisms."
@@ -173,5 +174,4 @@ def test_converted_document_from_pie_dataset(hf_example, builder):
             "pos": [14, 22],
             "type": "Positive_regulation",
         },
-        "pmid": "10945637.s12",
     }
