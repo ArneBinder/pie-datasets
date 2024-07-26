@@ -1,4 +1,5 @@
 import dataclasses
+import json
 import logging
 from collections import defaultdict
 from typing import Any, Dict, Hashable, List, Optional, Tuple, Union
@@ -193,15 +194,18 @@ def example_to_document(
             label=note_dict["type"],
             value=note_dict["note"],
         )
-        if note.resolve() in notes_dicts:
-            prev_note = notes_dicts[note.resolve()]
+        doc.notes.append(note)
+        doc.metadata["note_ids"].append(note_dict["id"])
+
+        # check for duplicates: this works only because the note was already added to the document
+        # (annotations attached to different documents are never equal)
+        if note in notes_dicts:
+            prev_note = notes_dicts[note]
             logger.warning(
                 f"document {doc.id}: annotation exists twice: {prev_note['id']} and {note_dict['id']} "
                 f"are identical"
             )
-        notes_dicts[note.resolve()] = note_dict
-        doc.notes.append(note)
-        doc.metadata["note_ids"].append(note_dict["id"])
+        notes_dicts[note] = note_dict
 
     return doc
 
