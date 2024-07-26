@@ -1,3 +1,4 @@
+import logging
 from typing import Union
 
 import pytest
@@ -222,9 +223,9 @@ def test_document_to_example_warnings(builder, caplog):
     caplog.clear()
     with caplog.at_level(logging.WARNING):
         doc = builder._generate_document(example)
-    assert caplog.messages == []
+    assert caplog.messages == ["document 1: annotation exists twice: #1 and #2 are identical"]
 
     caplog.clear()
     with caplog.at_level(logging.WARNING):
         builder._generate_example(doc)
-    assert caplog.messages == ['document 1: annotation exists twice: #1 and #2 are identical']
+    assert caplog.messages == ["document 1: annotation exists twice: #1 and #2 are identical"]
