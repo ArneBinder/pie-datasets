@@ -3,7 +3,7 @@ from typing import Union
 import pytest
 from pytorch_ie.documents import TextBasedDocument
 
-from src.pie_datasets.builders.brat import (
+from pie_datasets.builders.brat import (
     BratBuilder,
     BratDocument,
     BratDocumentWithMergedSpans,
