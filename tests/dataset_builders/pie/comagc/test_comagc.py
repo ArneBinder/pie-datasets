@@ -3,7 +3,11 @@ import pytest
 from pytorch_ie import Document
 from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
-from dataset_builders.pie.comagc.comagc import Comagc, ComagcDocument
+from dataset_builders.pie.comagc.comagc import (
+    Comagc,
+    ComagcDocument,
+    convert_to_text_document_with_labeled_spans_and_binary_relations,
+)
 from pie_datasets import load_dataset as load_pie_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
@@ -140,8 +144,9 @@ def test_converted_pie_dataset(converted_pie_dataset, converted_document_type):
         doc.copy()
 
 
-def test_converted_document_from_pie_dataset(converted_pie_dataset):
-    converted_doc = converted_pie_dataset["train"][0]
+def test_converted_document_from_pie_dataset(hf_example, builder):
+    doc = builder._generate_document(hf_example)
+    converted_doc = convert_to_text_document_with_labeled_spans_and_binary_relations(doc)
     assert converted_doc is not None
     assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndBinaryRelations)
 
