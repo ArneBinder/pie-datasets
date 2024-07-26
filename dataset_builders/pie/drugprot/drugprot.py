@@ -107,7 +107,7 @@ class Drugprot(GeneratorBasedBuilder):
     }
 
     BASE_DATASET_PATH = "bigbio/drugprot"
-    # This revision includes the "test-background" split (https://huggingface.co/datasets/bigbio/drugprot/discussions/1)
+    # This revision includes the "test_background" split (see https://github.com/bigscience-workshop/biomedical/pull/928)
     BASE_DATASET_REVISION = "0cc98b3d292242e69adcfd2c3e5eea94baaca8ea"
 
     BUILDER_CONFIGS = [
