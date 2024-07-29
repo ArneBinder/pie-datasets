@@ -39,10 +39,16 @@ type definitions.
 
 The dataset provides predefined document converters for the following target document types:
 
-- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`: The _labels_ for the binary relations are defined using a rule-based approach,
-  which is described in detail in the `get_relation_label()` method. The label
-  `"UNIDENTIFIED"` for relations is introduced for the sake of completeness and
-  is not part of the original dataset.
+- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`:
+
+  - **labeled_spans**: There are always two labeled spans in each sentence.
+    The first one refers to the gene, while the second one refers to the cancer.
+    Therefore, the `label` is either `"GENE"` or `"CANCER"`.
+  - **binary_relations**: There is always one binary relation in each sentence.
+    This relation is always established between the gene as `head` and the cancer as `tail`.
+    The specific `label` is the related **gene-class**. It is obtained from inference rules (see [here](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-323/tables/3)),
+    that are based on the values of the columns CGE, CCS, IGE and PT. The label `"UNIDENTIFIED"`
+    for relations is introduced for the sake of completeness and is not part of the original dataset!
 
 See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) and
 [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
