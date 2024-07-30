@@ -143,7 +143,7 @@ def example_to_document(
         raise NotImplementedError("converting events is not yet implemented")
 
     doc.metadata["attribute_ids"] = []
-    attribute_annotations: Dict[str, Dict[str, BratAttribute]] = defaultdict(dict)
+    attribute_dicts: Dict[str, Dict[str, BratAttribute]] = defaultdict(dict)
     for attribute_dict in dl2ld(example["attributions"]):
         target_id = attribute_dict["target"]
         if target_id in spans:
@@ -160,6 +160,14 @@ def example_to_document(
         doc.attributes.append(attribute)
         doc.metadata["attribute_ids"].append(attribute_dict["id"])
 
+        if attribute in attribute_dicts:
+            prev_attribute = attribute_dicts[attribute]
+            logger.warning(
+                f"document {doc.id}: annotation exists twice: {prev_attribute['id']} and {attribute_dict['id']} "
+                f"are identical"
+            )
+        attribute_dicts[attribute] = attribute_dict
+
     normalizations = dl2ld(example["normalizations"])
     if len(normalizations) > 0:
         raise NotImplementedError("converting normalizations is not yet implemented")
@@ -167,8 +175,7 @@ def example_to_document(
     id2annotation = {
         **spans,
         **relations,
-        **attribute_annotations["spans"],
-        **attribute_annotations["relations"],
+        **attribute_dicts,
     }
 
     doc.metadata["note_ids"] = []
@@ -274,11 +281,11 @@ def document_to_example(
 
     attribute_dicts: Dict[Annotation, Dict[str, Any]] = dict()
     for i, attribute_annotation in enumerate(document.attributes):
-        note_id = document.metadata["attribute_ids"][i]
-        annotation2id[attribute_annotation] = note_id
+        attribute_id = document.metadata["attribute_ids"][i]
+        annotation2id[attribute_annotation] = attribute_id
         target_id = annotation2id[attribute_annotation.annotation]
-        note_dict = {
-            "id": note_id,
+        attribute_dict = {
+            "id": attribute_id,
             "type": attribute_annotation.label,
             "target": target_id,
             "value": attribute_annotation.value,
@@ -286,10 +293,10 @@ def document_to_example(
         if attribute_annotation in attribute_dicts:
             prev_ann_dict = attribute_dicts[attribute_annotation]
             logger.warning(
-                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {note_dict['id']} "
+                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {attribute_dict['id']} "
                 f"are identical"
             )
-        attribute_dicts[attribute_annotation] = note_dict
+        attribute_dicts[attribute_annotation] = attribute_dict
     example["attributions"] = ld2dl(
         list(attribute_dicts.values()), keys=["id", "type", "target", "value"]
     )
