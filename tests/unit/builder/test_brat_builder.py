@@ -7,7 +7,7 @@ from pie_core import AnnotationLayer, annotation_field
 from pie_modules.annotations import LabeledSpan
 from pie_modules.documents import TextBasedDocument
 
-from pie_datasets.builders.brat import (
+from src.pie_datasets.builders.brat import (
     BratAttribute,
     BratBuilder,
     BratDocument,
@@ -113,8 +113,7 @@ def test_generate_document(builder, hf_example):
 
     if hf_example == HF_EXAMPLES[0]:
         assert len(generated_document.relations) == 0
-        assert len(generated_document.span_attributes) == 0
-        assert len(generated_document.relation_attributes) == 0
+        assert len(generated_document.attributes) == 0
 
         if builder.config.name == "default":
             assert generated_document.spans.resolve() == [
@@ -141,16 +140,15 @@ def test_generate_document(builder, hf_example):
             assert generated_document.relations.resolve() == [
                 ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",))))
             ]
-            assert generated_document.span_attributes.resolve() == [
-                ("actual", "factuality", ("city", ("Seattle",)))
-            ]
-            assert generated_document.relation_attributes.resolve() == [
+            assert generated_document.attributes.resolve() == [
+                ("actual", "factuality", ("city", ("Seattle",))),
                 (
                     "true",
                     "statement",
                     ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",)))),
-                )
+                ),
             ]
+
             assert generated_document.notes.resolve() == [
                 (
                     "single relation",
@@ -166,15 +164,13 @@ def test_generate_document(builder, hf_example):
             assert generated_document.relations.resolve() == [
                 ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle")))
             ]
-            assert generated_document.span_attributes.resolve() == [
-                ("actual", "factuality", ("city", "Seattle"))
-            ]
-            assert generated_document.relation_attributes.resolve() == [
+            assert generated_document.attributes.resolve() == [
+                ("actual", "factuality", ("city", "Seattle")),
                 (
                     "true",
                     "statement",
                     ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))),
-                )
+                ),
             ]
             assert generated_document.notes.resolve() == [
                 (
