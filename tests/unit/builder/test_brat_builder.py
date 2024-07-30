@@ -7,7 +7,7 @@ from pie_core import AnnotationLayer, annotation_field
 from pie_modules.annotations import LabeledSpan
 from pie_modules.documents import TextBasedDocument
 
-from src.pie_datasets.builders.brat import (
+from pie_datasets.builders.brat import (
     BratAttribute,
     BratBuilder,
     BratDocument,
@@ -216,6 +216,19 @@ def test_example_to_document_exceptions(builder):
         builder._generate_document(example=example, **kwargs)
     assert str(exc_info.value) == "note target T3 not found in any of the target layers"
 
+    example = HF_EXAMPLES[1].copy()
+    example["attributions"] = {
+        "id": ["A1"],
+        "type": ["factuality"],
+        "target": [
+            "N1",
+        ],
+        "value": ["actual"],
+    }
+    with pytest.raises(Exception) as exc_info:
+        builder._generate_document(example=example, **kwargs)
+    assert str(exc_info.value) == "only span and relation attributes are supported yet"
+
 
 def test_document_to_example_warnings(builder, caplog):
     example = HF_EXAMPLES[0].copy()
@@ -235,6 +248,24 @@ def test_document_to_example_warnings(builder, caplog):
     with caplog.at_level(logging.WARNING):
         builder._generate_example(doc)
     assert caplog.messages == ["document 1: annotation exists twice: #1 and #2 are identical"]
+
+    example = HF_EXAMPLES[1].copy()
+    example["attributions"] = {
+        "id": ["A1", "A2"],
+        "type": ["factuality", "factuality"],
+        "target": ["T1", "T1"],
+        "value": ["actual", "actual"],
+    }
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        doc = builder._generate_document(example)
+    assert caplog.messages == ["document 2: annotation exists twice: A1 and A2 are identical"]
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        builder._generate_example(doc)
+    assert caplog.messages == ["document 2: annotation exists twice: A1 and A2 are identical"]
 
 
 def test_brat_attribute():
