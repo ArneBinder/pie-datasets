@@ -201,21 +201,7 @@ def test_document_to_example_wrong_type(builder):
     assert str(exc_info.value) == f"document type {type(doc)} is not supported"
 
 
-def test_example_to_document_exceptions(builder):
-    example = HF_EXAMPLES[0].copy()
-    example["notes"] = {
-        "id": ["#1"],
-        "type": ["AnnotatorNotes"],
-        "target": ["T3"],
-        "note": ["last name is omitted"],
-    }
-
-    kwargs = dict()
-
-    with pytest.raises(Exception) as exc_info:
-        builder._generate_document(example=example, **kwargs)
-    assert str(exc_info.value) == "note target T3 not found in any of the target layers"
-
+def test_example_to_document_missing_attribute_target(builder):
     example = HF_EXAMPLES[1].copy()
     example["attributions"] = {
         "id": ["A1"],
@@ -226,8 +212,28 @@ def test_example_to_document_exceptions(builder):
         "value": ["actual"],
     }
     with pytest.raises(Exception) as exc_info:
-        builder._generate_document(example=example, **kwargs)
-    assert str(exc_info.value) == "only span and relation attributes are supported yet"
+        builder._generate_document(example=example)
+    assert (
+        str(exc_info.value)
+        == "attribute target annotation N1 not found in any of the target layers (spans, relations)"
+    )
+
+
+def test_example_to_document_missing_note_target(builder):
+    example = HF_EXAMPLES[0].copy()
+    example["notes"] = {
+        "id": ["#1"],
+        "type": ["AnnotatorNotes"],
+        "target": ["T3"],
+        "note": ["last name is omitted"],
+    }
+
+    with pytest.raises(Exception) as exc_info:
+        builder._generate_document(example=example)
+    assert (
+        str(exc_info.value)
+        == "note target annotation T3 not found in any of the target layers (spans, relations, attributes)"
+    )
 
 
 def test_document_to_example_warnings(builder, caplog):
