@@ -289,14 +289,14 @@ def get_relation_label(cge: str, ccs: str, pt: str, ige: str) -> str:
         },
         {
             "CGE": "decreased",
-            "CCS": "cancer->cancer",
+            "CCS": "cancerTOcancer",
             "IGE": "up-regulated",
             "PT": "observation",
             "Gene class": "biomarker",
         },
         {
             "CGE": "increased",
-            "CCS": "cancer->cancer",
+            "CCS": "cancerTOcancer",
             "IGE": "down-regulated",
             "PT": "observation",
             "Gene class": "biomarker",
@@ -312,6 +312,8 @@ def get_relation_label(cge: str, ccs: str, pt: str, ige: str) -> str:
         ):
             return rule["Gene class"]
 
-    # logger.warning("No rule matched.") # turned off to avoid spamming the logs
-    # NOTE: The label "UNIDENTIFIED" is not part of the original dataset, but added for the sake of completeness
+    # Commented out to avoid spamming the logs
+    # logger.warning("No rule matched. cge: " + cge + " - ccs: " + ccs + " - ige: " + ige + " - pt: " + pt)
+    # NOTE: The label "UNIDENTIFIED" is not part of the original dataset, but added if no inference rule matches.
+    #       In total 303 (37%) of the 821 examples in the dataset are labeled as "UNIDENTIFIED".
     return "UNIDENTIFIED"
