@@ -150,14 +150,13 @@ def example_to_document(
 
     # create span annotations
     spans: Dict[str, BratSpan] = dict()
-    span_locations: List[Tuple[Tuple[int, int], ...]] = []
-    span_texts: List[str] = []
+    doc.metadata["span_ids"] = []
+    doc.metadata["span_locations"] = []
+    doc.metadata["span_texts"] = []
     for span_dict in dl2ld(example["spans"]):
         starts: List[int] = span_dict["locations"]["start"]
         ends: List[int] = span_dict["locations"]["end"]
         slices = tuple(zip(starts, ends))
-        span_locations.append(slices)
-        span_texts.append(span_dict["text"])
         # sanity check
         span_text_parts = [doc.text[start:end] for start, end in slices]
         joined_span_texts_stripped = " ".join(span_text_parts).strip()
@@ -192,15 +191,17 @@ def example_to_document(
             span = BratMultiSpan(slices=slices, label=span_dict["type"])
         spans[span_dict["id"]] = span
 
-    # add span annotations to the document
-    doc.spans.extend(spans.values())
-    doc.metadata["span_ids"] = list(spans.keys())
-    doc.metadata["span_locations"] = span_locations
-    doc.metadata["span_texts"] = span_texts
-    id2annotation.update(spans)
+        # add span annotation to the document
+        doc.spans.append(span)
+        doc.metadata["span_ids"].append(span_dict["id"])
+        doc.metadata["span_locations"].append(slices)
+        doc.metadata["span_texts"].append(span_dict["text"])
+
+        id2annotation[span_dict["id"]] = span
 
     # create relation annotations
     relations: Dict[str, BratRelation] = dict()
+    doc.metadata["relation_ids"] = []
     for rel_dict in dl2ld(example["relations"]):
         arguments = dict(zip(rel_dict["arguments"]["type"], rel_dict["arguments"]["target"]))
         assert set(arguments) == {"Arg1", "Arg2"}
@@ -209,15 +210,18 @@ def example_to_document(
         rel = BratRelation(head=head, tail=tail, label=rel_dict["type"])
         relations[rel_dict["id"]] = rel
 
-    # add relation annotations to the document
-    doc.relations.extend(relations.values())
-    doc.metadata["relation_ids"] = list(relations.keys())
-    id2annotation.update(relations)
+        # add relation annotation to the document
+        doc.relations.append(rel)
+        doc.metadata["relation_ids"].append(rel_dict["id"])
 
+        id2annotation[rel_dict["id"]] = rel
+
+    # create equivalence relation annotations
     equivalence_relations = dl2ld(example["equivalence_relations"])
     if len(equivalence_relations) > 0:
         raise NotImplementedError("converting equivalence_relations is not yet implemented")
 
+    # create event annotations
     events = dl2ld(example["events"])
     if len(events) > 0:
         raise NotImplementedError("converting events is not yet implemented")
@@ -240,6 +244,14 @@ def example_to_document(
         )
         attributes[attribute_dict["id"]] = attribute
 
+        # add attribute annotation to the document
+        doc.attributes.append(attribute)
+        doc.metadata["attribute_ids"].append(attribute_dict["id"])
+
+        id2annotation[attribute_dict["id"]] = attribute
+
+        # check for duplicates: this works only because the attribute was already added to the document
+        # (annotations attached to different documents are never equal)
         if attribute in attribute_annotation2dict:
             prev_attribute = attribute_annotation2dict[attribute]
             logger.warning(
@@ -248,11 +260,7 @@ def example_to_document(
             )
         attribute_annotation2dict[attribute] = attribute_dict
 
-    # add attribute annotations to the document
-    doc.attributes.extend(attributes.values())
-    doc.metadata["attribute_ids"].extend(attributes.keys())
-    id2annotation.update(attributes)
-
+    # create normalization annotations
     normalizations = dl2ld(example["normalizations"])
     if len(normalizations) > 0:
         raise NotImplementedError("converting normalizations is not yet implemented")
@@ -276,6 +284,12 @@ def example_to_document(
         )
         notes[note_dict["id"]] = note
 
+        # add note annotation to the document
+        doc.notes.append(note)
+        doc.metadata["note_ids"].append(note_dict["id"])
+
+        id2annotation[note_dict["id"]] = note
+
         # check for duplicates: this works only because the note was already added to the document
         # (annotations attached to different documents are never equal)
         if note in note_annotation2dict:
@@ -285,11 +299,6 @@ def example_to_document(
                 f"are identical"
             )
         note_annotation2dict[note] = note_dict
-
-    # add note annotations to the document
-    doc.notes.extend(notes.values())
-    doc.metadata["note_ids"].extend(notes.keys())
-    id2annotation.update(notes)
 
     return doc
 
