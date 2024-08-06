@@ -185,12 +185,14 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
     label = get_relation_label(
         cge=document.cge, ccs=document.ccs, ige=document.ige, pt=document.pt
     )
-    relation = BinaryRelation(
-        head=gene,
-        tail=cancer,
-        label=label,
-    )
-    text_document.binary_relations.append(relation)
+
+    if label:
+        relation = BinaryRelation(
+            head=gene,
+            tail=cancer,
+            label=label,
+        )
+        text_document.binary_relations.append(relation)
 
     return text_document
 
@@ -218,7 +220,7 @@ class Comagc(ArrowBasedBuilder):
         return document_to_example(document)
 
 
-def get_relation_label(cge: str, ccs: str, pt: str, ige: str) -> str:
+def get_relation_label(cge: str, ccs: str, pt: str, ige: str):
     """Simple rule-based function to determine the relation between the gene and the cancer.
 
     As this dataset contains a multi-faceted annotation scheme
@@ -314,6 +316,6 @@ def get_relation_label(cge: str, ccs: str, pt: str, ige: str) -> str:
 
     # Commented out to avoid spamming the logs
     # logger.warning("No rule matched. cge: " + cge + " - ccs: " + ccs + " - ige: " + ige + " - pt: " + pt)
-    # NOTE: The label "UNIDENTIFIED" is not part of the original dataset, but added if no inference rule matches.
-    #       In total 303 (37%) of the 821 examples in the dataset are labeled as "UNIDENTIFIED".
-    return "UNIDENTIFIED"
+    # NOTE: In case no inference rule is applicable, no relation is returned and
+    #       eventually no relation is added to the document.
+    return None
