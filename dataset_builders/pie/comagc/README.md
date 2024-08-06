@@ -47,9 +47,9 @@ The dataset provides predefined document converters for the following target doc
   - **binary_relations**: There is always one binary relation in each sentence.
     This relation is always established between the gene as `head` and the cancer as `tail`.
     The specific `label` is the related **gene-class**. It is obtained from inference rules (cf [here](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-323/tables/3)),
-    that are based on the values of the columns CGE, CCS, IGE and PT. The label `"UNIDENTIFIED"`
-    for relations is assigned if no inference rule applies and is not part of the original dataset.
-    In total 303 of the 821 examples are labeled as `"UNIDENTIFIED"` (cf [here](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-323/tables/7)).
+    that are based on the values of the columns CGE, CCS, IGE and PT. In case no gene-class can be inferred,
+    no binary relation is added to the document. In total to 303 of the 821 examples,
+    there is no rule is applicable (cf [here](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-323/tables/7)).
 
 See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) and
 [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
