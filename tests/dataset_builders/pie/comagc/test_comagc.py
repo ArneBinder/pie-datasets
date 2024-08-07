@@ -175,3 +175,36 @@ def test_converted_document_from_pie_dataset(hf_example, builder):
             "type": "Positive_regulation",
         },
     }
+
+
+def test_converted_document_without_relation(converted_pie_dataset, converted_document_type):
+    assert converted_pie_dataset is not None
+    # Test a document without relations
+    converted_doc = converted_pie_dataset["train"][17]
+    assert converted_doc is not None
+    assert isinstance(converted_doc, TextDocumentWithLabeledSpansAndBinaryRelations)
+
+    assert converted_doc.id == "14744778.s10"
+    assert (
+        converted_doc.text
+        == "Elucidating the molecular events resulting from loss of AP-2 in the prostate epithelium has implications for the understanding and prevention of the onset of prostate cancer."
+    )
+    assert converted_doc.labeled_spans.resolve() == [
+        ("GENE", "AP-2"),
+        ("CANCER", "prostate cancer"),
+    ]
+    # No relations in this document so the binary_relations should be empty
+    assert converted_doc.binary_relations.resolve() == []
+    assert converted_doc.metadata == {
+        "CCS": "unidentifiable",
+        "CGE": "decreased",
+        "IGE": "",
+        "PT": "",
+        "cancer_type": "prostate",
+        "expression_change_keyword_1": {"name": "\nNone\n", "pos": None, "type": None},
+        "expression_change_keyword_2": {
+            "name": "loss",
+            "pos": [48, 51],
+            "type": "Negative_regulation",
+        },
+    }
