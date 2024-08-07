@@ -186,7 +186,7 @@ def convert_to_text_document_with_labeled_spans_and_binary_relations(
         cge=document.cge, ccs=document.ccs, ige=document.ige, pt=document.pt
     )
 
-    if label is None:
+    if label is not None:
         relation = BinaryRelation(
             head=gene,
             tail=cancer,
