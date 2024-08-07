@@ -7,6 +7,7 @@ from dataset_builders.pie.comagc.comagc import (
     Comagc,
     ComagcDocument,
     convert_to_text_document_with_labeled_spans_and_binary_relations,
+    get_relation_label,
 )
 from pie_datasets import load_dataset as load_pie_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
@@ -194,6 +195,13 @@ def test_converted_document_without_relation(converted_pie_dataset, converted_do
         ("CANCER", "prostate cancer"),
     ]
     # No relations in this document so the binary_relations should be empty
+    label = get_relation_label(
+        cge=converted_doc.metadata["CGE"],
+        ccs=converted_doc.metadata["CCS"],
+        pt=converted_doc.metadata["PT"],
+        ige=converted_doc.metadata["IGE"],
+    )
+    assert label is None
     assert converted_doc.binary_relations.resolve() == []
     assert converted_doc.metadata == {
         "CCS": "unidentifiable",
@@ -208,3 +216,89 @@ def test_converted_document_without_relation(converted_pie_dataset, converted_do
             "type": "Negative_regulation",
         },
     }
+
+
+def test_get_relation_label():
+    test_cases = [
+        # label: oncogene
+        {
+            "cge": "increased",
+            "ccs": "normalTOcancer",
+            "pt": "causality",
+            "ige": "*",
+            "expected": "oncogene",
+        },
+        {
+            "cge": "decreased",
+            "ccs": "cancerTOnormal",
+            "pt": "causality",
+            "ige": "unidentifiable",
+            "expected": "oncogene",
+        },
+        {
+            "cge": "decreased",
+            "ccs": "cancerTOnormal",
+            "pt": "*",
+            "ige": "up-regulated",
+            "expected": "oncogene",
+        },
+        # label: tumor suppressor gene
+        {
+            "cge": "decreased",
+            "ccs": "normalTOcancer",
+            "pt": "causality",
+            "ige": "*",
+            "expected": "tumor suppressor gene",
+        },
+        {
+            "cge": "increased",
+            "ccs": "cancerTOnormal",
+            "pt": "causality",
+            "ige": "unidentifiable",
+            "expected": "tumor suppressor gene",
+        },
+        {
+            "cge": "increased",
+            "ccs": "cancerTOnormal",
+            "pt": "*",
+            "ige": "down-regulated",
+            "expected": "tumor suppressor gene",
+        },
+        # label: biomarker
+        {
+            "cge": "*",
+            "ccs": "normalTOcancer",
+            "pt": "observation",
+            "ige": "*",
+            "expected": "biomarker",
+        },
+        {
+            "cge": "*",
+            "ccs": "cancerTOnormal",
+            "pt": "observation",
+            "ige": "unidentifiable",
+            "expected": "biomarker",
+        },
+        {
+            "cge": "decreased",
+            "ccs": "cancerTOcancer",
+            "pt": "observation",
+            "ige": "up-regulated",
+            "expected": "biomarker",
+        },
+        {
+            "cge": "increased",
+            "ccs": "cancerTOcancer",
+            "pt": "observation",
+            "ige": "down-regulated",
+            "expected": "biomarker",
+        },
+        # label: None
+        {"cge": "unknown", "ccs": "unknown", "pt": "unknown", "ige": "unknown", "expected": None},
+    ]
+
+    for i, case in enumerate(test_cases):
+        label = get_relation_label(case["cge"], case["ccs"], case["pt"], case["ige"])
+        assert (
+            label == case["expected"]
+        ), f"Test case {i + 1} failed: expected {case['expected']}, got {label}"
