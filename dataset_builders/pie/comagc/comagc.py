@@ -220,7 +220,7 @@ class Comagc(ArrowBasedBuilder):
         return document_to_example(document)
 
 
-def get_relation_label(cge: str, ccs: str, pt: str, ige: str):
+def get_relation_label(cge: str, ccs: str, pt: str, ige: str) -> Optional[str]:
     """Simple rule-based function to determine the relation between the gene and the cancer.
 
     As this dataset contains a multi-faceted annotation scheme
