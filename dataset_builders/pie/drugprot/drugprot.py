@@ -104,7 +104,6 @@ def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
 
 
 def drugprot2example(doc: DrugprotDocument) -> Dict[str, Any]:
-
     entities = []
     for i, entity in enumerate(doc.entities):
         entities.append(
@@ -147,7 +146,6 @@ def drugprot_bigbio2example(doc: DrugprotBigbioDocument) -> Dict[str, Any]:
                 "offsets": [[entity.start, entity.end]],
                 "type": entity.label,
                 "text": [doc.text[entity.start : entity.end]],
-
             }
         )
 
@@ -228,7 +226,9 @@ class Drugprot(GeneratorBasedBuilder):
         else:
             raise ValueError(f"Unknown dataset name: {self.config.name}")
 
-    def _generate_document(self, example: Dict[str, Any], **kwargs) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
+    def _generate_document(
+        self, example: Dict[str, Any], **kwargs
+    ) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
         if self.config.name == "drugprot_source":
             return example2drugprot(example)
         elif self.config.name == "drugprot_bigbio_kb":
@@ -236,7 +236,9 @@ class Drugprot(GeneratorBasedBuilder):
         else:
             raise ValueError(f"Unknown dataset config name: {self.config.name}")
 
-    def _generate_example(self, document: Union[DrugprotDocument, DrugprotBigbioDocument], **kwargs) -> Dict[str, Any]:
+    def _generate_example(
+        self, document: Union[DrugprotDocument, DrugprotBigbioDocument], **kwargs
+    ) -> Dict[str, Any]:
         if isinstance(document, DrugprotBigbioDocument):
             return drugprot_bigbio2example(document)
         elif isinstance(document, DrugprotDocument):
