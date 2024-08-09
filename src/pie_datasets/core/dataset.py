@@ -671,7 +671,7 @@ def _add_dset_name_to_document(doc: Document, name: str) -> Document:
         )
     if "dataset_name" in doc.metadata:
         raise ValueError(
-            f"Document already has a dataset_name attribute: {doc.metadata['dataset']}"
+            f"Document already has a dataset_name attribute: {doc.metadata['dataset_name']}"
         )
     doc.metadata["dataset_name"] = name
     return doc
