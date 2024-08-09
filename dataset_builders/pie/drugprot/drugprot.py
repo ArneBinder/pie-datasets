@@ -2,6 +2,7 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
 import datasets
+from pytorch_ie import Document
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.documents import (
     AnnotationLayer,
@@ -100,6 +101,14 @@ def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
     return document
 
 
+def drugprot_bigbio2example(doc: DrugprotBigbioDocument) -> Dict[str, Any]:
+    return {}
+
+
+def drugprot2example(doc: DrugprotDocument) -> Dict[str, Any]:
+    return {}
+
+
 class Drugprot(GeneratorBasedBuilder):
     DOCUMENT_TYPES = {
         "drugprot_source": DrugprotDocument,
@@ -153,3 +162,11 @@ class Drugprot(GeneratorBasedBuilder):
             return example2drugprot_bigbio(example)
         else:
             raise ValueError(f"Unknown dataset config name: {self.config.name}")
+
+    def _generate_example(self, document: Document, **kwargs) -> Dict[str, Any]:
+        if isinstance(document, DrugprotBigbioDocument):
+            return drugprot_bigbio2example(document)
+        elif isinstance(document, DrugprotDocument):
+            return drugprot2example(document)
+        else:
+            raise ValueError(f"Unknown document type: {type(document)}")
