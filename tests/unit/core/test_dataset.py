@@ -6,6 +6,7 @@ from typing import Union
 import numpy
 import pytest
 import torch
+from pytorch_ie import Document
 from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.core.taskmodule import (
@@ -431,3 +432,19 @@ def test_dataset_with_taskmodule(
 
     for document in train_dataset:
         assert not document["entities"].predictions
+
+
+def test_pie_dataset_from_documents(documents):
+    assert len(documents) == 8
+    assert all(isinstance(doc, TextBasedDocument) for doc in documents)
+
+    dataset_from_documents = Dataset.from_documents(documents)
+
+    assert isinstance(dataset_from_documents, Dataset)
+
+    assert len(dataset_from_documents) == 8
+    assert all(isinstance(doc, TextBasedDocument) for doc in dataset_from_documents)
+    assert all(doc1.id == doc2.id for doc1, doc2 in zip(documents, dataset_from_documents))
+
+    assert hasattr(dataset_from_documents, "document_type")
+
