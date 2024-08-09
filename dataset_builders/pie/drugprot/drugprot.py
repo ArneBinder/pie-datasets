@@ -31,7 +31,7 @@ class DrugprotBigbioDocument(TextBasedDocument):
 
 
 def example2drugprot(example: Dict[str, Any]) -> DrugprotDocument:
-    metadata = {"entity_ids": []}
+    metadata = {"entity_ids": [], "relation_ids": []}
     id2labeled_span: Dict[str, LabeledSpan] = {}
 
     document = DrugprotDocument(
@@ -58,6 +58,7 @@ def example2drugprot(example: Dict[str, Any]) -> DrugprotDocument:
                 label=relation["type"],
             )
         )
+        document.metadata["relation_ids"].append(relation["id"])
     return document
 
 
@@ -80,7 +81,7 @@ def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
                 label=passage["type"],
             )
         )
-    # We sort labels and relation to always have an deterministic order for testing purposes.
+    # We sort labels and relation to always have a deterministic order for testing purposes.
     for span in example["entities"]:
         labeled_span = LabeledSpan(
             start=span["offsets"][0][0],
@@ -99,6 +100,40 @@ def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
             )
         )
     return document
+
+
+def drugprot2example(doc: DrugprotDocument) -> Dict[str, Any]:
+
+    entities = []
+    for i, entity in enumerate(doc.entities):
+        entities.append(
+            {
+                "id": doc.metadata["entity_ids"][i],
+                "type": entity.label,
+                "text": doc.text[entity.start : entity.end],
+                "offset": [entity.start, entity.end],
+            }
+        )
+
+    relations = []
+    for i, relation in enumerate(doc.relations):
+        relations.append(
+            {
+                "id": doc.metadata["relation_ids"][i],
+                "arg1_id": doc.metadata["entity_ids"][doc.entities.index(relation.head)],
+                "arg2_id": doc.metadata["entity_ids"][doc.entities.index(relation.tail)],
+                "type": relation.label,
+            }
+        )
+
+    return {
+        "document_id": doc.id,
+        "title": doc.title,
+        "abstract": doc.abstract,
+        "text": doc.text,
+        "entities": entities,
+        "relations": relations,
+    }
 
 
 def drugprot_bigbio2example(doc: DrugprotBigbioDocument) -> Dict[str, Any]:
@@ -152,10 +187,7 @@ class Drugprot(GeneratorBasedBuilder):
         else:
             raise ValueError(f"Unknown dataset name: {self.config.name}")
 
-    def _generate_document(
-        self,
-        example: Dict[str, Any],
-    ) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
+    def _generate_document(self, example: Dict[str, Any], **kwargs) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
         if self.config.name == "drugprot_source":
             return example2drugprot(example)
         elif self.config.name == "drugprot_bigbio_kb":
@@ -163,7 +195,7 @@ class Drugprot(GeneratorBasedBuilder):
         else:
             raise ValueError(f"Unknown dataset config name: {self.config.name}")
 
-    def _generate_example(self, document: Document, **kwargs) -> Dict[str, Any]:
+    def _generate_example(self, document: Union[DrugprotDocument, DrugprotBigbioDocument], **kwargs) -> Dict[str, Any]:
         if isinstance(document, DrugprotBigbioDocument):
             return drugprot_bigbio2example(document)
         elif isinstance(document, DrugprotDocument):
