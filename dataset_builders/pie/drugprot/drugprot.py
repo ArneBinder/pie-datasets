@@ -65,7 +65,7 @@ def example2drugprot(example: Dict[str, Any]) -> DrugprotDocument:
 def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
     text = " ".join([" ".join(passage["text"]) for passage in example["passages"]])
     doc_id = example["document_id"]
-    metadata = {"entity_ids": []}
+    metadata = {"entity_ids": [], "relation_ids": []}
     id2labeled_span: Dict[str, LabeledSpan] = {}
 
     document = DrugprotBigbioDocument(
@@ -99,6 +99,7 @@ def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
                 label=relation["type"],
             )
         )
+        document.metadata["relation_ids"].append(relation["id"])
     return document
 
 
@@ -137,11 +138,51 @@ def drugprot2example(doc: DrugprotDocument) -> Dict[str, Any]:
 
 
 def drugprot_bigbio2example(doc: DrugprotBigbioDocument) -> Dict[str, Any]:
-    return {}
+    entities = []
+    for i, entity in enumerate(doc.entities):
+        entities.append(
+            {
+                "id": doc.metadata["entity_ids"][i],
+                "normalized": [],
+                "offsets": [[entity.start, entity.end]],
+                "type": entity.label,
+                "text": [doc.text[entity.start : entity.end]],
 
+            }
+        )
 
-def drugprot2example(doc: DrugprotDocument) -> Dict[str, Any]:
-    return {}
+    relations = []
+    for i, relation in enumerate(doc.relations):
+        relations.append(
+            {
+                "id": doc.metadata["relation_ids"][i],
+                "arg1_id": doc.metadata["entity_ids"][doc.entities.index(relation.head)],
+                "arg2_id": doc.metadata["entity_ids"][doc.entities.index(relation.tail)],
+                "normalized": [],
+                "type": relation.label,
+            }
+        )
+
+    passages = []
+    for passage in doc.passages:
+        passages.append(
+            {
+                "id": doc.id + "_" + passage.label,
+                "text": [doc.text[passage.start : passage.end]],
+                "offsets": [[passage.start, passage.end]],
+                "type": passage.label,
+            }
+        )
+
+    return {
+        "coreferences": [],
+        "document_id": doc.id,
+        "entities": entities,
+        "events": [],
+        "id": doc.id,
+        "passages": passages,
+        "relations": relations,
+    }
 
 
 class Drugprot(GeneratorBasedBuilder):
