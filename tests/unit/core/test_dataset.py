@@ -448,3 +448,8 @@ def test_pie_dataset_from_documents(documents):
 
     assert hasattr(dataset_from_documents, "document_type")
 
+    # Test dataset creation with empty list
+    empty_doc_list = list[Document]()
+    with pytest.raises(ValueError) as excinfo:
+        Dataset.from_documents(empty_doc_list)
+    assert str(excinfo.value) == "No documents to create dataset from"
