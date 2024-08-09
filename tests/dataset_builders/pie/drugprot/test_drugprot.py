@@ -22,6 +22,7 @@ from pie_datasets import DatasetDict, load_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 DATASET_NAME = "drugprot"
+BUILDER_CLASS = Drugprot
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 HF_DATASET_PATH = Drugprot.BASE_DATASET_PATH
 HF_DATASET_REVISION = Drugprot.BASE_DATASET_REVISION
@@ -317,28 +318,7 @@ def test_hf_dataset_all(hf_dataset, split):
             assert len(example["relations"]) >= 0
 
 
-@pytest.fixture(scope="module")
-def builder(dataset_variant) -> Drugprot:
-    return Drugprot(config_name=dataset_variant)
-
-
-def test_document_converters(builder, dataset_variant):
-    if dataset_variant == "drugprot_source":
-        assert set(builder.document_converters) == {TextDocumentWithLabeledSpansAndBinaryRelations}
-    elif dataset_variant == "drugprot_bigbio_kb":
-        assert set(builder.document_converters) == {
-            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
-        }
-    else:
-        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
-
-
-@pytest.fixture(scope="module")
-def document(hf_example, builder) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
-    return builder._generate_document(hf_example)
-
-
-def test_document(document, dataset_variant):
+def test_example_to_document(document, dataset_variant):
     if dataset_variant == "drugprot_source":
         assert isinstance(document, DrugprotDocument)
         assert (
@@ -406,6 +386,44 @@ def test_document(document, dataset_variant):
     assert document.relations.resolve() == [
         ("PRODUCT-OF", (("CHEMICAL", "androstanediol"), ("GENE-Y", "human type 12 RDH")))
     ]
+
+
+@pytest.fixture(scope="module")
+def builder(dataset_variant) -> BUILDER_CLASS:
+    return BUILDER_CLASS(config_name=dataset_variant)
+
+
+def test_builder(builder, dataset_variant):
+    assert builder is not None
+    assert builder.config_id == dataset_variant
+    assert builder.dataset_name == "drugprot"
+    if dataset_variant == "drugprot_source":
+        assert builder.document_type == DrugprotDocument
+    elif dataset_variant == "drugprot_bigbio_kb":
+        assert builder.document_type == DrugprotBigbioDocument
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
+def test_document_to_example(document, builder, hf_example):
+    hf_example_back = builder._generate_example(document)
+    assert hf_example_back == hf_example
+
+
+def test_document_converters(builder, dataset_variant):
+    if dataset_variant == "drugprot_source":
+        assert set(builder.document_converters) == {TextDocumentWithLabeledSpansAndBinaryRelations}
+    elif dataset_variant == "drugprot_bigbio_kb":
+        assert set(builder.document_converters) == {
+            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+        }
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
+@pytest.fixture(scope="module")
+def document(hf_example, builder) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
+    return builder._generate_document(hf_example)
 
 
 @pytest.fixture(scope="module")
