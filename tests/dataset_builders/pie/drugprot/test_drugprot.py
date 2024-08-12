@@ -365,22 +365,23 @@ def test_example_to_document(document, dataset_variant):
         ("GENE-Y", "RDH12"),
         ("GENE-N", "retinol dehydrogenase"),
     ]
-    # check entity ids
+    # check metadata
     assert document.metadata["entity_ids"] == [
-        "17512723_T1",
-        "17512723_T2",
-        "17512723_T3",
-        "17512723_T4",
-        "17512723_T5",
-        "17512723_T6",
-        "17512723_T7",
-        "17512723_T8",
-        "17512723_T9",
-        "17512723_T10",
-        "17512723_T11",
-        "17512723_T12",
-        "17512723_T13",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "T8",
+        "T9",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
     ]
+    assert document.metadata["relation_ids"] == ["R0"]
 
     # check the relations
     assert document.relations.resolve() == [
@@ -511,22 +512,23 @@ def test_converted_document(converted_document, converted_document_type):
         ("GENE-Y", "RDH12"),
         ("GENE-N", "retinol dehydrogenase"),
     ]
-    # check entity ids
+    # check metadata
     assert converted_document.metadata["entity_ids"] == [
-        "17512723_T1",
-        "17512723_T2",
-        "17512723_T3",
-        "17512723_T4",
-        "17512723_T5",
-        "17512723_T6",
-        "17512723_T7",
-        "17512723_T8",
-        "17512723_T9",
-        "17512723_T10",
-        "17512723_T11",
-        "17512723_T12",
-        "17512723_T13",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "T8",
+        "T9",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
     ]
+    assert converted_document.metadata["relation_ids"] == ["R0"]
 
     # check the relations
     assert converted_document.binary_relations.resolve() == [

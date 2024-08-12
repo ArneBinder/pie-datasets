@@ -41,6 +41,7 @@ def example2drugprot(example: Dict[str, Any]) -> DrugprotDocument:
         id=example["document_id"],
         metadata=metadata,
     )
+
     for span in example["entities"]:
         labeled_span = LabeledSpan(
             start=span["offset"][0],
@@ -48,17 +49,23 @@ def example2drugprot(example: Dict[str, Any]) -> DrugprotDocument:
             label=span["type"],
         )
         document.entities.append(labeled_span)
-        document.metadata["entity_ids"].append(span["id"])
-        id2labeled_span[span["id"]] = labeled_span
+        entity_id = span["id"].split("_")[1]
+        document.metadata["entity_ids"].append(entity_id)
+        id2labeled_span[entity_id] = labeled_span
+
     for relation in example["relations"]:
+        arg1_id = relation["arg1_id"].split("_")[1]
+        arg2_id = relation["arg2_id"].split("_")[1]
         document.relations.append(
             BinaryRelation(
-                head=id2labeled_span[relation["arg1_id"]],
-                tail=id2labeled_span[relation["arg2_id"]],
+                head=id2labeled_span[arg1_id],
+                tail=id2labeled_span[arg2_id],
                 label=relation["type"],
             )
         )
-        document.metadata["relation_ids"].append(relation["id"])
+        relation_id = "R" + relation["id"].split("_")[1]
+        document.metadata["relation_ids"].append(relation_id)
+
     return document
 
 
@@ -89,17 +96,23 @@ def example2drugprot_bigbio(example: Dict[str, Any]) -> DrugprotBigbioDocument:
             label=span["type"],
         )
         document.entities.append(labeled_span)
-        document.metadata["entity_ids"].append(span["id"])
-        id2labeled_span[span["id"]] = labeled_span
+        entity_id = span["id"].split("_")[1]
+        document.metadata["entity_ids"].append(entity_id)
+        id2labeled_span[entity_id] = labeled_span
+
     for relation in example["relations"]:
+        arg1_id = relation["arg1_id"].split("_")[1]
+        arg2_id = relation["arg2_id"].split("_")[1]
         document.relations.append(
             BinaryRelation(
-                head=id2labeled_span[relation["arg1_id"]],
-                tail=id2labeled_span[relation["arg2_id"]],
+                head=id2labeled_span[arg1_id],
+                tail=id2labeled_span[arg2_id],
                 label=relation["type"],
             )
         )
-        document.metadata["relation_ids"].append(relation["id"])
+        relation_id = "R" + relation["id"].split("_")[1]
+        document.metadata["relation_ids"].append(relation_id)
+
     return document
 
 
@@ -108,7 +121,7 @@ def drugprot2example(doc: DrugprotDocument) -> Dict[str, Any]:
     for i, entity in enumerate(doc.entities):
         entities.append(
             {
-                "id": doc.metadata["entity_ids"][i],
+                "id": doc.id + "_" + doc.metadata["entity_ids"][i],
                 "type": entity.label,
                 "text": doc.text[entity.start : entity.end],
                 "offset": [entity.start, entity.end],
@@ -119,9 +132,13 @@ def drugprot2example(doc: DrugprotDocument) -> Dict[str, Any]:
     for i, relation in enumerate(doc.relations):
         relations.append(
             {
-                "id": doc.metadata["relation_ids"][i],
-                "arg1_id": doc.metadata["entity_ids"][doc.entities.index(relation.head)],
-                "arg2_id": doc.metadata["entity_ids"][doc.entities.index(relation.tail)],
+                "id": doc.id + "_" + doc.metadata["relation_ids"][i][1:],
+                "arg1_id": doc.id
+                + "_"
+                + doc.metadata["entity_ids"][doc.entities.index(relation.head)],
+                "arg2_id": doc.id
+                + "_"
+                + doc.metadata["entity_ids"][doc.entities.index(relation.tail)],
                 "type": relation.label,
             }
         )
@@ -141,7 +158,7 @@ def drugprot_bigbio2example(doc: DrugprotBigbioDocument) -> Dict[str, Any]:
     for i, entity in enumerate(doc.entities):
         entities.append(
             {
-                "id": doc.metadata["entity_ids"][i],
+                "id": doc.id + "_" + doc.metadata["entity_ids"][i],
                 "normalized": [],
                 "offsets": [[entity.start, entity.end]],
                 "type": entity.label,
@@ -153,9 +170,13 @@ def drugprot_bigbio2example(doc: DrugprotBigbioDocument) -> Dict[str, Any]:
     for i, relation in enumerate(doc.relations):
         relations.append(
             {
-                "id": doc.metadata["relation_ids"][i],
-                "arg1_id": doc.metadata["entity_ids"][doc.entities.index(relation.head)],
-                "arg2_id": doc.metadata["entity_ids"][doc.entities.index(relation.tail)],
+                "id": doc.id + "_" + doc.metadata["relation_ids"][i][1:],
+                "arg1_id": doc.id
+                + "_"
+                + doc.metadata["entity_ids"][doc.entities.index(relation.head)],
+                "arg2_id": doc.id
+                + "_"
+                + doc.metadata["entity_ids"][doc.entities.index(relation.tail)],
                 "normalized": [],
                 "type": relation.label,
             }
