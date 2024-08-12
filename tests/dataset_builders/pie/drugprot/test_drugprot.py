@@ -410,6 +410,21 @@ def test_document_to_example(document, builder, hf_example):
     assert hf_example_back == hf_example
 
 
+def test_example_to_document_and_back_all(hf_dataset, builder, dataset_variant):
+    if dataset_variant == "drugprot_source":
+        for example in hf_dataset["train"]:
+            document = builder._generate_document(example)
+            example_back = builder._generate_example(document)
+            assert example_back == example
+    elif dataset_variant == "drugprot_bigbio_kb":
+        for example in hf_dataset["train"]:
+            document = builder._generate_document(example)
+            example_back = builder._generate_example(document)
+            assert example_back == example
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
 def test_document_converters(builder, dataset_variant):
     if dataset_variant == "drugprot_source":
         assert set(builder.document_converters) == {TextDocumentWithLabeledSpansAndBinaryRelations}
