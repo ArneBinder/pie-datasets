@@ -493,8 +493,19 @@ class IterableDataset(datasets.IterableDataset):
         documents: List[Document],
         document_converters: Optional[DocumentConvertersType] = None,
         **dataset_kwargs,
-    ) -> "Dataset":
-        raise NotImplementedError("from_documents is not implemented for IterableDataset")
+    ) -> "IterableDataset":
+        if len(documents) == 0:
+            raise ValueError("No documents to create dataset from")
+        document_type = type(documents[0])
+        data = [doc.asdict() for doc in documents]
+        hf_dataset = datasets.Dataset.from_list(mapping=data, **dataset_kwargs)
+        hf_iterable_dataset = hf_dataset.to_iterable_dataset()
+        dataset = cls.from_hf_dataset(
+            hf_iterable_dataset,
+            document_type=document_type,
+            document_converters=document_converters,
+        )
+        return dataset
 
     def __iter__(self):
         for example in iter(super().__iter__()):
