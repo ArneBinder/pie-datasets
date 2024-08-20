@@ -446,7 +446,9 @@ def test_pie_dataset_from_documents(documents, as_iterable_dataset):
     assert isinstance(dataset_from_documents, dataset_class)
 
     assert all(isinstance(doc, TextBasedDocument) for doc in dataset_from_documents)
-    assert all(doc1.id == doc2.id for doc1, doc2 in zip(documents, dataset_from_documents))
+    assert all(
+        doc1.asdict() == doc2.asdict() for doc1, doc2 in zip(documents, dataset_from_documents)
+    )
     assert hasattr(dataset_from_documents, "document_type")
 
     # Test dataset creation with document converter
