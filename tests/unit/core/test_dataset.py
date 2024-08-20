@@ -551,7 +551,7 @@ def test_concatenate_datasets_errors(dataset_with_converter_functions):
     assert str(excinfo.value) == "All datasets must have the same document type to concatenate"
 
 
-def test_add_set_name_to_document():
+def test_add_dset_name_to_document():
     # Test document having no metadata attribute
     doc = Document()
     assert not hasattr(doc, "metadata")
