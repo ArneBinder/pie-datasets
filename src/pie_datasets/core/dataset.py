@@ -299,6 +299,19 @@ class Dataset(datasets.Dataset, Sequence[D]):
         document_converters: Optional[DocumentConvertersType] = None,
         **dataset_kwargs,
     ) -> "Dataset":
+        """Create a Dataset from a list of documents. It wraps the Huggingface
+        datasets.Dataset.from_list method, see the documentation for more details.
+
+        Args:
+            documents (List[Document]): A list of documents.
+            document_converters (Optional[DocumentConvertersType], optional): A dictionary of document
+                converters. Defaults to None.
+            **dataset_kwargs: Additional arguments for the Huggingface dataset creation.
+
+        Returns:
+            Dataset: The created dataset.
+        """
+
         if len(documents) == 0:
             raise ValueError("No documents to create dataset from")
         document_type = type(documents[0])
