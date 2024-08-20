@@ -2,7 +2,6 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
 import datasets
-from pytorch_ie import Document
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.documents import (
     AnnotationLayer,

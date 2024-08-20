@@ -406,11 +406,12 @@ def test_builder(builder, dataset_variant):
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
 
 
-def test_document_to_example(document, builder, hf_example):
+def test_document_to_example_and_back(document, builder, hf_example):
     hf_example_back = builder._generate_example(document)
     assert hf_example_back == hf_example
 
 
+@pytest.mark.slow
 def test_example_to_document_and_back_all(hf_dataset, builder):
     for ds in hf_dataset.values():
         for example in ds:
@@ -472,7 +473,7 @@ def test_converted_pie_dataset(converted_pie_dataset, converted_document_type):
 
 
 @pytest.fixture(scope="module")
-def converted_document(converted_pie_dataset) -> Type[TextBasedDocument]:
+def converted_document(converted_pie_dataset) -> TextBasedDocument:
     return converted_pie_dataset["train"][0]
 
 
