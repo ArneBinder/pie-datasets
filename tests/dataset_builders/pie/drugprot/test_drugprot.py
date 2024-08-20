@@ -22,6 +22,7 @@ from pie_datasets import DatasetDict, load_dataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
 DATASET_NAME = "drugprot"
+BUILDER_CLASS = Drugprot
 PIE_DATASET_PATH = PIE_BASE_PATH / DATASET_NAME
 HF_DATASET_PATH = Drugprot.BASE_DATASET_PATH
 HF_DATASET_REVISION = Drugprot.BASE_DATASET_REVISION
@@ -317,28 +318,7 @@ def test_hf_dataset_all(hf_dataset, split):
             assert len(example["relations"]) >= 0
 
 
-@pytest.fixture(scope="module")
-def builder(dataset_variant) -> Drugprot:
-    return Drugprot(config_name=dataset_variant)
-
-
-def test_document_converters(builder, dataset_variant):
-    if dataset_variant == "drugprot_source":
-        assert set(builder.document_converters) == {TextDocumentWithLabeledSpansAndBinaryRelations}
-    elif dataset_variant == "drugprot_bigbio_kb":
-        assert set(builder.document_converters) == {
-            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
-        }
-    else:
-        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
-
-
-@pytest.fixture(scope="module")
-def document(hf_example, builder) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
-    return builder._generate_document(hf_example)
-
-
-def test_document(document, dataset_variant):
+def test_example_to_document(document, dataset_variant):
     if dataset_variant == "drugprot_source":
         assert isinstance(document, DrugprotDocument)
         assert (
@@ -385,27 +365,75 @@ def test_document(document, dataset_variant):
         ("GENE-Y", "RDH12"),
         ("GENE-N", "retinol dehydrogenase"),
     ]
-    # check entity ids
+    # check metadata
     assert document.metadata["entity_ids"] == [
-        "17512723_T1",
-        "17512723_T2",
-        "17512723_T3",
-        "17512723_T4",
-        "17512723_T5",
-        "17512723_T6",
-        "17512723_T7",
-        "17512723_T8",
-        "17512723_T9",
-        "17512723_T10",
-        "17512723_T11",
-        "17512723_T12",
-        "17512723_T13",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "T8",
+        "T9",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
     ]
+    assert document.metadata["relation_ids"] == ["R0"]
 
     # check the relations
     assert document.relations.resolve() == [
         ("PRODUCT-OF", (("CHEMICAL", "androstanediol"), ("GENE-Y", "human type 12 RDH")))
     ]
+
+
+@pytest.fixture(scope="module")
+def builder(dataset_variant) -> BUILDER_CLASS:
+    return BUILDER_CLASS(config_name=dataset_variant)
+
+
+def test_builder(builder, dataset_variant):
+    assert builder is not None
+    assert builder.config_id == dataset_variant
+    assert builder.dataset_name == "drugprot"
+    if dataset_variant == "drugprot_source":
+        assert builder.document_type == DrugprotDocument
+    elif dataset_variant == "drugprot_bigbio_kb":
+        assert builder.document_type == DrugprotBigbioDocument
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
+def test_document_to_example_and_back(document, builder, hf_example):
+    hf_example_back = builder._generate_example(document)
+    assert hf_example_back == hf_example
+
+
+@pytest.mark.slow
+def test_example_to_document_and_back_all(hf_dataset, builder):
+    for ds in hf_dataset.values():
+        for example in ds:
+            document = builder._generate_document(example)
+            example_back = builder._generate_example(document)
+            assert example_back == example
+
+
+def test_document_converters(builder, dataset_variant):
+    if dataset_variant == "drugprot_source":
+        assert set(builder.document_converters) == {TextDocumentWithLabeledSpansAndBinaryRelations}
+    elif dataset_variant == "drugprot_bigbio_kb":
+        assert set(builder.document_converters) == {
+            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+        }
+    else:
+        raise ValueError(f"Unknown dataset variant: {dataset_variant}")
+
+
+@pytest.fixture(scope="module")
+def document(hf_example, builder) -> Union[DrugprotDocument, DrugprotBigbioDocument]:
+    return builder._generate_document(hf_example)
 
 
 @pytest.fixture(scope="module")
@@ -445,7 +473,7 @@ def test_converted_pie_dataset(converted_pie_dataset, converted_document_type):
 
 
 @pytest.fixture(scope="module")
-def converted_document(converted_pie_dataset) -> Type[TextBasedDocument]:
+def converted_document(converted_pie_dataset) -> TextBasedDocument:
     return converted_pie_dataset["train"][0]
 
 
@@ -485,22 +513,23 @@ def test_converted_document(converted_document, converted_document_type):
         ("GENE-Y", "RDH12"),
         ("GENE-N", "retinol dehydrogenase"),
     ]
-    # check entity ids
+    # check metadata
     assert converted_document.metadata["entity_ids"] == [
-        "17512723_T1",
-        "17512723_T2",
-        "17512723_T3",
-        "17512723_T4",
-        "17512723_T5",
-        "17512723_T6",
-        "17512723_T7",
-        "17512723_T8",
-        "17512723_T9",
-        "17512723_T10",
-        "17512723_T11",
-        "17512723_T12",
-        "17512723_T13",
+        "T1",
+        "T2",
+        "T3",
+        "T4",
+        "T5",
+        "T6",
+        "T7",
+        "T8",
+        "T9",
+        "T10",
+        "T11",
+        "T12",
+        "T13",
     ]
+    assert converted_document.metadata["relation_ids"] == ["R0"]
 
     # check the relations
     assert converted_document.binary_relations.resolve() == [
