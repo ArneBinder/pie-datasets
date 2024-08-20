@@ -682,13 +682,12 @@ def concatenate_datasets(
         List[Dataset], List[IterableDataset], Dict[str, Dataset], Dict[str, IterableDataset]
     ]
 ) -> Union[Dataset, IterableDataset]:
-    """Concatenate multiple datasets into a single dataset.
-
-    The datasets must have the same
+    """Concatenate multiple datasets into a single dataset. The datasets must have the same
     document type.
+
     Args:
-        dsets: A list of datasets or a dictionary with dataset names as keys and datasets as values. If a dictionary is
-            provided, the dataset names will be added to the documents as metadata.
+        dsets: A list of datasets or a dictionary with dataset names as keys and datasets as values. If
+            a dictionary is provided, the dataset names will be added to the documents as metadata.
     Returns:
         A new dataset that is the concatenation of the input datasets.
     """
