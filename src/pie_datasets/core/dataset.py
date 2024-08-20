@@ -490,18 +490,42 @@ class IterableDataset(datasets.IterableDataset):
     @classmethod
     def from_documents(
         cls,
-        documents: List[Document],
+        documents: Callable,
         document_converters: Optional[DocumentConvertersType] = None,
         **dataset_kwargs,
     ) -> "IterableDataset":
-        if len(documents) == 0:
+        """Create an Iterable Dataset from a generator that yields documents. It wraps the
+        Huggingface datasets.IterableDataset.from_generator method, see the documentation for more
+        details.
+
+        Args:
+            documents (Callable): A generator function that `yields` documents.
+            document_converters (Optional[DocumentConvertersType], optional): A dictionary of document
+                converters. Defaults to None.
+            **dataset_kwargs: Additional arguments for the Huggingface dataset creation.
+
+        Returns:
+            IterableDataset: The created dataset.
+        """
+
+        # get first document to infer the document type
+        try:
+            gen_kwargs = dataset_kwargs.get("gen_kwargs", {})
+            first_doc = next(documents(**gen_kwargs))
+        except StopIteration:
             raise ValueError("No documents to create dataset from")
-        document_type = type(documents[0])
-        data = [doc.asdict() for doc in documents]
-        hf_dataset = datasets.Dataset.from_list(mapping=data, **dataset_kwargs)
-        hf_iterable_dataset = hf_dataset.to_iterable_dataset()
+        document_type = type(first_doc)
+
+        # wrap the generator to yield dictionaries
+        def wrapped_documents_generator(**kwargs):
+            for doc in documents(**kwargs):
+                yield doc.asdict()
+
+        hf_dataset = datasets.IterableDataset.from_generator(
+            wrapped_documents_generator, **dataset_kwargs
+        )
         dataset = cls.from_hf_dataset(
-            hf_iterable_dataset,
+            hf_dataset,
             document_type=document_type,
             document_converters=document_converters,
         )

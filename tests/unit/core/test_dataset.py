@@ -438,10 +438,20 @@ def test_dataset_with_taskmodule(
 def test_pie_dataset_from_documents(documents, as_iterable_dataset):
     if as_iterable_dataset:
         dataset_class = IterableDataset
+
+        # make generators from list
+        def _documents():
+            yield from documents
+
+        def _empty_docs():
+            return iter([])
+
     else:
         dataset_class = Dataset
+        _documents = documents
+        _empty_docs = list[Document]()
 
-    dataset_from_documents = dataset_class.from_documents(documents)
+    dataset_from_documents = dataset_class.from_documents(_documents)
 
     assert isinstance(dataset_from_documents, dataset_class)
 
@@ -453,7 +463,7 @@ def test_pie_dataset_from_documents(documents, as_iterable_dataset):
 
     # Test dataset creation with document converter
     dataset_from_documents_with_converter = dataset_class.from_documents(
-        documents, document_converters={TestDocumentWithLabel: convert_to_document_with_label}
+        _documents, document_converters={TestDocumentWithLabel: convert_to_document_with_label}
     )
 
     assert isinstance(dataset_from_documents_with_converter, dataset_class)
@@ -465,8 +475,7 @@ def test_pie_dataset_from_documents(documents, as_iterable_dataset):
         == convert_to_document_with_label
     )
 
-    # Test dataset creation with empty list
-    empty_doc_list = list[Document]()
+    # Test dataset creation with empty list / generator
     with pytest.raises(ValueError) as excinfo:
-        dataset_class.from_documents(empty_doc_list)
+        dataset_class.from_documents(_empty_docs)
     assert str(excinfo.value) == "No documents to create dataset from"
