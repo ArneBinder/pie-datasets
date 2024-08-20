@@ -518,7 +518,7 @@ class IterableDataset(datasets.IterableDataset):
             **dataset_kwargs: Additional arguments for the Huggingface dataset creation.
 
         Returns:
-            IterableDataset: The created dataset.
+            IterableDataset: The created iterable dataset.
         """
 
         # get first document to infer the document type
