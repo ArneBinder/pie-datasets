@@ -1,5 +1,5 @@
 from .builder import ArrowBasedBuilder, GeneratorBasedBuilder
-from .dataset import Dataset, IterableDataset
+from .dataset import Dataset, IterableDataset, concatenate_datasets
 from .dataset_dict import DatasetDict, load_dataset
 
 __all__ = [
@@ -9,4 +9,5 @@ __all__ = [
     "IterableDataset",
     "DatasetDict",
     "load_dataset",
+    "concatenate_datasets",
 ]
