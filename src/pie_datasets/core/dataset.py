@@ -292,6 +292,36 @@ class Dataset(datasets.Dataset, Sequence[D]):
         )
         return document_dataset
 
+    @classmethod
+    def from_documents(
+        cls,
+        documents: List[Document],
+        document_converters: Optional[DocumentConvertersType] = None,
+        **dataset_kwargs,
+    ) -> "Dataset":
+        """Create a Dataset from a list of documents. It wraps the Huggingface
+        datasets.Dataset.from_list method, see the documentation for more details.
+
+        Args:
+            documents (List[Document]): A list of documents.
+            document_converters (Optional[DocumentConvertersType], optional): A dictionary of document
+                converters. Defaults to None.
+            **dataset_kwargs: Additional arguments for the Huggingface dataset creation.
+
+        Returns:
+            Dataset: The created dataset.
+        """
+
+        if len(documents) == 0:
+            raise ValueError("No documents to create dataset from")
+        document_type = type(documents[0])
+        data = [doc.asdict() for doc in documents]
+        hf_dataset = datasets.Dataset.from_list(mapping=data, **dataset_kwargs)
+        dataset = cls.from_hf_dataset(
+            hf_dataset, document_type=document_type, document_converters=document_converters
+        )
+        return dataset
+
     def apply_hf_func(self, func, **kwargs) -> "Dataset":
         return Dataset.from_hf_dataset(
             func(self, **kwargs),
@@ -467,6 +497,50 @@ class IterableDataset(datasets.IterableDataset):
             hidden_columns=hidden_columns,
             document_converters=document_converters,
             **cls.get_base_kwargs(dataset),
+        )
+        return dataset
+
+    @classmethod
+    def from_documents(
+        cls,
+        documents: Callable,
+        document_converters: Optional[DocumentConvertersType] = None,
+        **dataset_kwargs,
+    ) -> "IterableDataset":
+        """Create an Iterable Dataset from a generator that yields documents. It wraps the
+        Huggingface datasets.IterableDataset.from_generator method, see the documentation for more
+        details.
+
+        Args:
+            documents (Callable): A generator function that `yields` documents.
+            document_converters (Optional[DocumentConvertersType], optional): A dictionary of document
+                converters. Defaults to None.
+            **dataset_kwargs: Additional arguments for the Huggingface dataset creation.
+
+        Returns:
+            IterableDataset: The created iterable dataset.
+        """
+
+        # get first document to infer the document type
+        try:
+            gen_kwargs = dataset_kwargs.get("gen_kwargs", {})
+            first_doc = next(documents(**gen_kwargs))
+        except StopIteration:
+            raise ValueError("No documents to create dataset from")
+        document_type = type(first_doc)
+
+        # wrap the generator to yield dictionaries
+        def wrapped_documents_generator(**kwargs):
+            for doc in documents(**kwargs):
+                yield doc.asdict()
+
+        hf_dataset = datasets.IterableDataset.from_generator(
+            wrapped_documents_generator, **dataset_kwargs
+        )
+        dataset = cls.from_hf_dataset(
+            hf_dataset,
+            document_type=document_type,
+            document_converters=document_converters,
         )
         return dataset
 

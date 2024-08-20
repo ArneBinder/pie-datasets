@@ -6,6 +6,7 @@ from typing import Union
 import numpy
 import pytest
 import torch
+from pytorch_ie import Document
 from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.core.taskmodule import (
@@ -431,3 +432,50 @@ def test_dataset_with_taskmodule(
 
     for document in train_dataset:
         assert not document["entities"].predictions
+
+
+@pytest.mark.parametrize("as_iterable_dataset", [False, True])
+def test_pie_dataset_from_documents(documents, as_iterable_dataset):
+    if as_iterable_dataset:
+        dataset_class = IterableDataset
+
+        # make generators from list
+        def _documents():
+            yield from documents
+
+        def _empty_docs():
+            return iter([])
+
+    else:
+        dataset_class = Dataset
+        _documents = documents
+        _empty_docs = list[Document]()
+
+    dataset_from_documents = dataset_class.from_documents(_documents)
+
+    assert isinstance(dataset_from_documents, dataset_class)
+
+    assert all(isinstance(doc, TextBasedDocument) for doc in dataset_from_documents)
+    assert all(
+        doc1.asdict() == doc2.asdict() for doc1, doc2 in zip(documents, dataset_from_documents)
+    )
+    assert hasattr(dataset_from_documents, "document_type")
+
+    # Test dataset creation with document converter
+    dataset_from_documents_with_converter = dataset_class.from_documents(
+        _documents, document_converters={TestDocumentWithLabel: convert_to_document_with_label}
+    )
+
+    assert isinstance(dataset_from_documents_with_converter, dataset_class)
+
+    assert len(dataset_from_documents_with_converter.document_converters) == 1
+    assert TestDocumentWithLabel in dataset_from_documents_with_converter.document_converters
+    assert (
+        dataset_from_documents_with_converter.document_converters[TestDocumentWithLabel]
+        == convert_to_document_with_label
+    )
+
+    # Test dataset creation with empty list / generator
+    with pytest.raises(ValueError) as excinfo:
+        dataset_class.from_documents(_empty_docs)
+    assert str(excinfo.value) == "No documents to create dataset from"
