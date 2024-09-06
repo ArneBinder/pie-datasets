@@ -215,7 +215,7 @@ def test_hf_example(hf_example, config_name, split_name):
                         ]
                     ],
                     "structured": [True],
-                    "evidence": [{"label": [], "sentences": []}],
+                    "evidence": [{"label": ["CONTRADICT"], "sentences": [[4]]}],
                 },
             }
         elif split_name == "test":

@@ -136,15 +136,12 @@ class SciFact(GeneratorBasedBuilder):
         elif self.config.name == VARIANT_CLAIMS:
             doc_id2doc = {doc["doc_id"]: doc for doc in corpus_docs}
             for _id, claim in enumerate(claim_data):
-                evidence = claim.pop("evidence", [])
-                claim[
-                    "cited_docs"
-                ] = (
-                    []
-                )  # {cited_doc_id: doc_id2doc[cited_doc_id] for cited_doc_id in cited_doc_ids}
-                for cited_doc_id in claim.pop("cited_doc_ids", []):
+                evidence = claim.pop("evidence", {})
+                cited_doc_ids = claim.pop("cited_doc_ids", [])
+                claim["cited_docs"] = []
+                for cited_doc_id in cited_doc_ids:
                     doc = copy(doc_id2doc[cited_doc_id])
-                    doc["evidence"] = evidence.get(cited_doc_id, [])
+                    doc["evidence"] = evidence.get(str(cited_doc_id), [])
                     claim["cited_docs"].append(doc)
                 yield _id, claim
         else:
