@@ -6,7 +6,13 @@ from typing import Any, Dict, List
 import pytest
 from datasets import DownloadManager, load_dataset
 
-from dataset_builders.hf.scifact.scifact import DATA_URL, SUBDIR, SciFact, VARIANT_DOCUMENTS, VARIANT_CLAIMS
+from dataset_builders.hf.scifact.scifact import (
+    DATA_URL,
+    SUBDIR,
+    VARIANT_CLAIMS,
+    VARIANT_DOCUMENTS,
+    SciFact,
+)
 from tests import FIXTURES_ROOT
 from tests.dataset_builders.common import HF_BASE_PATH
 
@@ -41,6 +47,11 @@ def config_name(request):
 @pytest.fixture(scope="module")
 def hf_dataset(config_name):
     return load_dataset(str(HF_DATASET_PATH), name=config_name)
+
+
+def test_claims_with_multiple_evidences(split_name):
+    ds = load_dataset(str(HF_DATASET_PATH), name="as_claims", split=split_name)
+    print("")
 
 
 def dict_of_lists_to_list_of_dicts(dict_of_lists):
@@ -267,11 +278,16 @@ def test_convert_to_output_eval_format(config_name):
         with open(claims_filepath) as f:
             original_claim_data = [json.loads(line) for line in f.readlines()]
 
-        compare_original_and_converted_to_output_eval_data(original_claim_data, converted_output_data)
+        compare_original_and_converted_to_output_eval_data(
+            original_claim_data, converted_output_data
+        )
     elif config_name == VARIANT_CLAIMS:
         with pytest.raises(NotImplementedError) as exc_info:
             builder._convert_to_output_eval_format(input_data)
-        assert str(exc_info.value) == f"_convert_to_output_eval_format is not yet implemented for dataset variant {config_name}"
+        assert (
+            str(exc_info.value)
+            == f"_convert_to_output_eval_format is not yet implemented for dataset variant {config_name}"
+        )
     else:
         raise ValueError(f"Unknown dataset variant: {config_name}")
 
@@ -291,10 +307,15 @@ def test_convert_to_output_eval_format_all(config_name):
         with open(claims_filepath) as f:
             original_claim_data = [json.loads(line) for line in f.readlines()]
 
-        compare_original_and_converted_to_output_eval_data(original_claim_data, converted_output_data)
+        compare_original_and_converted_to_output_eval_data(
+            original_claim_data, converted_output_data
+        )
     elif config_name == VARIANT_CLAIMS:
         with pytest.raises(NotImplementedError) as exc_info:
             builder._convert_to_output_eval_format(input_data)
-        assert str(exc_info.value) == f"_convert_to_output_eval_format is not yet implemented for dataset variant {config_name}"
+        assert (
+            str(exc_info.value)
+            == f"_convert_to_output_eval_format is not yet implemented for dataset variant {config_name}"
+        )
     else:
         raise ValueError(f"Unknown dataset variant: {config_name}")
