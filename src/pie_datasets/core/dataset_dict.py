@@ -19,7 +19,12 @@ import datasets
 from pytorch_ie.core.document import Document
 from pytorch_ie.utils.hydra import resolve_target, serialize_document_type
 
-from .dataset import Dataset, IterableDataset, get_pie_dataset_type
+from .dataset import (
+    Dataset,
+    IterableDataset,
+    concatenate_datasets,
+    get_pie_dataset_type,
+)
 
 logger = logging.getLogger(__name__)
 
@@ -712,3 +717,35 @@ def load_dataset(*args, **kwargs) -> Union[DatasetDict, Dataset, IterableDataset
             f"expected datasets.load_dataset to return {datasets.DatasetDict}, {datasets.IterableDatasetDict}, "
             f"{Dataset}, or {IterableDataset}, but got {type(dataset_or_dataset_dict)}"
         )
+
+
+def concatenate_dataset_dicts(
+    inputs: Dict[str, DatasetDict],
+    split_mappings: Dict[str, Dict[str, str]],
+):
+    """Concatenate the splits of multiple dataset dicts into a single one.
+
+    Args:
+        inputs: A mapping from dataset names to dataset dicts that contain the splits to concatenate.
+        split_mappings: A mapping from target split names to mappings from input dataset names to
+            source split names.
+
+    Returns: A dataset dict with keys in split_names as splits and content from the merged input
+        dataset dicts.
+    """
+
+    input_splits = {}
+    for target_split_name, mapping in split_mappings.items():
+        input_splits[target_split_name] = {
+            ds_name: inputs[ds_name][source_split_name]
+            for ds_name, source_split_name in mapping.items()
+        }
+
+    result = DatasetDict(
+        {
+            target_split_name: concatenate_datasets(dsets)
+            for target_split_name, dsets in input_splits.items()
+        }
+    )
+
+    return result
