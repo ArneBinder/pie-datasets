@@ -372,7 +372,8 @@ class DatasetDict(datasets.DatasetDict):
                 function signature. If this is not possible, the document type of the input dataset
                 is used.
             set_batch_size_to_split_size: If enabled, set the batch_size to the size of the respective split
-                when calling map() on it. This is useful to transform whole splits.
+                when calling map() on it. This is useful to transform whole splits when using it in
+                combination with batched=True.
             **kwargs: additional keyword arguments for `datasets.Dataset.map()`
         """
 
