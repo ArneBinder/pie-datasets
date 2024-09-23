@@ -9,7 +9,13 @@ from pytorch_ie.annotations import Label, LabeledSpan
 from pytorch_ie.core import AnnotationList, Document, annotation_field
 from pytorch_ie.documents import TextBasedDocument, TextDocument
 
-from pie_datasets import Dataset, DatasetDict, IterableDataset, load_dataset
+from pie_datasets import (
+    Dataset,
+    DatasetDict,
+    IterableDataset,
+    concatenate_dataset_dicts,
+    load_dataset,
+)
 from pie_datasets.core.dataset_dict import (
     EnterDatasetDictMixin,
     EnterDatasetMixin,
@@ -631,4 +637,28 @@ def test_load_dataset_conll2003_wrong_type_single_split():
         == "expected datasets.load_dataset to return <class 'datasets.dataset_dict.DatasetDict'>, "
         "<class 'datasets.dataset_dict.IterableDatasetDict'>, <class 'pie_datasets.core.dataset.Dataset'>, "
         "or <class 'pie_datasets.core.dataset.IterableDataset'>, but got <class 'datasets.arrow_dataset.Dataset'>"
+    )
+
+
+@pytest.fixture
+def tbga_extract():
+    return DatasetDict.from_json(data_dir=FIXTURES_ROOT / "dataset_dict" / "tbga_extract")
+
+
+@pytest.fixture
+def comagc_extract():
+    return DatasetDict.from_json(data_dir=FIXTURES_ROOT / "dataset_dict" / "comagc_extract")
+
+
+def test_concatenate_dataset_dicts(tbga_extract, comagc_extract):
+    concatenated_dataset = concatenate_dataset_dicts(
+        inputs={"tbga": tbga_extract, "comagc": comagc_extract},
+        split_mappings={"train": {"tbga": "train", "comagc": "train"}},
+    )
+
+    assert len(concatenated_dataset["train"]) == len(tbga_extract["train"]) + len(
+        comagc_extract["train"]
+    )
+    assert all(
+        [ds.metadata["dataset_name"] in ["tbga", "comagc"] for ds in concatenated_dataset["train"]]
     )
