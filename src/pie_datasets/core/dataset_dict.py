@@ -183,7 +183,8 @@ class DatasetDict(datasets.DatasetDict):
 
     def to_json(self, path: Union[str, Path], **kwargs) -> None:
         """Serializes the DatasetDict. We convert all documents with `.asdict()` and dump them with
-        `json.dump()` to one JSONLINE file per split.
+        `json.dump()` to one JSONLINE file per split. If there is already serialized data in the
+        output directory, we append the new data to the existing files.
 
         Args:
             path: path to the output directory
@@ -196,11 +197,20 @@ class DatasetDict(datasets.DatasetDict):
         metadata = {"document_type": serialize_document_type(self.document_type)}
         os.makedirs(path, exist_ok=True)
         if os.path.exists(path / METADATA_FILE_NAME):
-            logger.warning(
-                f"metadata file '{path / METADATA_FILE_NAME}' already exists, overwriting it"
-            )
-        with open(path / METADATA_FILE_NAME, "w") as f:
-            json.dump(metadata, f, indent=2)
+            # load previous metadata
+            with open(path / METADATA_FILE_NAME) as f:
+                previous_metadata = json.load(f)
+            if previous_metadata != metadata:
+                raise ValueError(
+                    f"The metadata file {path / METADATA_FILE_NAME} already exists, "
+                    "but the content does not match the current metadata. Can not append "
+                    "the current dataset to already serialized data."
+                    f"\nprevious metadata: {previous_metadata}"
+                    f"\ncurrent metadata: {metadata}"
+                )
+        else:
+            with open(path / METADATA_FILE_NAME, "w") as f:
+                json.dump(metadata, f, indent=2)
 
         # save the splits
         for split, dataset in self.items():
@@ -208,7 +218,8 @@ class DatasetDict(datasets.DatasetDict):
             logger.info(f'serialize documents to "{split_path}" ...')
             os.makedirs(split_path, exist_ok=True)
             file_name = split_path / "documents.jsonl"
-            with open(file_name, "w") as f:
+            mode = "a" if os.path.exists(file_name) else "w"
+            with open(file_name, mode) as f:
                 for doc in dataset:
                     f.write(json.dumps(doc.asdict(), **kwargs) + "\n")
 
