@@ -107,6 +107,48 @@ def test_to_json_and_back_serialize_document_type(dataset_dict, tmp_path):
             assert doc1 == doc2
 
 
+def test_to_json_and_back_append(dataset_dict, tmp_path):
+    path = Path(tmp_path) / "dataset_dict"
+
+    dataset_dict1 = DatasetDict(
+        {split_name: Dataset.from_documents(docs[:2]) for split_name, docs in dataset_dict.items()}
+    )
+    dataset_dict2 = DatasetDict(
+        {split_name: Dataset.from_documents(docs[2:]) for split_name, docs in dataset_dict.items()}
+    )
+    dataset_dict1.to_json(path)
+    dataset_dict2.to_json(path)
+    dataset_dict_from_json = DatasetDict.from_json(
+        data_dir=str(path),
+    )
+    assert set(dataset_dict_from_json) == set(dataset_dict)
+    for split in dataset_dict:
+        assert len(dataset_dict_from_json[split]) == len(dataset_dict[split])
+        for doc1, doc2 in zip(dataset_dict_from_json[split], dataset_dict[split]):
+            assert doc1 == doc2
+
+
+def test_to_json_and_back_append_metadata_mismatch(dataset_dict, tmp_path):
+    path = Path(tmp_path) / "dataset_dict"
+
+    dataset_dict1 = DatasetDict(
+        {split_name: Dataset.from_documents(docs[:2]) for split_name, docs in dataset_dict.items()}
+    )
+    dataset_dict2 = DatasetDict(
+        {split_name: Dataset.from_documents(docs[2:]) for split_name, docs in dataset_dict.items()}
+    )
+    dataset_dict2_converted = dataset_dict2.cast_document_type(TextBasedDocument)
+    dataset_dict1.to_json(path)
+    with pytest.raises(ValueError) as excinfo:
+        dataset_dict2_converted.to_json(path)
+    assert str(excinfo.value).endswith(
+        "metadata.json already exists, but the content does not match the current metadata. "
+        "Can not append the current dataset to already serialized data."
+        "\nprevious metadata: {'document_type': 'tests.unit.core.test_dataset_dict.DocumentWithEntitiesAndRelations'}"
+        "\ncurrent metadata: {'document_type': 'pytorch_ie.documents.TextBasedDocument'}"
+    )
+
+
 def test_document_type_empty_no_splits():
     with pytest.raises(ValueError) as excinfo:
         DatasetDict().document_type
