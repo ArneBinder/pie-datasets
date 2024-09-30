@@ -280,6 +280,25 @@ def test_map_with_context_manager(dataset_dict):
             assert doc1 == doc2
 
 
+def test_map_set_max_batch_size(dataset_dict):
+    def join_docs(docs):
+        return [TextBasedDocument(text=" ".join([doc.text for doc in docs]))]
+
+    dataset_dict_mapped = dataset_dict.map(
+        join_docs,
+        batched=True,
+        set_batch_size_to_split_size=True,
+        result_document_type=TextBasedDocument,
+    )
+    assert dataset_dict_mapped.document_type is TextBasedDocument
+    for split in dataset_dict:
+        assert len(dataset_dict_mapped[split]) == 1
+        new_doc = dataset_dict_mapped[split][0]
+        assert isinstance(new_doc, TextBasedDocument)
+        original_texts = [doc.text for doc in dataset_dict[split]]
+        assert new_doc.text == " ".join(original_texts)
+
+
 def test_select(dataset_dict):
     # select documents by index
     dataset_dict_selected = dataset_dict.select(

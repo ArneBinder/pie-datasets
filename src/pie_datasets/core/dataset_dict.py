@@ -348,6 +348,7 @@ class DatasetDict(datasets.DatasetDict):
         self,
         function: Optional[Union[Callable, str]] = None,
         result_document_type: Optional[Union[str, Type[Document]]] = None,
+        set_batch_size_to_split_size: bool = False,
         **kwargs,
     ) -> "DatasetDict":
         """Applies a function to all documents in the dataset.
@@ -370,6 +371,9 @@ class DatasetDict(datasets.DatasetDict):
                 string that can be resolved to such a type. If not provided, it is tried to infer it from the
                 function signature. If this is not possible, the document type of the input dataset
                 is used.
+            set_batch_size_to_split_size: If enabled, set the batch_size to the size of the respective split
+                when calling map() on it. This is useful to transform whole splits when using it in
+                combination with batched=True.
             **kwargs: additional keyword arguments for `datasets.Dataset.map()`
         """
 
@@ -395,6 +399,8 @@ class DatasetDict(datasets.DatasetDict):
         for split, dataset in self.items():
             if isinstance(func, EnterDatasetMixin):
                 func.enter_dataset(dataset=dataset, name=split)
+            if set_batch_size_to_split_size:
+                map_kwargs["batch_size"] = len(dataset)
             result_dict[split] = dataset.map(**map_kwargs)
             if isinstance(func, ExitDatasetMixin):
                 func.exit_dataset(dataset=result_dict[split], name=split)
