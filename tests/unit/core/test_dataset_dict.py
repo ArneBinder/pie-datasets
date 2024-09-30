@@ -654,6 +654,7 @@ def test_concatenate_dataset_dicts(tbga_extract, comagc_extract):
     concatenated_dataset = concatenate_dataset_dicts(
         inputs={"tbga": tbga_extract, "comagc": comagc_extract},
         split_mappings={"train": {"tbga": "train", "comagc": "train"}},
+        clear_metadata=True,
     )
 
     assert len(concatenated_dataset["train"]) == len(tbga_extract["train"]) + len(

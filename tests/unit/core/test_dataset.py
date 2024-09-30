@@ -502,8 +502,12 @@ def test_pie_dataset_from_documents(documents, as_iterable_dataset):
     assert str(excinfo.value) == "No documents to create dataset from"
 
 
-@pytest.mark.parametrize("as_list", [False, True])
-def test_concatenate_datasets(maybe_iterable_dataset, dataset_with_converter_functions, as_list):
+@pytest.mark.parametrize(
+    "as_list, clear_metadata", [(False, False), (False, True), (True, False), (True, True)]
+)
+def test_concatenate_datasets(
+    maybe_iterable_dataset, dataset_with_converter_functions, as_list, clear_metadata
+):
     # Tests four different cases of concatenation of list/dict of Datasets/IterableDatasets
     if as_list:
         # Test concatenation of list of datasets
@@ -512,11 +516,14 @@ def test_concatenate_datasets(maybe_iterable_dataset, dataset_with_converter_fun
                 maybe_iterable_dataset["train"],
                 maybe_iterable_dataset["validation"],
                 maybe_iterable_dataset["test"],
-            ]
+            ],
+            clear_metadata=clear_metadata,
         )
     else:
         # Test concatenation of dictionary of datasets
-        concatenated_dataset = concatenate_datasets(maybe_iterable_dataset)
+        concatenated_dataset = concatenate_datasets(
+            maybe_iterable_dataset, clear_metadata=clear_metadata
+        )
 
     # Check correct output type
     if isinstance(maybe_iterable_dataset["train"], IterableDataset):
@@ -556,7 +563,7 @@ def test_concatenate_datasets_errors(dataset_with_converter_functions):
     # Test concatenation of empty datasets
     empty_dataset = list[Dataset]()
     with pytest.raises(ValueError) as excinfo:
-        concatenate_datasets(empty_dataset)
+        concatenate_datasets(empty_dataset, clear_metadata=False)
     assert str(excinfo.value) == "No datasets to concatenate"
 
     # Test concatenation of datasets with different document types
@@ -564,7 +571,9 @@ def test_concatenate_datasets_errors(dataset_with_converter_functions):
         TestDocumentWithLabel
     )
     with pytest.raises(ValueError) as excinfo:
-        concatenate_datasets([dataset_with_converter_functions, dataset_with_converted_doc])
+        concatenate_datasets(
+            [dataset_with_converter_functions, dataset_with_converted_doc], clear_metadata=False
+        )
     assert str(excinfo.value) == "All datasets must have the same document type to concatenate"
 
 
@@ -573,7 +582,7 @@ def test_add_dset_name_to_document():
     doc = Document()
     assert not hasattr(doc, "metadata")
     with pytest.raises(ValueError) as excinfo:
-        _add_dset_name_to_document(doc, "test")
+        _add_dset_name_to_document(doc, "test", clear_metadata=False)
     assert (
         str(excinfo.value)
         == "Document does not have metadata attribute which required to save the dataset name: Document()"
@@ -582,10 +591,9 @@ def test_add_dset_name_to_document():
     # Test adding dataset name to document
     doc.metadata = {}
     assert hasattr(doc, "metadata")
-    _add_dset_name_to_document(doc, "test_dataset_name")
+    _add_dset_name_to_document(doc, "test_dataset_name", clear_metadata=False)
     assert doc.metadata["dataset_name"] == "test_dataset_name"
 
-    # Test document already having dataset_name in metadata
-    with pytest.raises(ValueError) as excinfo:
-        _add_dset_name_to_document(doc, "test")
-    assert str(excinfo.value) == "Document already has a dataset_name attribute: test_dataset_name"
+    # Test document already having dataset_name in metadata keeps the old name
+    _add_dset_name_to_document(doc, "test", clear_metadata=False)
+    assert doc.metadata["dataset_name"] == "test_dataset_name"

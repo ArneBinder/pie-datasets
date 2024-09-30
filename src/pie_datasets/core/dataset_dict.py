@@ -720,15 +720,16 @@ def load_dataset(*args, **kwargs) -> Union[DatasetDict, Dataset, IterableDataset
 
 
 def concatenate_dataset_dicts(
-    inputs: Dict[str, DatasetDict],
-    split_mappings: Dict[str, Dict[str, str]],
+    inputs: Dict[str, DatasetDict], split_mappings: Dict[str, Dict[str, str]], clear_metadata: bool
 ):
-    """Concatenate the splits of multiple dataset dicts into a single one.
+    """Concatenate the splits of multiple dataset dicts into a single one. Dataset name will be
+    saved in Metadata.
 
     Args:
         inputs: A mapping from dataset names to dataset dicts that contain the splits to concatenate.
         split_mappings: A mapping from target split names to mappings from input dataset names to
             source split names.
+        clear_metadata: Whether to clear the metadata before concatenating.
 
     Returns: A dataset dict with keys in split_names as splits and content from the merged input
         dataset dicts.
@@ -743,7 +744,7 @@ def concatenate_dataset_dicts(
 
     result = DatasetDict(
         {
-            target_split_name: concatenate_datasets(dsets)
+            target_split_name: concatenate_datasets(dsets, clear_metadata=clear_metadata)
             for target_split_name, dsets in input_splits.items()
         }
     )

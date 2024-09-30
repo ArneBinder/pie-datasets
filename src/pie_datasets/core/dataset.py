@@ -673,16 +673,16 @@ def get_pie_dataset_type(
         )
 
 
-def _add_dset_name_to_document(doc: Document, name: str) -> Document:
+def _add_dset_name_to_document(doc: Document, name: str, clear_metadata: bool) -> Document:
     if not hasattr(doc, "metadata"):
         raise ValueError(
             f"Document does not have metadata attribute which required to save the dataset name: {doc}"
         )
+    # Keep the old name if available
     if "dataset_name" in doc.metadata:
-        raise ValueError(
-            f"Document already has a dataset_name attribute: {doc.metadata['dataset_name']}"
-        )
-    doc.metadata = {}
+        name = doc.metadata["dataset_name"]
+    if clear_metadata:
+        doc.metadata = {}
     doc.metadata["dataset_name"] = name
     return doc
 
@@ -690,21 +690,26 @@ def _add_dset_name_to_document(doc: Document, name: str) -> Document:
 def concatenate_datasets(
     dsets: Union[
         List[Dataset], List[IterableDataset], Dict[str, Dataset], Dict[str, IterableDataset]
-    ]
+    ],
+    clear_metadata: bool,
 ) -> Union[Dataset, IterableDataset]:
     """Concatenate multiple datasets into a single dataset. The datasets must have the same
-    document type. Datasets metadata will be removed, dataset name will be saved instead.
+    document type. Dataset name will be saved in Metadata.
 
     Args:
         dsets: A list of datasets or a dictionary with dataset names as keys and datasets as values. If
             a dictionary is provided, the dataset names will be added to the documents as metadata.
+        clear_metadata: Whether to clear the metadata before concatenating.
     Returns:
         A new dataset that is the concatenation of the input datasets.
     """
 
     if isinstance(dsets, dict):
         dsets = [
-            dset.map(_add_dset_name_to_document, fn_kwargs={"name": name})
+            dset.map(
+                _add_dset_name_to_document,
+                fn_kwargs={"name": name, "clear_metadata": clear_metadata},
+            )
             for name, dset in dsets.items()
         ]
 
