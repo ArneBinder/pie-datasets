@@ -673,6 +673,7 @@ def _add_dset_name_to_document(doc: Document, name: str) -> Document:
         raise ValueError(
             f"Document already has a dataset_name attribute: {doc.metadata['dataset_name']}"
         )
+    doc.metadata = {}
     doc.metadata["dataset_name"] = name
     return doc
 
@@ -683,7 +684,7 @@ def concatenate_datasets(
     ]
 ) -> Union[Dataset, IterableDataset]:
     """Concatenate multiple datasets into a single dataset. The datasets must have the same
-    document type.
+    document type. Datasets metadata will be removed, dataset name will be saved instead.
 
     Args:
         dsets: A list of datasets or a dictionary with dataset names as keys and datasets as values. If
