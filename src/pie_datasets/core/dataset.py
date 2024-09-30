@@ -225,6 +225,13 @@ def dataset_to_document_type(
     # remove the document converters because they are not valid anymore
     result.document_converters = {}
 
+    # remove features not declared in the target document type
+    if result.features is not None:
+        original_field_names = set(result.features)
+        target_field_names = {field.name for field in document_type.fields()}
+        remove_field_names = original_field_names - target_field_names
+        result = result.remove_columns(list(remove_field_names))
+
     return result
 
 

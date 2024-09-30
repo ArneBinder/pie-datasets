@@ -6,6 +6,7 @@ from typing import Union
 import numpy
 import pytest
 import torch
+from pyexpat import features
 from pytorch_ie import Document
 from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
 from pytorch_ie.core import AnnotationList, annotation_field
@@ -203,18 +204,25 @@ def test_register_document_converter_mapping(dataset_with_converter_mapping):
 
 
 def test_to_document_type_function(dataset_with_converter_functions):
-    assert set(dataset_with_converter_functions.features) == {
-        "entities",
-        "relations",
-        "metadata",
-        "sentences",
-        "id",
-        "text",
-    }
+    # Features are only available for Dataset type (not for IterableDataset)
+    if isinstance(dataset_with_converter_functions, Dataset):
+        assert set(dataset_with_converter_functions.features) == {
+            "entities",
+            "relations",
+            "metadata",
+            "sentences",
+            "id",
+            "text",
+        }
+    else:
+        assert dataset_with_converter_functions.features is None
     assert dataset_with_converter_functions.document_type == TestDocument
     converted_dataset = dataset_with_converter_functions.to_document_type(TestDocumentWithLabel)
     assert converted_dataset.document_type == TestDocumentWithLabel
-    assert set(converted_dataset.features) == {"id", "label", "metadata", "text"}
+    if isinstance(converted_dataset, Dataset):
+        assert set(converted_dataset.features) == {"id", "label", "metadata", "text"}
+    else:
+        assert converted_dataset.features is None
 
     assert len(converted_dataset.document_converters) == 0
     for doc in converted_dataset:
