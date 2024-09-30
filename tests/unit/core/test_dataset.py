@@ -203,9 +203,18 @@ def test_register_document_converter_mapping(dataset_with_converter_mapping):
 
 
 def test_to_document_type_function(dataset_with_converter_functions):
+    assert set(dataset_with_converter_functions.features) == {
+        "entities",
+        "relations",
+        "metadata",
+        "sentences",
+        "id",
+        "text",
+    }
     assert dataset_with_converter_functions.document_type == TestDocument
     converted_dataset = dataset_with_converter_functions.to_document_type(TestDocumentWithLabel)
     assert converted_dataset.document_type == TestDocumentWithLabel
+    assert set(converted_dataset.features) == {"id", "label", "metadata", "text"}
 
     assert len(converted_dataset.document_converters) == 0
     for doc in converted_dataset:
