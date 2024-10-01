@@ -225,6 +225,13 @@ def dataset_to_document_type(
     # remove the document converters because they are not valid anymore
     result.document_converters = {}
 
+    # remove features not declared in the target document type
+    if result.features is not None:
+        original_field_names = set(result.features)
+        target_field_names = {field.name for field in document_type.fields()}
+        remove_field_names = original_field_names - target_field_names
+        result = result.remove_columns(list(remove_field_names))
+
     return result
 
 
@@ -376,7 +383,9 @@ class Dataset(datasets.Dataset, Sequence[D]):
         result_document_type: Optional[Type[Document]] = None,
     ) -> "Dataset":
         dataset = super().map(
-            function=decorate_convert_to_dict_of_lists(function) if as_documents else function,
+            function=decorate_convert_to_dict_of_lists(function)
+            if as_documents and function is not None
+            else function,
             with_indices=with_indices,
             with_rank=with_rank,
             input_columns=input_columns,
@@ -582,7 +591,7 @@ class IterableDataset(datasets.IterableDataset):
             function=decorate_convert_to_document_and_back(
                 function, document_type=self.document_type, batched=batched
             )
-            if as_documents
+            if as_documents and function is not None
             else function,
             batched=batched,
             **kwargs,
@@ -664,15 +673,16 @@ def get_pie_dataset_type(
         )
 
 
-def _add_dset_name_to_document(doc: Document, name: str) -> Document:
+def _add_dset_name_to_document(doc: Document, name: str, clear_metadata: bool) -> Document:
     if not hasattr(doc, "metadata"):
         raise ValueError(
             f"Document does not have metadata attribute which required to save the dataset name: {doc}"
         )
+    # Keep the old name if available
     if "dataset_name" in doc.metadata:
-        raise ValueError(
-            f"Document already has a dataset_name attribute: {doc.metadata['dataset_name']}"
-        )
+        name = doc.metadata["dataset_name"]
+    if clear_metadata:
+        doc.metadata = {}
     doc.metadata["dataset_name"] = name
     return doc
 
@@ -680,21 +690,26 @@ def _add_dset_name_to_document(doc: Document, name: str) -> Document:
 def concatenate_datasets(
     dsets: Union[
         List[Dataset], List[IterableDataset], Dict[str, Dataset], Dict[str, IterableDataset]
-    ]
+    ],
+    clear_metadata: bool,
 ) -> Union[Dataset, IterableDataset]:
     """Concatenate multiple datasets into a single dataset. The datasets must have the same
-    document type.
+    document type. Dataset name will be saved in Metadata.
 
     Args:
         dsets: A list of datasets or a dictionary with dataset names as keys and datasets as values. If
             a dictionary is provided, the dataset names will be added to the documents as metadata.
+        clear_metadata: Whether to clear the metadata before concatenating.
     Returns:
         A new dataset that is the concatenation of the input datasets.
     """
 
     if isinstance(dsets, dict):
         dsets = [
-            dset.map(_add_dset_name_to_document, fn_kwargs={"name": name})
+            dset.map(
+                _add_dset_name_to_document,
+                fn_kwargs={"name": name, "clear_metadata": clear_metadata},
+            )
             for name, dset in dsets.items()
         ]
 
