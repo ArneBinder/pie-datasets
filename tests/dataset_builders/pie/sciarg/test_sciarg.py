@@ -50,10 +50,12 @@ FULL_LABEL_COUNTS = {
             "supports": 5789,
         },
         "spans": {"background_claim": 3291, "data": 4297, "own_claim": 6004},
+        "labeled_partitions": {"Abstract": 39, "H1": 340, "Title": 40},
     },
     "resolve_parts_of_same": {
         "relations": {"contradicts": 696, "semantically_same": 44, "supports": 5788},
         "spans": {"background_claim": 2752, "data": 4093, "own_claim": 5450},
+        "labeled_partitions": {"Abstract": 39, "H1": 340, "Title": 40},
     },
 }
 
@@ -257,7 +259,7 @@ def converted_dataset(dataset, target_document_type) -> Optional[DatasetDict]:
     return dataset.to_document_type(target_document_type)
 
 
-def test_converted_datasets(converted_dataset, dataset_variant):
+def test_converted_datasets(converted_dataset, dataset_variant, target_document_type):
     if converted_dataset is not None:
         split_sizes = {name: len(ds) for name, ds in converted_dataset.items()}
         assert split_sizes == SPLIT_SIZES
@@ -280,9 +282,13 @@ def test_converted_datasets(converted_dataset, dataset_variant):
 
         if TEST_FULL_DATASET:
             expected_label_counts = {
-                layer_name_mapping[ln]: value
+                layer_name_mapping.get(ln, ln): value
                 for ln, value in FULL_LABEL_COUNTS[dataset_variant].items()
             }
+            if not issubclass(target_document_type, TextDocumentWithLabeledPartitions):
+                expected_label_counts = {
+                    k: v for k, v in expected_label_counts.items() if k != "labeled_partitions"
+                }
             assert_dataset_label_counts(converted_dataset, expected_label_counts)
 
 
