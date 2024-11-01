@@ -123,7 +123,8 @@ class SciArg(BratBuilder):
     def document_converters(self) -> DocumentConvertersType:
         regex_partitioner = RegexPartitioner(
             partition_layer_name="labeled_partitions",
-            pattern="<([^>/]+)>.*</\\1>",
+            # find matching tags, allow newlines in between (s flag) and capture the tag name
+            pattern="<([^>/]+)>(?s:.)*?</\\1>",
             label_group_id=1,
             label_whitelist=["Title", "Abstract", "H1"],
             skip_initial_partition=True,
