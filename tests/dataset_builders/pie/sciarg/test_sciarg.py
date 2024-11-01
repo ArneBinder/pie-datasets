@@ -70,11 +70,7 @@ FULL_LABEL_COUNTS_CONVERTED = {
     variant: {CONVERTED_LAYER_MAPPING[variant][ln]: value for ln, value in counts.items()}
     for variant, counts in FULL_LABEL_COUNTS.items()
 }
-LABELED_PARTITION_COUNTS = {
-    "Abstract": 39,
-    "H1": 340,
-    "Title": 40,
-}
+LABELED_PARTITION_COUNTS = {"Abstract": 40, "H1": 340, "Title": 40}
 
 
 def resolve_annotation(annotation: Annotation) -> Any:
