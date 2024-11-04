@@ -724,3 +724,19 @@ def test_concatenate_dataset_dicts(tbga_extract, comagc_extract):
     assert all(
         [ds.metadata["dataset_name"] in ["tbga", "comagc"] for ds in concatenated_dataset["train"]]
     )
+
+    concatenated_dataset_with_list_in_mapping = concatenate_dataset_dicts(
+        inputs={"tbga": tbga_extract, "comagc": comagc_extract},
+        split_mappings={"train": {"tbga": ["train", "test"], "comagc": "train"}},
+        clear_metadata=True,
+    )
+
+    assert len(concatenated_dataset_with_list_in_mapping["train"]) == len(
+        tbga_extract["train"]
+    ) + len(tbga_extract["test"]) + len(comagc_extract["train"])
+    assert all(
+        [
+            ds.metadata["dataset_name"] in ["tbga", "comagc"]
+            for ds in concatenated_dataset_with_list_in_mapping["train"]
+        ]
+    )
