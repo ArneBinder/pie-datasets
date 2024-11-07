@@ -65,7 +65,7 @@ definitions.
 - `mixed_test` contains 20 abstracts on the following diseases: glaucoma, neoplasm, diabetes, hypertension, hepatitis.
 - 31 out of 40 abstracts in `mixed_test` overlap with abstracts in `neoplasm_test` and `glaucoma_test`.
 
-### Label Descriptions
+### Label Descriptions and Statistics
 
 In this section, we describe labels according to [Mayer et al. (2020)](https://ebooks.iospress.nl/publication/55129), as well as our label counts on 669 abstracts.
 
