@@ -42,17 +42,33 @@ See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema)
 ### Usage
 
 ```python
-from pie_datasets import load_dataset, builders
+from pie_datasets import load_dataset
+from pie_datasets.builders.brat import BratDocumentWithMergedSpans, BratDocument
+from pytorch_ie.documents import TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
 
 # load default version
-datasets = load_dataset("pie/sciarg")
-doc = datasets["train"][0]
-assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
+dataset = load_dataset("pie/sciarg")
+assert isinstance(dataset["train"][0], BratDocumentWithMergedSpans)
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type(TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions)
+assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions)
+
 
 # load version with resolved parts_of_same relations
-datasets = load_dataset("pie/sciarg", name='resolve_parts_of_same')
-doc = datasets["train"][0]
-assert isinstance(doc, builders.brat.BratDocument)
+dataset = load_dataset("pie/sciarg", name='resolve_parts_of_same')
+assert isinstance(dataset["train"][0], BratDocument)
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type(TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions)
+assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions)
+
+# get first relation in the first document
+doc = dataset_converted["train"][0]
+print(doc.binary_relations[0])
+# BinaryRelation(head=LabeledMultiSpan(slices=((15071, 15076),), label='data', score=1.0), tail=LabeledMultiSpan(slices=((14983, 15062),), label='background_claim', score=1.0), label='supports', score=1.0)
+print(doc.binary_relations[0].resolve())
+# ('supports', (('data', ('[ 3 ]',)), ('background_claim', ('PSD and improved example-based schemes have been discussed in many publications',))))
 ```
 
 ### Document Converters
