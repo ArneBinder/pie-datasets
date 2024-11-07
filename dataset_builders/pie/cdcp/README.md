@@ -3,6 +3,27 @@
 This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for the
 [CDCP Huggingface dataset loading script](https://huggingface.co/datasets/DFKI-SLT/cdcp).
 
+## Usage
+
+```python
+from pie_datasets import load_dataset
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+
+# load English variant
+dataset = load_dataset("pie/cdcp")
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type(TextDocumentWithLabeledSpansAndBinaryRelations)
+assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledSpansAndBinaryRelations)
+
+# get first relation in the first document
+doc = dataset_converted["train"][0]
+print(doc.binary_relations[0])
+# BinaryRelation(head=LabeledSpan(start=0, end=78, label='value', score=1.0), tail=LabeledSpan(start=79, end=242, label='value', score=1.0), label='reason', score=1.0)
+print(doc.binary_relations[0].resolve())
+# ('reason', (('value', 'State and local court rules sometimes make default judgments much more likely.'), ('value', 'For example, when a person who allegedly owes a debt is told to come to court on a work day, they may be forced to choose between a default judgment and their job.')))
+```
+
 ## Data Schema
 
 The document type for this dataset is `CDCPDocument` which defines the following data fields:
