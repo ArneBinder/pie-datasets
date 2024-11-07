@@ -4,6 +4,37 @@ This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for t
 
 Therefore, the `sciarg` dataset as described here follows the data structure from the [PIE brat dataset card](https://huggingface.co/datasets/pie/brat).
 
+### Usage
+
+```python
+from pie_datasets import load_dataset
+from pie_datasets.builders.brat import BratDocumentWithMergedSpans, BratDocument
+from pytorch_ie.documents import TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+
+# load default version
+dataset = load_dataset("pie/sciarg")
+assert isinstance(dataset["train"][0], BratDocumentWithMergedSpans)
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type(TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions)
+assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions)
+
+# load version with resolved parts_of_same relations
+dataset = load_dataset("pie/sciarg", name='resolve_parts_of_same')
+assert isinstance(dataset["train"][0], BratDocument)
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type(TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions)
+assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions)
+
+# get first relation in the first document
+doc = dataset_converted["train"][0]
+print(doc.binary_relations[0])
+# BinaryRelation(head=LabeledMultiSpan(slices=((15071, 15076),), label='data', score=1.0), tail=LabeledMultiSpan(slices=((14983, 15062),), label='background_claim', score=1.0), label='supports', score=1.0)
+print(doc.binary_relations[0].resolve())
+# ('supports', (('data', ('[ 3 ]',)), ('background_claim', ('PSD and improved example-based schemes have been discussed in many publications',))))
+```
+
 ### Dataset Summary
 
 The SciArg dataset is an extension of the Dr. Inventor corpus (Fisas et al., [2015](https://aclanthology.org/W15-1605.pdf), [2016](https://aclanthology.org/L16-1492.pdf)) with an annotation layer containing
@@ -38,38 +69,6 @@ are connected via the `parts_of_same` relations are converted to `LabeledMultiSp
 ### Data Schema
 
 See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema).
-
-### Usage
-
-```python
-from pie_datasets import load_dataset
-from pie_datasets.builders.brat import BratDocumentWithMergedSpans, BratDocument
-from pytorch_ie.documents import TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
-
-# load default version
-dataset = load_dataset("pie/sciarg")
-assert isinstance(dataset["train"][0], BratDocumentWithMergedSpans)
-
-# if required, normalize the document type (see section Document Converters below)
-dataset_converted = dataset.to_document_type(TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions)
-assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions)
-
-
-# load version with resolved parts_of_same relations
-dataset = load_dataset("pie/sciarg", name='resolve_parts_of_same')
-assert isinstance(dataset["train"][0], BratDocument)
-
-# if required, normalize the document type (see section Document Converters below)
-dataset_converted = dataset.to_document_type(TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions)
-assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions)
-
-# get first relation in the first document
-doc = dataset_converted["train"][0]
-print(doc.binary_relations[0])
-# BinaryRelation(head=LabeledMultiSpan(slices=((15071, 15076),), label='data', score=1.0), tail=LabeledMultiSpan(slices=((14983, 15062),), label='background_claim', score=1.0), label='supports', score=1.0)
-print(doc.binary_relations[0].resolve())
-# ('supports', (('data', ('[ 3 ]',)), ('background_claim', ('PSD and improved example-based schemes have been discussed in many publications',))))
-```
 
 ### Document Converters
 
