@@ -13,15 +13,15 @@ from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 dataset = load_dataset("pie/argmicro", name="en")
 
 # if required, normalize the document type (see section Document Converters below)
-dataset_converted = dataset.to_document_type("pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations")
+dataset_converted = dataset.to_document_type(TextDocumentWithLabeledSpansAndBinaryRelations)
 assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledSpansAndBinaryRelations)
 
 # get first relation in the first document
 doc = dataset_converted["train"][0]
 print(doc.binary_relations[0])
-# BinaryRelation(head=LabeledSpan(start=1769, end=1945, label='Claim', score=1.0), tail=LabeledSpan(start=1, end=162, label='MajorClaim', score=1.0), label='Support', score=1.0)
+# BinaryRelation(head=LabeledSpan(start=0, end=81, label='opp', score=1.0), tail=LabeledSpan(start=326, end=402, label='pro', score=1.0), label='reb', score=1.0)
 print(doc.binary_relations[0].resolve())
-# ('Support', (('Claim', 'Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement in several HQL domains and symptoms than treatment with prednisone alone.'), ('MajorClaim', 'A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain in men with metastatic, hormone-resistant, prostate cancer.')))
+# ('reb', (('opp', "Yes, it's annoying and cumbersome to separate your rubbish properly all the time."), ('pro', 'We Berliners should take the chance and become pioneers in waste separation!')))
 ```
 
 ## Dataset Variants
