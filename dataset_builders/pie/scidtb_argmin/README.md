@@ -3,11 +3,32 @@
 This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for the
 [SciDTB ArgMin Huggingface dataset loading script](https://huggingface.co/datasets/DFKI-SLT/scidtb_argmin).
 
+## Usage
+
+```python
+from pie_datasets import load_dataset
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+
+# load English variant
+dataset = load_dataset("pie/scidtb_argmin")
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type(TextDocumentWithLabeledSpansAndBinaryRelations)
+assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledSpansAndBinaryRelations)
+
+# get first relation in the first document
+doc = dataset_converted["train"][0]
+print(doc.binary_relations[0])
+# BinaryRelation(head=LabeledSpan(start=251, end=454, label='means', score=1.0), tail=LabeledSpan(start=455, end=712, label='proposal', score=1.0), label='detail', score=1.0)
+print(doc.binary_relations[0].resolve())
+# ('detail', (('means', 'We observe , identify , and detect naturally occurring signals of interestingness in click transitions on the Web between source and target documents , which we collect from commercial Web browser logs .'), ('proposal', 'The DSSM is trained on millions of Web transitions , and maps source-target document pairs to feature vectors in a latent space in such a way that the distance between source documents and their corresponding interesting targets in that space is minimized .')))
+```
+
 ## Data Schema
 
 The document type for this dataset is `SciDTBArgminDocument` which defines the following data fields:
 
-- `tokens` (Tuple of string)
+- `tokens` (tuple of string)
 - `id` (str, optional)
 - `metadata` (dictionary, optional)
 
