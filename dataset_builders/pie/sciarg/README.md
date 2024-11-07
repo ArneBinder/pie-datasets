@@ -4,6 +4,37 @@ This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for t
 
 Therefore, the `sciarg` dataset as described here follows the data structure from the [PIE brat dataset card](https://huggingface.co/datasets/pie/brat).
 
+### Usage
+
+```python
+from pie_datasets import load_dataset
+from pie_datasets.builders.brat import BratDocumentWithMergedSpans, BratDocument
+from pytorch_ie.documents import TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+
+# load default version
+dataset = load_dataset("pie/sciarg")
+assert isinstance(dataset["train"][0], BratDocumentWithMergedSpans)
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type(TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions)
+assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions)
+
+# load version with resolved parts_of_same relations
+dataset = load_dataset("pie/sciarg", name='resolve_parts_of_same')
+assert isinstance(dataset["train"][0], BratDocument)
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type(TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions)
+assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions)
+
+# get first relation in the first document
+doc = dataset_converted["train"][0]
+print(doc.binary_relations[0])
+# BinaryRelation(head=LabeledMultiSpan(slices=((15071, 15076),), label='data', score=1.0), tail=LabeledMultiSpan(slices=((14983, 15062),), label='background_claim', score=1.0), label='supports', score=1.0)
+print(doc.binary_relations[0].resolve())
+# ('supports', (('data', ('[ 3 ]',)), ('background_claim', ('PSD and improved example-based schemes have been discussed in many publications',))))
+```
+
 ### Dataset Summary
 
 The SciArg dataset is an extension of the Dr. Inventor corpus (Fisas et al., [2015](https://aclanthology.org/W15-1605.pdf), [2016](https://aclanthology.org/L16-1492.pdf)) with an annotation layer containing
@@ -39,21 +70,25 @@ are connected via the `parts_of_same` relations are converted to `LabeledMultiSp
 
 See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema).
 
-### Usage
+### Document Converters
 
-```python
-from pie_datasets import load_dataset, builders
+The dataset provides document converters for the following target document types:
 
-# load default version
-datasets = load_dataset("pie/sciarg")
-doc = datasets["train"][0]
-assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
+- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+  - `LabeledSpans`, converted from `BratDocument`'s `spans`
+    - labels: `background_claim`, `own_claim`, `data`
+    - if `spans` contain whitespace at the beginning and/or the end, the whitespace are trimmed out.
+  - `BinraryRelations`, converted from `BratDocument`'s `relations`
+    - labels: `supports`, `contradicts`, `semantically_same`, `parts_of_same`
+    - if the `relations` label is `semantically_same` or `parts_of_same`, they are merged if they are the same arguments after sorting.
+- `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
+  - `LabeledSpans`, as above
+  - `BinaryRelations`, as above
+  - `LabeledPartitions`, partitioned `BratDocument`'s `text`, according to the paragraph, using regex.
+    - labels: `title`, `abstract`, `H1`
 
-# load version with resolved parts_of_same relations
-datasets = load_dataset("pie/sciarg", name='resolve_parts_of_same')
-doc = datasets["train"][0]
-assert isinstance(doc, builders.brat.BratDocument)
-```
+See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
+definitions.
 
 ### Data Splits
 
@@ -133,6 +168,13 @@ possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) prese
 
 (*Annotation Guidelines*, pp. 4-6)
 
+There are currently discrepancies in label counts between
+
+- previous report in [Lauscher et al., 2018](https://aclanthology.org/W18-5206/), p. 43),
+- current report above here (labels counted in `BratDocument`'s);
+
+possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) presents the numbers of the real argumentative components, whereas here discontinuous components are still split (marked with the `parts_of_same` helper relation) and, thus, count per fragment.
+
 #### Examples
 
 ![sample1](img/leaannof3.png)
@@ -143,9 +185,14 @@ Below: Subset of relations in `A01`
 
 ![sample2](img/sciarg-sam.png)
 
-### Document Converters
+### Collected Statistics after Document Conversion
 
-The dataset provides document converters for the following target document types:
+We use the script `evaluate_documents.py` from [PyTorch-IE-Hydra-Template](https://github.com/ArneBinder/pytorch-ie-hydra-template-1) to generate these statistics.
+After checking out that code, the statistics and plots can be generated by the command:
+
+```commandline
+python src/evaluate_documents.py dataset=sciarg_base metric=METRIC
+```
 
 From `default` version:
 
@@ -178,8 +225,111 @@ From `resolve_parts_of_same` version:
   - `labeled_partitions`, `LabeledSpan` annotations, created from splitting `BratDocument`'s `text` at new paragraph in `xml` format.
     - labels: `title`, `abstract`, `H1`
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
-definitions.
+This also requires to have the following dataset config in `configs/dataset/sciarg_base.yaml` of this dataset within the repo directory:
+
+```commandline
+_target_: src.utils.execute_pipeline
+input:
+  _target_: pie_datasets.DatasetDict.load_dataset
+  path: pie/sciarg
+  revision: 982d5682ba414ee13cf92cb93ec18fc8e78e2b81
+```
+
+For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py)).
+
+#### Relation argument (outer) token distance per label
+
+The distance is measured from the first token of the first argumentative unit to the last token of the last unit, a.k.a. outer distance.
+
+We collect the following statistics: number of documents in the split (*no. doc*), no. of relations (*len*), mean of token distance (*mean*), standard deviation of the distance (*std*), minimum outer distance (*min*), and maximum outer distance (*max*).
+We also present histograms in the collapsible, showing the distribution of these relation distances (x-axis; and unit-counts in y-axis), accordingly.
+
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=sciarg_base metric=relation_argument_token_distances
+```
+
+</details>
+
+|                   |   len |  max |    mean | min |     std |
+| :---------------- | ----: | ---: | ------: | --: | ------: |
+| ALL               | 15640 | 2864 |  30.524 |   3 |  45.351 |
+| contradicts       |  1392 |  238 |  32.565 |   6 |  19.771 |
+| parts_of_same     |  2594 |  374 |   28.18 |   3 |  26.845 |
+| semantically_same |    84 | 2864 | 206.333 |  11 | 492.268 |
+| supports          | 11570 |  407 |  29.527 |   4 |  24.189 |
+
+<details>
+  <summary>Histogram (split: train, 40 documents)</summary>
+
+![rtd-label_sciarg.png](img%2Frtd-label_sciarg.png)
+
+</details>
+
+#### Span lengths (tokens)
+
+The span length is measured from the first token of the first argumentative unit to the last token of the particular unit.
+
+We collect the following statistics: number of documents in the split (*no. doc*), no. of spans (*len*), mean of number of tokens in a span (*mean*), standard deviation of the number of tokens (*std*), minimum tokens in a span (*min*), and maximum tokens in a span (*max*).
+We also present histograms in the collapsible, showing the distribution of these token-numbers (x-axis; and unit-counts in y-axis), accordingly.
+
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=sciarg_base metric=span_lengths_tokens
+```
+
+</details>
+
+| statistics |  train |
+| :--------- | -----: |
+| no. doc    |     40 |
+| len        |  13586 |
+| mean       | 11.677 |
+| std        |  8.731 |
+| min        |      1 |
+| max        |    138 |
+
+<details>
+  <summary>Histogram (split: train, 40 documents)</summary>
+
+![slt_sciarg.png](img%2Fslt_sciarg.png)
+
+</details>
+
+#### Token length (tokens)
+
+The token length is measured from the first token of the document to the last one.
+
+We collect the following statistics: number of documents in the split (*no. doc*), mean of document token-length (*mean*), standard deviation of the length (*std*), minimum number of tokens in a document (*min*), and maximum number of tokens in a document (*max*).
+We also present histograms in the collapsible, showing the distribution of these token lengths (x-axis; and unit-counts in y-axis), accordingly.
+
+<details>
+<summary>Command</summary>
+
+```
+python src/evaluate_documents.py dataset=sciarg_base metric=count_text_tokens
+```
+
+</details>
+
+| statistics |   train |
+| :--------- | ------: |
+| no. doc    |      40 |
+| mean       | 10521.1 |
+| std        |  2472.2 |
+| min        |    6452 |
+| max        |   16421 |
+
+<details>
+  <summary>Histogram (split: train, 40 documents)</summary>
+
+![tl_sciarg.png](img%2Ftl_sciarg.png)
+
+</details>
 
 ## Dataset Creation
 
