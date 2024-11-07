@@ -3,6 +3,27 @@
 This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for the
 [ArgMicro Huggingface dataset loading script](https://huggingface.co/datasets/DFKI-SLT/argmicro).
 
+## Usage
+
+```python
+from pie_datasets import load_dataset
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+
+# load English variant
+dataset = load_dataset("pie/argmicro", name="en")
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type("pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations")
+assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledSpansAndBinaryRelations)
+
+# get first relation in the first document
+doc = dataset_converted["train"][0]
+print(doc.binary_relations[0])
+# BinaryRelation(head=LabeledSpan(start=1769, end=1945, label='Claim', score=1.0), tail=LabeledSpan(start=1, end=162, label='MajorClaim', score=1.0), label='Support', score=1.0)
+print(doc.binary_relations[0].resolve())
+# ('Support', (('Claim', 'Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement in several HQL domains and symptoms than treatment with prednisone alone.'), ('MajorClaim', 'A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain in men with metastatic, hormone-resistant, prostate cancer.')))
+```
+
 ## Dataset Variants
 
 The dataset contains two `BuilderConfig`'s:
