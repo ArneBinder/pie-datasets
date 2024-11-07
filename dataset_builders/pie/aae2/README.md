@@ -4,6 +4,29 @@ This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for t
 
 Therefore, the `aae2` dataset as described here follows the data structure from the [PIE brat dataset card](https://huggingface.co/datasets/pie/brat).
 
+### Usage
+
+```python
+from pie_datasets import load_dataset
+from pie_datasets.builders.brat import BratDocumentWithMergedSpans
+from pytorch_ie.documents import TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+
+# load default version
+dataset = load_dataset("pie/aae2")
+assert isinstance(dataset["train"][0], BratDocumentWithMergedSpans)
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type(TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions)
+assert isinstance(dataset_converted["train"][0], TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions)
+
+# get first relation in the first document
+doc = dataset_converted["train"][0]
+print(doc.binary_relations[0])
+# BinaryRelation(head=LabeledSpan(start=716, end=851, label='Premise', score=1.0), tail=LabeledSpan(start=591, end=714, label='Claim', score=1.0), label='supports', score=1.0)
+print(doc.binary_relations[0].resolve())
+# ('supports', (('Premise', 'What we acquired from team work is not only how to achieve the same goal with others but more importantly, how to get along with others'), ('Claim', 'through cooperation, children can learn about interpersonal skills which are significant in the future life of all students')))
+```
+
 ### Dataset Summary
 
 Argument Annotated Essays Corpus (AAEC) ([Stab and Gurevych, 2017](https://aclanthology.org/J17-3005.pdf)) contains student essays. A stance for a controversial theme is expressed by a major claim component as well as claim components, and premise components justify or refute the claims. Attack and support labels are defined as relations. The span covers a statement, *which can stand in isolation as a complete sentence*, according to the AAEC annotation guidelines. All components are annotated with minimum boundaries of a clause or sentence excluding so-called "shell" language such as *On the other hand* and *Hence*. (Morio et al., 2022, p. 642)
@@ -27,17 +50,6 @@ The `aae2` dataset comes in a single version (`default`) with `BratDocumentWithM
 ### Data Schema
 
 See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema).
-
-### Usage
-
-```python
-from pie_datasets import load_dataset, builders
-
-# load default version
-datasets = load_dataset("pie/aae2")
-doc = datasets["train"][0]
-assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
-```
 
 ### Data Splits
 

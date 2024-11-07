@@ -10,6 +10,29 @@ A novel corpus of healthcare texts (i.e., RCT abstracts on various diseases) fro
 are annotated with argumentative components (i.e., `MajorClaim`, `Claim`, and `Premise`) and relations (i.e., `Support`, `Attack`, and `Partial-attack`),
 in order to support clinicians' daily tasks in information finding and evidence-based reasoning for decision making.
 
+### Usage
+
+```python
+from pie_datasets import load_dataset
+from pie_datasets.builders.brat import BratDocumentWithMergedSpans
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+
+# load default version
+dataset = load_dataset("pie/abstrct")
+assert isinstance(dataset["neoplasm_train"][0], BratDocumentWithMergedSpans)
+
+# if required, normalize the document type (see section Document Converters below)
+dataset_converted = dataset.to_document_type("pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations")
+assert isinstance(dataset_converted["neoplasm_train"][0], TextDocumentWithLabeledSpansAndBinaryRelations)
+
+# get first relation in the first document
+doc = dataset_converted["neoplasm_train"][0]
+print(doc.binary_relations[0])
+# BinaryRelation(head=LabeledSpan(start=1769, end=1945, label='Claim', score=1.0), tail=LabeledSpan(start=1, end=162, label='MajorClaim', score=1.0), label='Support', score=1.0)
+print(doc.binary_relations[0].resolve())
+# ('Support', (('Claim', 'Treatment with mitoxantrone plus prednisone was associated with greater and longer-lasting improvement in several HQL domains and symptoms than treatment with prednisone alone.'), ('MajorClaim', 'A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain in men with metastatic, hormone-resistant, prostate cancer.')))
+```
+
 ### Supported Tasks and Leaderboards
 
 - **Tasks**: Argumentation Mining, Component Identification, Boundary Detection, Relation Identification, Link Prediction
@@ -30,17 +53,6 @@ Without any need to merge fragments, the document type `BratDocumentWithMergedSp
 
 See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema).
 
-### Usage
-
-```python
-from pie_datasets import load_dataset, builders
-
-# load default version
-datasets = load_dataset("pie/abstrct")
-doc = datasets["neoplasm_train"][0]
-assert isinstance(doc, builders.brat.BratDocumentWithMergedSpans)
-```
-
 ### Document Converters
 
 The dataset provides document converters for the following target document types:
@@ -51,8 +63,7 @@ The dataset provides document converters for the following target document types
   - `BinraryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
     - labels:  `Support`, `Partial-Attack`, `Attack`
 
-See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
-definitions.
+See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type definitions.
 
 ### Data Splits
 
