@@ -136,8 +136,8 @@ possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) prese
 
 | Relations                  | Count | Percentage |
 | -------------------------- | ----: | ---------: |
-| support: `support`         |  5789 |     74.0 % |
-| attack: `contradict`       |   696 |      8.9 % |
+| support: `supports`        |  5789 |     74.0 % |
+| attack: `contradicts`      |   696 |      8.9 % |
 | other: `semantically_same` |    44 |      0.6 % |
 | other: `parts_of_same`     |  1298 |     16.6 % |
 | total                      |  7827 |    100.0 % |
@@ -146,17 +146,17 @@ possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) prese
 
 | Relations                  | Count | Percentage |
 | -------------------------- | ----: | ---------: |
-| support: `support`         |  5788 |     88.7 % |
-| attack: `contradict`       |   696 |     10.7 % |
+| support: `supports`        |  5788 |     88.7 % |
+| attack: `contradicts`      |   696 |     10.7 % |
 | other: `semantically_same` |    44 |      0.7 % |
 | total                      |  6528 |    100.0 % |
 
 ##### Argumentative relations
 
-- `support`:
+- `supports`:
   - if the assumed veracity of *b* increases with the veracity of *a*
   - "Usually, this relationship exists from data to claim, but in many cases a claim might support another claim. Other combinations are still possible." -  (*Annotation Guidelines*, p. 3)
-- `contradict`:
+- `contradicts`:
   - if the assumed veracity of *b* decreases with the veracity of *a*
   - It is a **bi-directional**, i.e., symmetric relationship.
 
