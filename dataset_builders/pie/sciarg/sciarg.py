@@ -35,7 +35,7 @@ def get_common_converter_pipeline_steps(target_document_type: type[Document]) ->
         trim_adus=TextSpanTrimmer(layer="labeled_spans"),
         sort_symmetric_relation_arguments=RelationArgumentSorter(
             relation_layer="binary_relations",
-            label_whitelist=["parts_of_same", "semantically_same"],
+            label_whitelist=["parts_of_same", "semantically_same", "contradicts"],
         ),
     )
 

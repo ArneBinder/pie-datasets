@@ -411,12 +411,12 @@ def test_converted_document(converted_document, dataset_variant):
                     ),
                 ),
                 (
-                    ("This approach is not commonly applied", "background_claim"),
-                    "contradicts",
                     (
                         "artists will edit the geometry of characters in the rest pose to fine-tune animations",
                         "background_claim",
                     ),
+                    "contradicts",
+                    ("This approach is not commonly applied", "background_claim"),
                 ),
                 (
                     (
