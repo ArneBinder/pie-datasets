@@ -155,7 +155,7 @@ possibly since [Lauscher et al., 2018](https://aclanthology.org/W18-5206/) prese
 
 - `supports`:
   - if the assumed veracity of *b* increases with the veracity of *a*
-  - "Usually, this relationship exists from data to claim, but in many cases a claim might support another claim. Other combinations are still possible." -  (*Annotation Guidelines*, p. 3)
+  - "Usually, this relationship exists from data to claim, but in many cases a claim might support another claim. Other combinations are still possible." - (*Annotation Guidelines*, p. 3)
 - `contradicts`:
   - if the assumed veracity of *b* decreases with the veracity of *a*
   - It is a **bi-directional**, i.e., symmetric relationship.
@@ -335,7 +335,7 @@ python src/evaluate_documents.py dataset=sciarg_base metric=count_text_tokens
 
 ### Curation Rationale
 
-"\[C\]omputational methods for analyzing scientific writing are becoming paramount...there is no publicly available corpus of scientific publications (in English), annotated with fine-grained argumentative structures. ...\[A\]rgumentative structure of scientific publications should not be studied in isolation, but rather in relation to other rhetorical aspects, such as the
+"[C]omputational methods for analyzing scientific writing are becoming paramount...there is no publicly available corpus of scientific publications (in English), annotated with fine-grained argumentative structures. ...[A]rgumentative structure of scientific publications should not be studied in isolation, but rather in relation to other rhetorical aspects, such as the
 discourse structure.
 (Lauscher et al. 2018, p. 40)
 
@@ -343,7 +343,7 @@ discourse structure.
 
 #### Initial Data Collection and Normalization
 
-"\[W\]e randomly selected a set of 40 documents, available in PDF format, among a bigger collection provided by experts in the domain, who pre-selected a representative sample of articles in Computer Graphics. Articles were classified into four important subjects in this area: Skinning, Motion Capture, Fluid Simulation and Cloth Simulation. We included in the corpus 10 highly representative articles for each subject." (Fisas et al. 2015, p. 44)
+"[W]e randomly selected a set of 40 documents, available in PDF format, among a bigger collection provided by experts in the domain, who pre-selected a representative sample of articles in Computer Graphics. Articles were classified into four important subjects in this area: Skinning, Motion Capture, Fluid Simulation and Cloth Simulation. We included in the corpus 10 highly representative articles for each subject." (Fisas et al. 2015, p. 44)
 
 "The Corpus includes 10,789 sentences, with an average of 269.7 sentences per document." (p. 45)
 
@@ -367,7 +367,7 @@ The annotation were done using BRAT Rapid Annotation Tool ([Stenetorp et al., 20
 
 ### Personal and Sensitive Information
 
-\[More Information Needed\]
+[More Information Needed]
 
 ## Considerations for Using the Data
 
@@ -384,7 +384,7 @@ of the different rhetorical aspects of scientific language (which we dub *scitor
 
 "While the background claims and own claims are on average of similar length (85 and 87 characters, respectively), they are much longer than data components (average of 25 characters)."
 
-"\[A\]nnotators identified an average of 141 connected component per publication...This indicates that either authors write very short argumentative chains or that our annotators had difficulties noticing long-range argumentative dependencies."
+"[A]nnotators identified an average of 141 connected component per publication...This indicates that either authors write very short argumentative chains or that our annotators had difficulties noticing long-range argumentative dependencies."
 
 (Lauscher et al. 2018, p.43)
 
