@@ -61,7 +61,7 @@ The dataset provides document converters for the following target document types
   - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
     - labels: `MajorClaim`, `Claim`, `Premise`
   - `BinraryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
-    - labels:  `Support`, `Partial-Attack`, `Attack`
+    - labels: `Support`, `Partial-Attack`, `Attack`
 
 See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type definitions.
 
@@ -93,7 +93,7 @@ Morio et al. ([2022](https://aclanthology.org/2022.tacl-1.37.pdf); p. 642, Table
 
 - `MajorClaim` are more general/concluding `claim`'s, which is supported by more specific claims
 - `Claim` is a concluding statement made by the author about the outcome of the study. Claims only points to other claims.
-- `Premise` (a.k.a. evidence)  is an observation or measurement in the study, which supports or attacks another argument component, usually a `claim`. They are observed facts, and therefore credible without further justifications, as this is the ground truth the argumentation is based on.
+- `Premise` (a.k.a. evidence) is an observation or measurement in the study, which supports or attacks another argument component, usually a `claim`. They are observed facts, and therefore credible without further justifications, as this is the ground truth the argumentation is based on.
 
 (Mayer et al. 2020, p.2110)
 
@@ -354,7 +354,7 @@ python src/evaluate_documents.py dataset=abstrct_base metric=count_text_tokens
 
 ### Curation Rationale
 
-"\[D\]espite its natural employment in healthcare applications, only few approaches have applied AM methods to this kind
+"[D]espite its natural employment in healthcare applications, only few approaches have applied AM methods to this kind
 of text, and their contribution is limited to the detection
 of argument components, disregarding the more complex phase of
 predicting the relations among them. In addition, no huge annotated
@@ -373,7 +373,7 @@ Extended from the previous dataset in [Mayer et al. 2018](https://webusers.i3s.u
 
 #### Who are the source language producers?
 
-\[More Information Needed\]
+[More Information Needed]
 
 ### Annotations
 
@@ -405,7 +405,7 @@ Two annotators with background in computational linguistics. No information was 
 
 ### Personal and Sensitive Information
 
-\[More Information Needed\]
+[More Information Needed]
 
 ## Considerations for Using the Data
 
@@ -426,17 +426,17 @@ scale." (p. 2114)
 
 ### Discussion of Biases
 
-\[More Information Needed\]
+[More Information Needed]
 
 ### Other Known Limitations
 
-\[More Information Needed\]
+[More Information Needed]
 
 ## Additional Information
 
 ### Dataset Curators
 
-\[More Information Needed\]
+[More Information Needed]
 
 ### Licensing Information
 

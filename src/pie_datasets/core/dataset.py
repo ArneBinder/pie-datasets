@@ -179,8 +179,7 @@ def dataset_to_document_type(
     dataset: "Dataset",
     document_type: Type[Document],
     **kwargs,
-) -> "Dataset":
-    ...
+) -> "Dataset": ...
 
 
 @overload
@@ -188,8 +187,7 @@ def dataset_to_document_type(
     dataset: "IterableDataset",
     document_type: Type[Document],
     **kwargs,
-) -> "IterableDataset":
-    ...
+) -> "IterableDataset": ...
 
 
 def dataset_to_document_type(
@@ -383,9 +381,11 @@ class Dataset(datasets.Dataset, Sequence[D]):
         result_document_type: Optional[Type[Document]] = None,
     ) -> "Dataset":
         dataset = super().map(
-            function=decorate_convert_to_dict_of_lists(function)
-            if as_documents and function is not None
-            else function,
+            function=(
+                decorate_convert_to_dict_of_lists(function)
+                if as_documents and function is not None
+                else function
+            ),
             with_indices=with_indices,
             with_rank=with_rank,
             input_columns=input_columns,
@@ -588,11 +588,13 @@ class IterableDataset(datasets.IterableDataset):
         **kwargs,
     ) -> "IterableDataset":
         dataset_mapped = super().map(
-            function=decorate_convert_to_document_and_back(
-                function, document_type=self.document_type, batched=batched
-            )
-            if as_documents and function is not None
-            else function,
+            function=(
+                decorate_convert_to_document_and_back(
+                    function, document_type=self.document_type, batched=batched
+                )
+                if as_documents and function is not None
+                else function
+            ),
             batched=batched,
             **kwargs,
         )

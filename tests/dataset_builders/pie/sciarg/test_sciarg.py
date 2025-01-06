@@ -842,9 +842,11 @@ def test_tokenize_documents_all(converted_dataset, tokenizer, dataset_variant):
                 tokenizer=tokenizer,
                 return_overflowing_tokens=True,
                 result_document_type=TOKENIZED_DOCUMENT_TYPE_MAPPING[type(doc)],
-                partition_layer="labeled_partitions"
-                if isinstance(doc, TextDocumentWithLabeledPartitions)
-                else None,
+                partition_layer=(
+                    "labeled_partitions"
+                    if isinstance(doc, TextDocumentWithLabeledPartitions)
+                    else None
+                ),
                 strict_span_conversion=strict_span_conversion,
                 verbose=True,
             )

@@ -176,12 +176,10 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
         return None  # pragma: no cover
 
     @overload  # type: ignore
-    def _convert_dataset_single(self, dataset: datasets.IterableDataset) -> IterableDataset:
-        ...
+    def _convert_dataset_single(self, dataset: datasets.IterableDataset) -> IterableDataset: ...
 
     @overload  # type: ignore
-    def _convert_dataset_single(self, dataset: datasets.Dataset) -> Dataset:
-        ...
+    def _convert_dataset_single(self, dataset: datasets.Dataset) -> Dataset: ...
 
     def _convert_dataset_single(
         self, dataset: Union[datasets.Dataset, datasets.IterableDataset]
@@ -204,22 +202,18 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
         return result
 
     @overload  # type: ignore
-    def _convert_datasets(self, datasets: datasets.DatasetDict) -> datasets.DatasetDict:
-        ...
+    def _convert_datasets(self, datasets: datasets.DatasetDict) -> datasets.DatasetDict: ...
 
     @overload  # type: ignore
     def _convert_datasets(
         self, datasets: datasets.IterableDatasetDict
-    ) -> datasets.IterableDatasetDict:
-        ...
+    ) -> datasets.IterableDatasetDict: ...
 
     @overload  # type: ignore
-    def _convert_datasets(self, datasets: datasets.IterableDataset) -> IterableDataset:
-        ...
+    def _convert_datasets(self, datasets: datasets.IterableDataset) -> IterableDataset: ...
 
     @overload  # type: ignore
-    def _convert_datasets(self, datasets: datasets.Dataset) -> Dataset:
-        ...
+    def _convert_datasets(self, datasets: datasets.Dataset) -> Dataset: ...
 
     def _convert_datasets(
         self,

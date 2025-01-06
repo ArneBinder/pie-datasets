@@ -53,11 +53,11 @@ See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema)
 
 ### Data Splits
 
-| Statistics                                                       |                      Train |                     Test |
-| ---------------------------------------------------------------- | -------------------------: | -----------------------: |
-| No. of document                                                  |                        322 |                       80 |
-| Components     <br/>- `MajorClaim`<br/>- `Claim`<br/>- `Premise` | <br/>598<br/>1202<br/>3023 | <br/>153<br/>304<br/>809 |
-| Relations\*<br/>- `supports`<br/>- `attacks`                     |          <br/>3820<br/>405 |         <br/>1021<br/>92 |
+| Statistics                                                   |                      Train |                     Test |
+| ------------------------------------------------------------ | -------------------------: | -----------------------: |
+| No. of document                                              |                        322 |                       80 |
+| Components <br/>- `MajorClaim`<br/>- `Claim`<br/>- `Premise` | <br/>598<br/>1202<br/>3023 | <br/>153<br/>304<br/>809 |
+| Relations\*<br/>- `supports`<br/>- `attacks`                 |          <br/>3820<br/>405 |         <br/>1021<br/>92 |
 
 \* included all relations between claims and premises and all claim attributions.
 
@@ -90,7 +90,7 @@ See further statistics in Stab & Gurevych (2017), p. 650, Table A.1.
 
 See further description in Stab & Gurevych 2017, p.627 and the [annotation guideline](https://github.com/ArneBinder/pie-datasets/blob/db94035602610cefca2b1678aa2fe4455c96155d/data/datasets/ArgumentAnnotatedEssays-2.0/guideline.pdf).
 
-**Note that** relations between `MajorClaim` and  `Claim` were not annotated; however, each claim is annotated with an `Attribute` annotation with value `for` or `against` - which indicates the relation between itself and `MajorClaim`. In addition, when two non-related `Claim` 's appear in one paragraph, there is also no relations to one another. An example of a document is shown here below.
+**Note that** relations between `MajorClaim` and `Claim` were not annotated; however, each claim is annotated with an `Attribute` annotation with value `for` or `against` - which indicates the relation between itself and `MajorClaim`. In addition, when two non-related `Claim` 's appear in one paragraph, there is also no relations to one another. An example of a document is shown here below.
 
 #### Example
 
@@ -351,7 +351,7 @@ Three non-native speakers; one of the three being an expert annotator.
 
 ### Social Impact of Dataset
 
-"\[Computational Argumentation\] have
+"[Computational Argumentation] have
 broad application potential in various areas such as legal decision support (Mochales-Palau and Moens 2009), information retrieval (Carstens and Toni 2015), policy making (Sardianos et al. 2015), and debating technologies (Levy et al. 2014; Rinott et al.
 2015)." (p. 619)
 
@@ -366,7 +366,7 @@ The relations between claims and major claims are not explicitly annotated.
 "The proportion of non-argumentative text amounts to 47,474 tokens (32.2%) and
 1,631 sentences (22.9%). The number of sentences with several argument components
 is 583, of which 302 include several components with different types (e.g., a claim followed by premise)...
-\[T\]he identification of argument components requires the
+[T]he identification of argument components requires the
 separation of argumentative from non-argumentative text units and the recognition of
 component boundaries at the token level...The proportion of paragraphs with unlinked
 argument components (e.g., unsupported claims without incoming relations) is 421

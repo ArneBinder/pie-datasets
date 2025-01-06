@@ -107,9 +107,9 @@ def hf_example(request) -> dict:
 
 def test_generate_document(builder, hf_example):
     kwargs = dict()
-    generated_document: Union[
-        BratDocument, BratDocumentWithMergedSpans
-    ] = builder._generate_document(example=hf_example, **kwargs)
+    generated_document: Union[BratDocument, BratDocumentWithMergedSpans] = (
+        builder._generate_document(example=hf_example, **kwargs)
+    )
 
     if hf_example == HF_EXAMPLES[0]:
         assert len(generated_document.relations) == 0

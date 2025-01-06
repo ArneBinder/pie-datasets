@@ -33,7 +33,7 @@ def _deep_compare(
             if re.match(excluded_path, path):
                 return
 
-    if type(obj) != type(obj_expected):
+    if type(obj) is not type(obj_expected):
         raise AssertionError(f"{path}: {obj} != {obj_expected}")
     if isinstance(obj, (list, tuple)):
         if len(obj) != len(obj_expected):

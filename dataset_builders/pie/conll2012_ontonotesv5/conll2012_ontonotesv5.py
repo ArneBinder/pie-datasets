@@ -447,9 +447,9 @@ class Conll2012Ontonotesv5(GeneratorBasedBuilder):
         pos_tags_feature = dataset.features["sentences"][0]["pos_tags"].feature
         return dict(
             entity_labels=dataset.features["sentences"][0]["named_entities"].feature,
-            pos_tag_labels=pos_tags_feature
-            if isinstance(pos_tags_feature, datasets.ClassLabel)
-            else None,
+            pos_tag_labels=(
+                pos_tags_feature if isinstance(pos_tags_feature, datasets.ClassLabel) else None
+            ),
         )
 
     def _generate_document(self, example, **document_kwargs):
