@@ -1,1 +1,3 @@
-pie-datasets>=0.6.0,<0.11.0
+#pie-datasets>=0.6.0,<0.11.0
+# temporarily install from this branch
+pie-datasets @ git+https://github.com/ArneBinder/pie-datasets.git@fix-164
