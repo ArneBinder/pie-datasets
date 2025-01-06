@@ -27,6 +27,8 @@ python = "^3.9"
 pytorch-ie = ">=0.30.3,<0.32.0"
 # <2.16.0 because of https://github.com/ArneBinder/pie-datasets/issues/93
 datasets = ">=2.14.0,<2.16.0"
+# should not be necessary, but see https://github.com/ArneBinder/pie-datasets/issues/164
+huggingface-hub = ">=0.24.0"
 # <2.0.0 because otherwise datasets breaks
 numpy = "<2.0.0"
 # this was manually added because we get a conflict with pyarrow otherwise
