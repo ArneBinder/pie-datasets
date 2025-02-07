@@ -153,6 +153,10 @@ def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
         converted_dataset = dataset.to_document_type(
             TextDocumentWithLabeledSpansAndBinaryRelations
         )
+    elif dataset_variant == "paragraphs":
+        converted_dataset = dataset.to_document_type(
+            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+        ).cast_document_type(TextDocumentWithLabeledSpansAndBinaryRelations)
     else:
         raise ValueError(f"Unknown dataset variant: {dataset_variant}")
     return converted_dataset
@@ -206,7 +210,7 @@ def test_convert_aae2_claim_attributions_to_relations(method):
 
 
 def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations,
+    dataset_of_text_documents_with_labeled_spans_and_binary_relations, dataset_variant
 ):
     # Check that the conversion is correct and the data makes sense
     # get a document to check
@@ -269,68 +273,143 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
     )
 
     # check the relations
-    # for conversion_method="connect_first"
-    assert len(doc.binary_relations) == 10
-    relation_tuples = [(str(rel.head), rel.label, str(rel.tail)) for rel in doc.binary_relations]
-    assert relation_tuples[0] == (
-        "What we acquired from team work is not only how to achieve the same goal with others but more importantly, "
-        "how to get along with others",
-        "supports",
-        "through cooperation, children can learn about interpersonal skills which are significant in the future life "
-        "of all students",
-    )
-    assert relation_tuples[1] == (
-        "During the process of cooperation, children can learn about how to listen to opinions of others, how to "
-        "communicate with others, how to think comprehensively, and even how to compromise with other team members "
-        "when conflicts occurred",
-        "supports",
-        "through cooperation, children can learn about interpersonal skills which are significant in the future life "
-        "of all students",
-    )
-    assert relation_tuples[2] == (
-        "All of these skills help them to get on well with other people and will benefit them for the whole life",
-        "supports",
-        "through cooperation, children can learn about interpersonal skills which are significant in the future life "
-        "of all students",
-    )
-    assert relation_tuples[3] == (
-        "Take Olympic games which is a form of competition for instance, it is hard to imagine how an athlete could "
-        "win the game without the training of his or her coach, and the help of other professional staffs such as "
-        "the people who take care of his diet, and those who are in charge of the medical care",
-        "supports",
-        "without the cooperation, there would be no victory of competition",
-    )
-    assert relation_tuples[4] == (
-        "when we consider about the question that how to win the game, we always find that we need the cooperation",
-        "supports",
-        "without the cooperation, there would be no victory of competition",
-    )
-    assert relation_tuples[5] == (
-        "the significance of competition is that how to become more excellence to gain the victory",
-        "supports",
-        "competition makes the society more effective",
-    )
-    assert relation_tuples[6] == (
-        "through cooperation, children can learn about interpersonal skills which are significant in the future "
-        "life of all students",
-        "supports",
-        "we should attach more importance to cooperation during primary education",
-    )
-    assert relation_tuples[7] == (
-        "competition makes the society more effective",
-        "attacks",
-        "we should attach more importance to cooperation during primary education",
-    )
-    assert relation_tuples[8] == (
-        "without the cooperation, there would be no victory of competition",
-        "supports",
-        "we should attach more importance to cooperation during primary education",
-    )
-    assert relation_tuples[9] == (
-        "a more cooperative attitudes towards life is more profitable in one's success",
-        "semantically_same",
-        "we should attach more importance to cooperation during primary education",
-    )
+    if dataset_variant == "paragraphs":
+        assert doc.binary_relations.resolve() == [
+            (
+                "supports",
+                (
+                    (
+                        "Premise",
+                        "What we acquired from team work is not only how to achieve the same goal with others but more importantly, how to get along with others",
+                    ),
+                    (
+                        "Claim",
+                        "through cooperation, children can learn about interpersonal skills which are significant in the future life of all students",
+                    ),
+                ),
+            ),
+            (
+                "supports",
+                (
+                    (
+                        "Premise",
+                        "During the process of cooperation, children can learn about how to listen to opinions of others, how to communicate with others, how to think comprehensively, and even how to compromise with other team members when conflicts occurred",
+                    ),
+                    (
+                        "Claim",
+                        "through cooperation, children can learn about interpersonal skills which are significant in the future life of all students",
+                    ),
+                ),
+            ),
+            (
+                "supports",
+                (
+                    (
+                        "Premise",
+                        "All of these skills help them to get on well with other people and will benefit them for the whole life",
+                    ),
+                    (
+                        "Claim",
+                        "through cooperation, children can learn about interpersonal skills which are significant in the future life of all students",
+                    ),
+                ),
+            ),
+            (
+                "supports",
+                (
+                    (
+                        "Premise",
+                        "Take Olympic games which is a form of competition for instance, it is hard to imagine how an athlete could win the game without the training of his or her coach, and the help of other professional staffs such as the people who take care of his diet, and those who are in charge of the medical care",
+                    ),
+                    ("Claim", "without the cooperation, there would be no victory of competition"),
+                ),
+            ),
+            (
+                "supports",
+                (
+                    (
+                        "Premise",
+                        "when we consider about the question that how to win the game, we always find that we need the cooperation",
+                    ),
+                    ("Claim", "without the cooperation, there would be no victory of competition"),
+                ),
+            ),
+            (
+                "supports",
+                (
+                    (
+                        "Premise",
+                        "the significance of competition is that how to become more excellence to gain the victory",
+                    ),
+                    ("Claim", "competition makes the society more effective"),
+                ),
+            ),
+        ]
+    else:
+        # for conversion_method="connect_first"
+        assert len(doc.binary_relations) == 10
+        relation_tuples = [
+            (str(rel.head), rel.label, str(rel.tail)) for rel in doc.binary_relations
+        ]
+        assert relation_tuples[0] == (
+            "What we acquired from team work is not only how to achieve the same goal with others but more importantly, "
+            "how to get along with others",
+            "supports",
+            "through cooperation, children can learn about interpersonal skills which are significant in the future life "
+            "of all students",
+        )
+        assert relation_tuples[1] == (
+            "During the process of cooperation, children can learn about how to listen to opinions of others, how to "
+            "communicate with others, how to think comprehensively, and even how to compromise with other team members "
+            "when conflicts occurred",
+            "supports",
+            "through cooperation, children can learn about interpersonal skills which are significant in the future life "
+            "of all students",
+        )
+        assert relation_tuples[2] == (
+            "All of these skills help them to get on well with other people and will benefit them for the whole life",
+            "supports",
+            "through cooperation, children can learn about interpersonal skills which are significant in the future life "
+            "of all students",
+        )
+        assert relation_tuples[3] == (
+            "Take Olympic games which is a form of competition for instance, it is hard to imagine how an athlete could "
+            "win the game without the training of his or her coach, and the help of other professional staffs such as "
+            "the people who take care of his diet, and those who are in charge of the medical care",
+            "supports",
+            "without the cooperation, there would be no victory of competition",
+        )
+        assert relation_tuples[4] == (
+            "when we consider about the question that how to win the game, we always find that we need the cooperation",
+            "supports",
+            "without the cooperation, there would be no victory of competition",
+        )
+        assert relation_tuples[5] == (
+            "the significance of competition is that how to become more excellence to gain the victory",
+            "supports",
+            "competition makes the society more effective",
+        )
+        assert relation_tuples[6] == (
+            "through cooperation, children can learn about interpersonal skills which are significant in the future "
+            "life of all students",
+            "supports",
+            "we should attach more importance to cooperation during primary education",
+        )
+        assert relation_tuples[7] == (
+            "competition makes the society more effective",
+            "attacks",
+            "we should attach more importance to cooperation during primary education",
+        )
+        assert relation_tuples[8] == (
+            "without the cooperation, there would be no victory of competition",
+            "supports",
+            "we should attach more importance to cooperation during primary education",
+        )
+        assert relation_tuples[9] == (
+            "a more cooperative attitudes towards life is more profitable in one's success",
+            "semantically_same",
+            "we should attach more importance to cooperation during primary education",
+        )
 
 
 @pytest.fixture(scope="module")
@@ -338,6 +417,10 @@ def dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_pa
     dataset, dataset_variant
 ) -> DatasetDict:
     if dataset_variant == "default":
+        converted_dataset = dataset.to_document_type(
+            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+        )
+    elif dataset_variant == "paragraphs":
         converted_dataset = dataset.to_document_type(
             TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
         )
@@ -442,14 +525,17 @@ def tokenized_documents_with_labeled_spans_and_binary_relations(
 
 
 def test_tokenized_documents_with_labeled_spans_and_binary_relations(
-    tokenized_documents_with_labeled_spans_and_binary_relations,
+    tokenized_documents_with_labeled_spans_and_binary_relations, dataset_variant
 ):
     docs = tokenized_documents_with_labeled_spans_and_binary_relations
     # check that the tokenization was fine
     assert len(docs) == 1
     doc = docs[0]
     assert len(doc.labeled_spans) == 11
-    assert len(doc.binary_relations) == 10
+    if dataset_variant == "paragraphs":
+        assert len(doc.binary_relations) == 6
+    else:
+        assert len(doc.binary_relations) == 10
     assert len(doc.tokens) == 427
     # Check the first ten tokens
     assert doc.tokens[:10] == (
@@ -646,6 +732,12 @@ def test_document_converters(dataset_variant):
         assert len(document_converters) == 2
         assert set(document_converters) == {
             TextDocumentWithLabeledSpansAndBinaryRelations,
+            TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+        }
+        assert all(callable(v) for k, v in document_converters.items())
+    elif dataset_variant == "paragraphs":
+        assert len(document_converters) == 1
+        assert set(document_converters) == {
             TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
         }
         assert all(callable(v) for k, v in document_converters.items())

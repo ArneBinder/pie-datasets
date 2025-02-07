@@ -123,6 +123,51 @@ def get_common_pipeline_steps(conversion_method: str) -> dict:
     )
 
 
+def remove_cross_partition_relations(
+    document: TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
+) -> TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions:
+    # for each labeled_spans entry, get the labeled_partitions entry it belongs to
+    labeled_span2partition = {}
+    for labeled_span in document.labeled_spans:
+        for partition in document.labeled_partitions:
+            if partition.start <= labeled_span.start and labeled_span.end <= partition.end:
+                labeled_span2partition[labeled_span] = partition
+                break
+        else:
+            raise ValueError(f"Could not find partition for labeled_span: {labeled_span}")
+
+    result = document.copy(with_annotations=True)
+    idx = 0
+    for relation in document.binary_relations:
+        head_partition = labeled_span2partition[relation.head]
+        tail_partition = labeled_span2partition[relation.tail]
+        if head_partition != tail_partition:
+            result.binary_relations.pop(idx)
+        else:
+            idx += 1
+    return result
+
+
+# def split_documents_into_partitions(
+#    document: TextDocumentWithLabeledSpansAndBinaryRelations,
+# ) -> TextDocumentWithLabeledSpansAndBinaryRelations:
+#    raise NotImplementedError("split_documents_into_partitions is not implemented yet.")
+
+
+def get_common_pipeline_steps_paragraphs(conversion_method: str) -> dict:
+    return dict(
+        **get_common_pipeline_steps(conversion_method=conversion_method),
+        cast=Caster(document_type=TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions),
+        add_partitions=RegexPartitioner(
+            partition_layer_name="labeled_partitions",
+            default_partition_label="paragraph",
+            pattern="\n",
+            strip_whitespace=True,
+            verbose=False,
+        ),
+    )
+
+
 class ArgumentAnnotatedEssaysV2Config(BratConfig):
     def __init__(self, conversion_method: str, **kwargs):
         """BuilderConfig for ArgumentAnnotatedEssaysV2.
@@ -140,43 +185,55 @@ class ArgumentAnnotatedEssaysV2(BratBuilder):
     BASE_DATASET_PATH = "DFKI-SLT/brat"
     BASE_DATASET_REVISION = "bb8c37d84ddf2da1e691d226c55fef48fd8149b5"
 
-    # we need to add None to the list of dataset variants to support the default dataset variant
-    BASE_BUILDER_KWARGS_DICT = {
-        dataset_variant: {"url": URL, "split_paths": SPLIT_PATHS}
-        for dataset_variant in [BratBuilder.DEFAULT_CONFIG_NAME, None]
-    }
-
     BUILDER_CONFIGS = [
         ArgumentAnnotatedEssaysV2Config(
             name=BratBuilder.DEFAULT_CONFIG_NAME,
             conversion_method="connect_first",
         ),
+        ArgumentAnnotatedEssaysV2Config(
+            name="paragraphs",
+            conversion_method="connect_all",
+        ),
     ]
 
-    DOCUMENT_TYPES = {
-        BratBuilder.DEFAULT_CONFIG_NAME: BratDocumentWithMergedSpans,
+    # we need to add None to the list of dataset variants to support the default dataset variant
+    BASE_BUILDER_KWARGS_DICT = {
+        dataset_variant: {"url": URL, "split_paths": SPLIT_PATHS}
+        for dataset_variant in [None] + [config.name for config in BUILDER_CONFIGS]
     }
+
+    DOCUMENT_TYPES = {config.name: BratDocumentWithMergedSpans for config in BUILDER_CONFIGS}
 
     @property
     def document_converters(self) -> DocumentConvertersType:
-        if self.config.name == "default" or None:
+        if self.config.name in [None, "main_claim_connect_all", BratBuilder.DEFAULT_CONFIG_NAME]:
             return {
                 TextDocumentWithLabeledSpansAndBinaryRelations: Pipeline(
                     **get_common_pipeline_steps(conversion_method=self.config.conversion_method)
                 ),
                 TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions: Pipeline(
-                    **get_common_pipeline_steps(conversion_method=self.config.conversion_method),
-                    cast=Caster(
-                        document_type=TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+                    **get_common_pipeline_steps_paragraphs(
+                        conversion_method=self.config.conversion_method
+                    )
+                ),
+            }
+        elif self.config.name == "paragraphs":
+            return {
+                # return one document per paragraph
+                # TextDocumentWithLabeledSpansAndBinaryRelations: Pipeline(
+                #    **get_common_pipeline_steps_paragraphs(conversion_method=self.config.conversion_method),
+                #    split_documents=Converter(function=split_documents_into_partitions),
+                # ),
+                # just remove the cross-paragraph relations
+                TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions: Pipeline(
+                    **get_common_pipeline_steps_paragraphs(
+                        conversion_method=self.config.conversion_method
                     ),
-                    add_partitions=RegexPartitioner(
-                        partition_layer_name="labeled_partitions",
-                        default_partition_label="paragraph",
-                        pattern="\n",
-                        strip_whitespace=True,
-                        verbose=False,
+                    remove_cross_partition_relations=Converter(
+                        function=remove_cross_partition_relations
                     ),
                 ),
             }
+
         else:
             raise ValueError(f"Unknown dataset variant: {self.config.name}")
