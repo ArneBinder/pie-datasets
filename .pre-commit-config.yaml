@@ -88,8 +88,7 @@ repos:
           - --skip=logs/**
           # arbitral: this is a legal term and used in example data (cdcp dataset)
           # abstrct / AbstRCT: this is a dataset name
-          # NED and TE: these are task abbreviations in bigbiohub.py
-          - --ignore-words-list=arbitral,abstrct,AbstRCT,NED,TE
+          - --ignore-words-list=arbitral,abstrct,AbstRCT
 
   # python static type checking
   - repo: https://github.com/pre-commit/mirrors-mypy

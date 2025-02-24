@@ -214,7 +214,8 @@ class Chemprot(GeneratorBasedBuilder):
         "chemprot_shared_task_eval_source": ChemprotDocument,
     }
 
-    BASE_DATASET_PATH = "dataset_builders/hf/chemprot"
+    BASE_DATASET_PATH = "DFKI-SLT/chemprot"
+    BASE_DATASET_REVISION = "0ac36434e431c5e74c40ccf1baa0fdac6f7698ee"
 
     BUILDER_CONFIGS = [
         datasets.BuilderConfig(
