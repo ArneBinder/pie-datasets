@@ -214,8 +214,7 @@ class Chemprot(GeneratorBasedBuilder):
         "chemprot_shared_task_eval_source": ChemprotDocument,
     }
 
-    BASE_DATASET_PATH = "bigbio/chemprot"
-    BASE_DATASET_REVISION = "86afccf3ccc614f817a7fad0692bf62fbc5ce469"
+    BASE_DATASET_PATH = "dataset_builders/hf/chemprot"
 
     BUILDER_CONFIGS = [
         datasets.BuilderConfig(
