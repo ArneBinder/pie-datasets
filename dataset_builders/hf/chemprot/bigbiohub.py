@@ -1,7 +1,7 @@
+import logging
 from collections import defaultdict
 from dataclasses import dataclass
 from enum import Enum
-import logging
 from pathlib import Path
 from types import SimpleNamespace
 from typing import TYPE_CHECKING, Dict, Iterable, List, Tuple
@@ -229,95 +229,84 @@ def parse_brat_file(
     annotation_file_suffixes: List[str] = None,
     parse_notes: bool = False,
 ) -> Dict:
-    """
-    Parse a brat file into the schema defined below.
-    `txt_file` should be the path to the brat '.txt' file you want to parse, e.g. 'data/1234.txt'
-    Assumes that the annotations are contained in one or more of the corresponding '.a1', '.a2' or '.ann' files,
-    e.g. 'data/1234.ann' or 'data/1234.a1' and 'data/1234.a2'.
-    Will include annotator notes, when `parse_notes == True`.
-    brat_features = datasets.Features(
-        {
-            "id": datasets.Value("string"),
-            "document_id": datasets.Value("string"),
-            "text": datasets.Value("string"),
-            "text_bound_annotations": [  # T line in brat, e.g. type or event trigger
-                {
-                    "offsets": datasets.Sequence([datasets.Value("int32")]),
-                    "text": datasets.Sequence(datasets.Value("string")),
-                    "type": datasets.Value("string"),
-                    "id": datasets.Value("string"),
-                }
-            ],
-            "events": [  # E line in brat
-                {
-                    "trigger": datasets.Value(
-                        "string"
-                    ),  # refers to the text_bound_annotation of the trigger,
-                    "id": datasets.Value("string"),
-                    "type": datasets.Value("string"),
-                    "arguments": datasets.Sequence(
-                        {
-                            "role": datasets.Value("string"),
-                            "ref_id": datasets.Value("string"),
-                        }
-                    ),
-                }
-            ],
-            "relations": [  # R line in brat
-                {
-                    "id": datasets.Value("string"),
-                    "head": {
-                        "ref_id": datasets.Value("string"),
+    """Parse a brat file into the schema defined below. `txt_file` should be the path to the brat
+    '.txt' file you want to parse, e.g. 'data/1234.txt' Assumes that the annotations are contained
+    in one or more of the corresponding '.a1', '.a2' or '.ann' files, e.g. 'data/1234.ann' or
+    'data/1234.a1' and 'data/1234.a2'. Will include annotator notes, when `parse_notes == True`.
+    brat_features = datasets.Features( { "id": datasets.Value("string"), "document_id":
+    datasets.Value("string"), "text": datasets.Value("string"), "text_bound_annotations": [  # T
+    line in brat, e.g. type or event trigger { "offsets":
+    datasets.Sequence([datasets.Value("int32")]), "text":
+    datasets.Sequence(datasets.Value("string")), "type": datasets.Value("string"), "id":
+    datasets.Value("string"), } ], "events": [  # E line in brat { "trigger": datasets.Value(
+
+                    "string"
+                ),  # refers to the text_bound_annotation of the trigger,
+                "id": datasets.Value("string"),
+                "type": datasets.Value("string"),
+                "arguments": datasets.Sequence(
+                    {
                         "role": datasets.Value("string"),
-                    },
-                    "tail": {
                         "ref_id": datasets.Value("string"),
-                        "role": datasets.Value("string"),
-                    },
-                    "type": datasets.Value("string"),
-                }
-            ],
-            "equivalences": [  # Equiv line in brat
-                {
-                    "id": datasets.Value("string"),
-                    "ref_ids": datasets.Sequence(datasets.Value("string")),
-                }
-            ],
-            "attributes": [  # M or A lines in brat
-                {
-                    "id": datasets.Value("string"),
-                    "type": datasets.Value("string"),
+                    }
+                ),
+            }
+        ],
+        "relations": [  # R line in brat
+            {
+                "id": datasets.Value("string"),
+                "head": {
                     "ref_id": datasets.Value("string"),
-                    "value": datasets.Value("string"),
-                }
-            ],
-            "normalizations": [  # N lines in brat
-                {
-                    "id": datasets.Value("string"),
-                    "type": datasets.Value("string"),
+                    "role": datasets.Value("string"),
+                },
+                "tail": {
                     "ref_id": datasets.Value("string"),
-                    "resource_name": datasets.Value(
-                        "string"
-                    ),  # Name of the resource, e.g. "Wikipedia"
-                    "cuid": datasets.Value(
-                        "string"
-                    ),  # ID in the resource, e.g. 534366
-                    "text": datasets.Value(
-                        "string"
-                    ),  # Human readable description/name of the entity, e.g. "Barack Obama"
-                }
-            ],
-            ### OPTIONAL: Only included when `parse_notes == True`
-            "notes": [  # # lines in brat
-                {
-                    "id": datasets.Value("string"),
-                    "type": datasets.Value("string"),
-                    "ref_id": datasets.Value("string"),
-                    "text": datasets.Value("string"),
-                }
-            ],
-        },
-        )
+                    "role": datasets.Value("string"),
+                },
+                "type": datasets.Value("string"),
+            }
+        ],
+        "equivalences": [  # Equiv line in brat
+            {
+                "id": datasets.Value("string"),
+                "ref_ids": datasets.Sequence(datasets.Value("string")),
+            }
+        ],
+        "attributes": [  # M or A lines in brat
+            {
+                "id": datasets.Value("string"),
+                "type": datasets.Value("string"),
+                "ref_id": datasets.Value("string"),
+                "value": datasets.Value("string"),
+            }
+        ],
+        "normalizations": [  # N lines in brat
+            {
+                "id": datasets.Value("string"),
+                "type": datasets.Value("string"),
+                "ref_id": datasets.Value("string"),
+                "resource_name": datasets.Value(
+                    "string"
+                ),  # Name of the resource, e.g. "Wikipedia"
+                "cuid": datasets.Value(
+                    "string"
+                ),  # ID in the resource, e.g. 534366
+                "text": datasets.Value(
+                    "string"
+                ),  # Human readable description/name of the entity, e.g. "Barack Obama"
+            }
+        ],
+        ### OPTIONAL: Only included when `parse_notes == True`
+        "notes": [  # # lines in brat
+            {
+                "id": datasets.Value("string"),
+                "type": datasets.Value("string"),
+                "ref_id": datasets.Value("string"),
+                "text": datasets.Value("string"),
+            }
+        ],
+    },
+    )
     """
 
     example = {}
@@ -485,11 +474,9 @@ def parse_brat_file(
 
 
 def brat_parse_to_bigbio_kb(brat_parse: Dict) -> Dict:
-    """
-    Transform a brat parse (conforming to the standard brat schema) obtained with
-    `parse_brat_file` into a dictionary conforming to the `bigbio-kb` schema (as defined in ../schemas/kb.py)
-    :param brat_parse:
-    """
+    """Transform a brat parse (conforming to the standard brat schema) obtained with
+    `parse_brat_file` into a dictionary conforming to the `bigbio-kb` schema (as defined in
+    ../schemas/kb.py) :param brat_parse:"""
 
     unified_example = {}
 
@@ -525,9 +512,7 @@ def brat_parse_to_bigbio_kb(brat_parse: Dict) -> Dict:
         event = event.copy()
         event["id"] = id_prefix + event["id"]
         trigger = next(
-            tr
-            for tr in brat_parse["text_bound_annotations"]
-            if tr["id"] == event["trigger"]
+            tr for tr in brat_parse["text_bound_annotations"] if tr["id"] == event["trigger"]
         )
         if trigger in non_event_ann:
             non_event_ann.remove(trigger)
@@ -552,10 +537,7 @@ def brat_parse_to_bigbio_kb(brat_parse: Dict) -> Dict:
     unified_example["relations"] = []
     skipped_relations = set()
     for ann in brat_parse["relations"]:
-        if (
-            ann["head"]["ref_id"] not in anno_ids
-            or ann["tail"]["ref_id"] not in anno_ids
-        ):
+        if ann["head"]["ref_id"] not in anno_ids or ann["tail"]["ref_id"] not in anno_ids:
             skipped_relations.add(ann["id"])
             continue
         unified_example["relations"].append(

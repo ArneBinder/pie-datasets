@@ -1,4 +1,3 @@
-# coding=utf-8
 # Copyright 2020 The HuggingFace Datasets Authors and the current dataset script contributor.
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
@@ -12,23 +11,21 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-"""
-The BioCreative VI Chemical-Protein interaction dataset identifies entities of
-chemicals and proteins and their likely relation to one other. Compounds are
-generally agonists (activators) or antagonists (inhibitors) of proteins. The
-script loads dataset in bigbio schema (using knowledgebase schema: schemas/kb)
-AND/OR source (default) schema
+"""The BioCreative VI Chemical-Protein interaction dataset identifies entities of chemicals and
+proteins and their likely relation to one other.
+
+Compounds are generally agonists (activators) or antagonists (inhibitors) of proteins. The script
+loads dataset in bigbio schema (using knowledgebase schema: schemas/kb) AND/OR source (default)
+schema
 """
 import os
 from typing import Dict, Tuple
 
 import datasets
 
-from .bigbiohub import kb_features
-from .bigbiohub import BigBioConfig
-from .bigbiohub import Tasks
+from .bigbiohub import BigBioConfig, Tasks, kb_features
 
-_LANGUAGES = ['English']
+_LANGUAGES = ["English"]
 _PUBMED = True
 _LOCAL = True
 _CITATION = """\
@@ -55,11 +52,11 @@ _DISPLAYNAME = "ChemProt"
 
 _HOMEPAGE = "https://biocreative.bioinformatics.udel.edu/tasks/biocreative-vi/track-5/"
 
-_LICENSE = 'Public Domain Mark 1.0'
+_LICENSE = "Public Domain Mark 1.0"
 
 _URLs = {
-    "source": "../../../data/datasets/ChemProt_Corpus.zip",
-    "bigbio_kb": "../../../data/datasets/ChemProt_Corpus.zip",
+    "source": "./ChemProt_Corpus.zip",
+    "bigbio_kb": "./ChemProt_Corpus.zip",
 }
 
 _SUPPORTED_TASKS = [Tasks.RELATION_EXTRACTION, Tasks.NAMED_ENTITY_RECOGNITION]
@@ -232,16 +229,12 @@ class ChemprotDataset(datasets.GeneratorBasedBuilder):
         if self.config.schema == "source":
             abstracts = self._get_abstract(os.path.join(filepath, abstract_file))
 
-            entities, entity_id = self._get_entities(
-                os.path.join(filepath, entity_file)
-            )
+            entities, entity_id = self._get_entities(os.path.join(filepath, entity_file))
 
             if self.config.subset_id == "chemprot_full":
                 relations = self._get_relations(os.path.join(filepath, relation_file))
             elif self.config.subset_id == "chemprot_shared_task_eval":
-                relations = self._get_relations_gs(
-                    os.path.join(filepath, gold_standard_file)
-                )
+                relations = self._get_relations_gs(os.path.join(filepath, gold_standard_file))
             else:
                 raise ValueError(self.config)
 
@@ -256,12 +249,8 @@ class ChemprotDataset(datasets.GeneratorBasedBuilder):
         elif self.config.schema == "bigbio_kb":
 
             abstracts = self._get_abstract(os.path.join(filepath, abstract_file))
-            entities, entity_id = self._get_entities(
-                os.path.join(filepath, entity_file)
-            )
-            relations = self._get_relations(
-                os.path.join(filepath, relation_file), is_mapped=True
-            )
+            entities, entity_id = self._get_entities(os.path.join(filepath, entity_file))
+            relations = self._get_relations(os.path.join(filepath, relation_file), is_mapped=True)
 
             uid = 0
             for id_, pmid in enumerate(abstracts.keys()):
@@ -310,14 +299,13 @@ class ChemprotDataset(datasets.GeneratorBasedBuilder):
 
     @staticmethod
     def _get_abstract(abs_filename: str) -> Dict[str, str]:
-        """
-        For each document in PubMed ID (PMID) in the ChemProt abstract data file, return the abstract. Data is tab-separated.
+        """For each document in PubMed ID (PMID) in the ChemProt abstract data file, return the
+        abstract. Data is tab-separated.
 
-        :param filename: `*_abstracts.tsv from ChemProt
-
-        :returns Dictionary with PMID keys and abstract text as values.
+        :param filename:`*_abstracts.tsv from ChemProt :returns Dictionary with PMID keys and
+            abstract text as values.
         """
-        with open(abs_filename, "r") as f:
+        with open(abs_filename) as f:
             contents = [i.strip() for i in f.readlines()]
 
         # PMID is the first column, Abstract is last
@@ -341,7 +329,7 @@ class ChemprotDataset(datasets.GeneratorBasedBuilder):
 
         :returns: Dictionary with PMID keys and entity annotations.
         """
-        with open(ents_filename, "r") as f:
+        with open(ents_filename) as f:
             contents = [i.strip() for i in f.readlines()]
 
         entities = {}
@@ -375,7 +363,7 @@ class ChemprotDataset(datasets.GeneratorBasedBuilder):
 
         :param is_mapped: Whether to convert into NL the relation tags. Default is OFF
         """
-        with open(rel_filename, "r") as f:
+        with open(rel_filename) as f:
             contents = [i.strip() for i in f.readlines()]
 
         relations = {}
@@ -403,8 +391,8 @@ class ChemprotDataset(datasets.GeneratorBasedBuilder):
 
     @staticmethod
     def _get_relations_gs(rel_filename: str, is_mapped: bool = False) -> Dict[str, str]:
-        """
-        For each document in the ChemProt corpus, create an annotation for the gold-standard relationships.
+        """For each document in the ChemProt corpus, create an annotation for the gold-standard
+        relationships.
 
         The columns include:
         (1) PMID
@@ -419,7 +407,7 @@ class ChemprotDataset(datasets.GeneratorBasedBuilder):
         :param rel_filename: Gold standard file name
         :param ent_dict: Entity Identifier to text
         """
-        with open(rel_filename, "r") as f:
+        with open(rel_filename) as f:
             contents = [i.strip() for i in f.readlines()]
 
         relations = {}

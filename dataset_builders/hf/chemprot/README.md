@@ -1,21 +1,22 @@
+______________________________________________________________________
 
----
-language: 
+language:
+
 - en
-bigbio_language: 
+  bigbio_language:
 - English
-license: other
-multilinguality: monolingual
-bigbio_license_shortname: PUBLIC_DOMAIN_MARK_1p0
-pretty_name: ChemProt
-homepage: https://biocreative.bioinformatics.udel.edu/tasks/biocreative-vi/track-5/
-bigbio_pubmed: True
-bigbio_public: True
-bigbio_tasks: 
+  license: other
+  multilinguality: monolingual
+  bigbio_license_shortname: PUBLIC_DOMAIN_MARK_1p0
+  pretty_name: ChemProt
+  homepage: https://biocreative.bioinformatics.udel.edu/tasks/biocreative-vi/track-5/
+  bigbio_pubmed: True
+  bigbio_public: True
+  bigbio_tasks:
 - RELATION_EXTRACTION
 - NAMED_ENTITY_RECOGNITION
----
 
+______________________________________________________________________
 
 # Dataset Card for ChemProt
 
@@ -26,12 +27,9 @@ bigbio_tasks:
 - **Public:** True
 - **Tasks:** RE,NER
 
-
 The BioCreative VI Chemical-Protein interaction dataset identifies entities of
 chemicals and proteins and their likely relation to one other. Compounds are
 generally agonists (activators) or antagonists (inhibitors) of proteins.
-
-
 
 ## Citation Information
 
