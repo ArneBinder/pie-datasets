@@ -118,7 +118,8 @@ Morio et al. ([2022](https://aclanthology.org/2022.tacl-1.37.pdf); p. 642, Table
 
 #### Example
 
-![abstr-sam.png](img%2Fabstr-sam.png)
+![abstr-sam1.png](img/abstrct_neoplasm-train_6.png)
+![abstr-sam2.png](img/abstrct_neoplasm-train_67.png)
 
 ### Collected Statistics after Document Conversion
 
