@@ -94,7 +94,9 @@ See further description in Stab & Gurevych 2017, p.627 and the [annotation guide
 
 #### Example
 
-![Example](img/sg17f2.png)
+![Structure](img/sg17f2.png)
+
+![Example](img/aae2_train_47.png)
 
 ### Document Converters
 
@@ -211,6 +213,8 @@ python src/evaluate_documents.py dataset=aae2_base metric=relation_argument_toke
   <summary>Histogram (split: test, 80 documents)</summary>
 
 ![rtd-label_aae2_test.png](img%2Frtd-label_aae2_test.png)
+
+
 
 </details>
 
