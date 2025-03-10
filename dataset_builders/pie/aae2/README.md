@@ -94,7 +94,9 @@ See further description in Stab & Gurevych 2017, p.627 and the [annotation guide
 
 #### Example
 
-![Example](img/sg17f2.png)
+![Structure](img/sg17f2.png)
+
+![Example](img/aae2_train_47.png)
 
 ### Document Converters
 
