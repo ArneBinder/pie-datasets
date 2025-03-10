@@ -214,8 +214,6 @@ python src/evaluate_documents.py dataset=aae2_base metric=relation_argument_toke
 
 ![rtd-label_aae2_test.png](img%2Frtd-label_aae2_test.png)
 
-
-
 </details>
 
 #### Span lengths (tokens)
