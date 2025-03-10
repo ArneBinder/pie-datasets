@@ -183,7 +183,7 @@ Above: Diagram from *Annotation Guildelines* (p.6)
 
 Below: Subset of relations in `A01`
 
-![sample2](img/sciarg-sam.png)
+![sample2](img/sciarg_train_0.png)
 
 ### Collected Statistics after Document Conversion
 
