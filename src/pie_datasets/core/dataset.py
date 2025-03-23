@@ -35,9 +35,9 @@ def decorate_convert_to_dict_of_lists(f):
     def decorated(item, *args, **kwargs):
         if isinstance(item, list):
             # Convert a list of dicts into a dict of lists.
-            return pd.DataFrame([e.asdict() for e in f(item, *args, **kwargs)]).to_dict(
-                orient="list"
-            )
+            return pd.DataFrame(
+                [e.asdict() if isinstance(e, Document) else e for e in f(item, *args, **kwargs)]
+            ).to_dict(orient="list")
         else:
             return f(item, *args, **kwargs).asdict()
 
