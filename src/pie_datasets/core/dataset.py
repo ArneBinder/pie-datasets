@@ -20,11 +20,12 @@ import pandas as pd
 from datasets.formatting import _register_formatter
 from pie_core import Document
 
-from .document_formatter import DocumentFormatter
+from .formatter import DocumentFormatter, TaskEncodingFormatter
 
 logger = logging.getLogger(__name__)
 
 _register_formatter(DocumentFormatter, "document")
+_register_formatter(TaskEncodingFormatter, "task_encoding")
 
 
 def decorate_convert_to_dict_of_lists(f):
