@@ -381,6 +381,8 @@ class Dataset(datasets.Dataset, Sequence[D]):
         desc: Optional[str] = None,
         as_documents: bool = True,
         result_document_type: Optional[Type[Document]] = None,
+        result_format: str = "document",
+        result_format_kwargs: Optional[dict] = None,
     ) -> "Dataset":
         dataset = super().map(
             function=(
@@ -408,6 +410,10 @@ class Dataset(datasets.Dataset, Sequence[D]):
             new_fingerprint=new_fingerprint,
             desc=desc,
         )
+
+        if result_format != "document":
+            dataset.set_format(result_format, **(result_format_kwargs or {}))
+            return dataset
 
         if result_document_type is None:
             result_document_type = self.document_type
@@ -589,6 +595,10 @@ class IterableDataset(datasets.IterableDataset):
         batched: bool = False,
         as_documents: bool = True,
         result_document_type: Optional[Type[Document]] = None,
+        # result_format and result_format_kwargs are not used in IterableDataset,
+        # but are kept for compatibility with Dataset
+        result_format: str = "document",
+        result_format_kwargs: Optional[dict] = None,
         **kwargs,
     ) -> "IterableDataset":
         dataset_mapped = super().map(
@@ -602,6 +612,9 @@ class IterableDataset(datasets.IterableDataset):
             batched=batched,
             **kwargs,
         )
+
+        if result_format != "document":
+            raise ValueError("result_format must be 'document' for IterableDataset")
 
         if result_document_type is None:
             result_document_type = self.document_type
