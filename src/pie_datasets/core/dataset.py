@@ -20,11 +20,12 @@ import pandas as pd
 from datasets.formatting import _register_formatter
 from pytorch_ie.core.document import Document
 
-from .document_formatter import DocumentFormatter
+from .formatter import DocumentFormatter, TaskEncodingFormatter
 
 logger = logging.getLogger(__name__)
 
 _register_formatter(DocumentFormatter, "document")
+_register_formatter(TaskEncodingFormatter, "task_encoding")
 
 
 def decorate_convert_to_dict_of_lists(f):
@@ -35,9 +36,9 @@ def decorate_convert_to_dict_of_lists(f):
     def decorated(item, *args, **kwargs):
         if isinstance(item, list):
             # Convert a list of dicts into a dict of lists.
-            return pd.DataFrame([e.asdict() for e in f(item, *args, **kwargs)]).to_dict(
-                orient="list"
-            )
+            return pd.DataFrame(
+                [e.asdict() if isinstance(e, Document) else e for e in f(item, *args, **kwargs)]
+            ).to_dict(orient="list")
         else:
             return f(item, *args, **kwargs).asdict()
 
@@ -379,6 +380,8 @@ class Dataset(datasets.Dataset, Sequence[D]):
         desc: Optional[str] = None,
         as_documents: bool = True,
         result_document_type: Optional[Type[Document]] = None,
+        result_format: str = "document",
+        result_format_kwargs: Optional[dict] = None,
     ) -> "Dataset":
         dataset = super().map(
             function=(
@@ -406,6 +409,10 @@ class Dataset(datasets.Dataset, Sequence[D]):
             new_fingerprint=new_fingerprint,
             desc=desc,
         )
+
+        if result_format != "document":
+            dataset.set_format(result_format, **(result_format_kwargs or {}))
+            return dataset
 
         if result_document_type is None:
             result_document_type = self.document_type
@@ -585,6 +592,10 @@ class IterableDataset(datasets.IterableDataset):
         batched: bool = False,
         as_documents: bool = True,
         result_document_type: Optional[Type[Document]] = None,
+        # result_format and result_format_kwargs are not used in IterableDataset,
+        # but are kept for compatibility with Dataset
+        result_format: str = "document",
+        result_format_kwargs: Optional[dict] = None,
         **kwargs,
     ) -> "IterableDataset":
         dataset_mapped = super().map(
@@ -598,6 +609,9 @@ class IterableDataset(datasets.IterableDataset):
             batched=batched,
             **kwargs,
         )
+
+        if result_format != "document":
+            raise ValueError("result_format must be 'document' for IterableDataset")
 
         if result_document_type is None:
             result_document_type = self.document_type
