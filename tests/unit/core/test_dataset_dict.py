@@ -621,9 +621,15 @@ def test_register_document_converter_resolve_wrong_converter(dataset_dict):
     assert str(excinfo.value) == "converter must be a callable or a dict, but is <class 'list'>"
 
 
-def test_to_document_type(dataset_dict):
+@pytest.mark.parametrize("downcast", [True, False, None])
+def test_to_document_type(dataset_dict, downcast):
     dataset_dict.register_document_converter(convert_to_document_with_label)
-    dataset_dict_converted = dataset_dict.to_document_type(TestDocumentWithLabel)
+    if downcast is None:
+        dataset_dict_converted = dataset_dict.to_document_type(TestDocumentWithLabel)
+    else:
+        dataset_dict_converted = dataset_dict.to_document_type(
+            TestDocumentWithLabel, downcast=downcast
+        )
     assert dataset_dict_converted.document_type == TestDocumentWithLabel
     for split in dataset_dict_converted.values():
         assert all(isinstance(doc, TestDocumentWithLabel) for doc in split)
@@ -653,6 +659,24 @@ def test_to_document_type_noop(dataset_dict):
     dataset_dict_converted = dataset_dict.to_document_type(DocumentWithEntitiesAndRelations)
     assert dataset_dict_converted.document_type == DocumentWithEntitiesAndRelations
     assert dataset_dict_converted == dataset_dict
+
+
+def test_to_document_type_dont_downcast_noop(dataset_dict, caplog):
+    @dataclass
+    class DocumentWithEntitiesRelationsAndPartitions(DocumentWithEntitiesAndRelations):
+        partitions: AnnotationList[LabeledSpan] = annotation_field(target="text")
+
+    # nothing should happen, since the document is a superclass of the requested type
+    with caplog.at_level(logging.INFO):
+        dataset_dict_converted = dataset_dict.to_document_type(
+            DocumentWithEntitiesRelationsAndPartitions, downcast=False
+        )
+    assert caplog.messages == [
+        f"The dataset has already the requested document type {DocumentWithEntitiesRelationsAndPartitions}."
+    ]
+    assert issubclass(
+        DocumentWithEntitiesRelationsAndPartitions, dataset_dict_converted.document_type
+    )
 
 
 def test_load_dataset_conll2003():
