@@ -314,6 +314,7 @@ class DatasetDict(datasets.DatasetDict):
     def to_document_type(
         self,
         document_type: Union[Type[Document], str],
+        downcast: bool = True,
         **kwargs,
     ) -> "DatasetDict":
         """Converts all documents in the dataset to a new document type using the best registered
@@ -322,6 +323,9 @@ class DatasetDict(datasets.DatasetDict):
         Args:
             document_type: document type to convert the documents to. Can be a subclass of Document or string that
                 can be resolved to such a type.
+            downcast: if `True` (default), the dataset is converted to the new document type even
+                if it already has a document type that is a superclass of the new document type.
+                If `False`, no conversion is done in this case.
         """
 
         if isinstance(document_type, str):
@@ -337,9 +341,18 @@ class DatasetDict(datasets.DatasetDict):
                 f"but got {document_type}."
             )
 
-        if resolved_document_type == self.document_type:
-            logger.info(f"The dataset has already the requested document type {document_type}.")
-            return self
+        if downcast:
+            if resolved_document_type == self.document_type:
+                logger.info(
+                    f"The dataset has already the requested document type {document_type}."
+                )
+                return self
+        else:
+            if issubclass(resolved_document_type, self.document_type):
+                logger.info(
+                    f"The dataset has already the requested document type {document_type}."
+                )
+                return self
 
         result = type(self)(
             {
