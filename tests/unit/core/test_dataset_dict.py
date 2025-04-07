@@ -182,7 +182,7 @@ def test_to_json_and_back_append_metadata_mismatch(dataset_dict, tmp_path):
         "metadata.json already exists, but the content does not match the current metadata. "
         "Can not append the current dataset to already serialized data."
         "\nprevious metadata: {'document_type': 'tests.unit.core.test_dataset_dict.DocumentWithEntitiesAndRelations'}"
-        "\ncurrent metadata: {'document_type': 'pytorch_ie.documents.TextBasedDocument'}"
+        "\ncurrent metadata: {'document_type': 'pie_modules.documents.TextBasedDocument'}"
     )
 
 

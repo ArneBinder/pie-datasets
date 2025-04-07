@@ -5,12 +5,67 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datasets
 from pie_core import Annotation, AnnotationLayer, Document, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pie_modules.documents import TextBasedDocument
 
 from pie_datasets import GeneratorBasedBuilder
 
 logger = logging.getLogger(__name__)
+
+
+def _post_init_single_label(self):
+    if not isinstance(self.label, str):
+        raise ValueError("label must be a single string.")
+
+    if not isinstance(self.score, float):
+        raise ValueError("score must be a single float.")
+
+
+@dataclasses.dataclass(eq=True, frozen=True)
+class BratRelation(Annotation):
+    head: Annotation
+    tail: Annotation
+    label: str
+    score: float = dataclasses.field(default=1.0, compare=False)
+
+    def __post_init__(self) -> None:
+        _post_init_single_label(self)
+
+    def resolve(self) -> Any:
+        return self.label, (self.head.resolve(), self.tail.resolve())
+
+
+@dataclasses.dataclass(eq=True, frozen=True)
+class BratSpan(Annotation):
+    start: int
+    end: int
+    label: str
+    score: float = dataclasses.field(default=1.0, compare=False)
+
+    def __post_init__(self) -> None:
+        _post_init_single_label(self)
+
+    def resolve(self) -> Any:
+        return self.label, super().resolve()
+
+
+@dataclasses.dataclass(eq=True, frozen=True)
+class BratMultiSpan(Annotation):
+    slices: Tuple[Tuple[int, int], ...]
+    label: str
+    score: float = dataclasses.field(default=1.0, compare=False)
+
+    def __post_init__(self) -> None:
+        _post_init_single_label(self)
+
+    def __str__(self) -> str:
+        if not self.is_attached:
+            return super().__str__()
+        return str(tuple(self.target[start:end] for start, end in self.slices))
+
+    def resolve(self) -> Any:
+        if self.is_attached:
+            return self.label, tuple(self.target[start:end] for start, end in self.slices)
+        else:
+            raise ValueError(f"{self} is not attached to a target.")
 
 
 @dataclasses.dataclass(eq=True, frozen=True)
@@ -36,9 +91,16 @@ class BratNote(Annotation):
 
 
 @dataclasses.dataclass
-class BratDocument(TextBasedDocument):
-    spans: AnnotationLayer[LabeledMultiSpan] = annotation_field(target="text")
-    relations: AnnotationLayer[BinaryRelation] = annotation_field(target="spans")
+class BaseBratDocument(Document):
+    text: str
+    id: Optional[str] = None
+    metadata: Dict[str, Any] = dataclasses.field(default_factory=dict)
+
+
+@dataclasses.dataclass
+class BratDocument(BaseBratDocument):
+    spans: AnnotationLayer[BratMultiSpan] = annotation_field(target="text")
+    relations: AnnotationLayer[BratRelation] = annotation_field(target="spans")
     span_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="spans")
     relation_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="relations")
     notes: AnnotationLayer[BratNote] = annotation_field(
@@ -47,9 +109,9 @@ class BratDocument(TextBasedDocument):
 
 
 @dataclasses.dataclass
-class BratDocumentWithMergedSpans(TextBasedDocument):
-    spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
-    relations: AnnotationLayer[BinaryRelation] = annotation_field(target="spans")
+class BratDocumentWithMergedSpans(BaseBratDocument):
+    spans: AnnotationLayer[BratSpan] = annotation_field(target="text")
+    relations: AnnotationLayer[BratRelation] = annotation_field(target="spans")
     span_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="spans")
     relation_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="relations")
     notes: AnnotationLayer[BratNote] = annotation_field(
@@ -76,7 +138,7 @@ def example_to_document(
     else:
         doc = BratDocument(text=example["context"], id=example["file_name"])
 
-    spans: Dict[str, LabeledSpan] = dict()
+    spans: Dict[str, BratSpan] = dict()
     span_locations: List[Tuple[Tuple[int, int], ...]] = []
     span_texts: List[str] = []
     for span_dict in dl2ld(example["spans"]):
@@ -114,9 +176,9 @@ def example_to_document(
             # just take everything
             start = min(starts)
             end = max(ends)
-            span = LabeledSpan(start=start, end=end, label=span_dict["type"])
+            span = BratSpan(start=start, end=end, label=span_dict["type"])
         else:
-            span = LabeledMultiSpan(slices=slices, label=span_dict["type"])
+            span = BratMultiSpan(slices=slices, label=span_dict["type"])
         spans[span_dict["id"]] = span
 
     doc.spans.extend(spans.values())
@@ -124,13 +186,13 @@ def example_to_document(
     doc.metadata["span_locations"] = span_locations
     doc.metadata["span_texts"] = span_texts
 
-    relations: Dict[str, BinaryRelation] = dict()
+    relations: Dict[str, BratRelation] = dict()
     for rel_dict in dl2ld(example["relations"]):
         arguments = dict(zip(rel_dict["arguments"]["type"], rel_dict["arguments"]["target"]))
         assert set(arguments) == {"Arg1", "Arg2"}
         head = spans[arguments["Arg1"]]
         tail = spans[arguments["Arg2"]]
-        rel = BinaryRelation(head=head, tail=tail, label=rel_dict["type"])
+        rel = BratRelation(head=head, tail=tail, label=rel_dict["type"])
         relations[rel_dict["id"]] = rel
 
     doc.relations.extend(relations.values())
@@ -172,7 +234,7 @@ def example_to_document(
     if len(normalizations) > 0:
         raise NotImplementedError("converting normalizations is not yet implemented")
 
-    id2annotation = {
+    id2annotation: Dict[str, Annotation] = {
         **spans,
         **relations,
         **attribute_annotations["spans"],
@@ -211,11 +273,11 @@ def document_to_example(
     document: Union[BratDocument, BratDocumentWithMergedSpans]
 ) -> Dict[str, Any]:
     annotation2id: Dict[Annotation, str] = dict()
-    example = {
+    example: Dict[str, Any] = {
         "context": document.text,
         "file_name": document.id,
     }
-    span_dicts: Dict[Union[LabeledSpan, LabeledMultiSpan], Dict[str, Any]] = dict()
+    span_dicts: Dict[Union[BratSpan, BratMultiSpan], Dict[str, Any]] = dict()
     assert len(document.metadata["span_locations"]) == len(document.spans)
     assert len(document.metadata["span_texts"]) == len(document.spans)
     assert len(document.metadata["span_ids"]) == len(document.spans)
@@ -223,10 +285,10 @@ def document_to_example(
         span_id = document.metadata["span_ids"][i]
         annotation2id[span] = span_id
         locations = tuple((start, end) for start, end in document.metadata["span_locations"][i])
-        if isinstance(span, LabeledSpan):
+        if isinstance(span, BratSpan):
             assert locations[0][0] == span.start
             assert locations[-1][1] == span.end
-        elif isinstance(span, LabeledMultiSpan):
+        elif isinstance(span, BratMultiSpan):
             assert span.slices == locations
         else:
             raise TypeError(f"span has unknown type [{type(span)}]: {span}")
@@ -251,7 +313,7 @@ def document_to_example(
         span_dicts[span] = span_dict
     example["spans"] = ld2dl(list(span_dicts.values()), keys=["id", "type", "locations", "text"])
 
-    relation_dicts: Dict[BinaryRelation, Dict[str, Any]] = dict()
+    relation_dicts: Dict[BratRelation, Dict[str, Any]] = dict()
     assert len(document.metadata["relation_ids"]) == len(document.relations)
     for i, rel in enumerate(document.relations):
         rel_id = document.metadata["relation_ids"][i]
