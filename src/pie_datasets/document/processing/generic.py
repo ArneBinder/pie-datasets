@@ -3,8 +3,8 @@ from __future__ import annotations
 import logging
 from typing import Callable, Generic, TypeVar
 
-from pytorch_ie.core import Document
-from pytorch_ie.utils.hydra import resolve_target
+from pie_core import Document
+from pie_core.utils.hydra import resolve_target
 
 logger = logging.getLogger(__name__)
 

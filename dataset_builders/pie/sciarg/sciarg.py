@@ -1,14 +1,14 @@
 import logging
 from typing import Union
 
+from pie_core import Document
 from pie_modules.document.processing import (
     RegexPartitioner,
     RelationArgumentSorter,
     SpansViaRelationMerger,
     TextSpanTrimmer,
 )
-from pytorch_ie.core import Document
-from pytorch_ie.documents import (
+from pie_modules.documents import (
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
     TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
     TextDocumentWithLabeledSpansAndBinaryRelations,

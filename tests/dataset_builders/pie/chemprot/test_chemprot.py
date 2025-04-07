@@ -2,8 +2,8 @@ from typing import Union
 
 import datasets
 import pytest
-from pytorch_ie import Document
-from pytorch_ie.documents import (
+from pie_core import Document
+from pie_modules.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
