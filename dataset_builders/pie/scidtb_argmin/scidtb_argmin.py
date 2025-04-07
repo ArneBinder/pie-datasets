@@ -3,10 +3,10 @@ import logging
 from typing import Any, Dict, List, Tuple
 
 import datasets
+from pie_core import AnnotationLayer, annotation_field
+from pie_modules.annotations import BinaryRelation, LabeledSpan
 from pie_modules.document.processing import token_based_document_to_text_based
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan
-from pytorch_ie.core import AnnotationList, annotation_field
-from pytorch_ie.documents import (
+from pie_modules.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TokenBasedDocument,
 )
@@ -30,14 +30,14 @@ def labels_and_spans_to_bio_tags(
 
 @dataclasses.dataclass
 class SciDTBArgminDocument(TokenBasedDocument):
-    units: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
-    relations: AnnotationList[BinaryRelation] = annotation_field(target="units")
+    units: AnnotationLayer[LabeledSpan] = annotation_field(target="tokens")
+    relations: AnnotationLayer[BinaryRelation] = annotation_field(target="units")
 
 
 @dataclasses.dataclass
 class SimplifiedSciDTBArgminDocument(TokenBasedDocument):
-    labeled_spans: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
-    binary_relations: AnnotationList[BinaryRelation] = annotation_field(target="labeled_spans")
+    labeled_spans: AnnotationLayer[LabeledSpan] = annotation_field(target="tokens")
+    binary_relations: AnnotationLayer[BinaryRelation] = annotation_field(target="labeled_spans")
 
 
 def example_to_document(

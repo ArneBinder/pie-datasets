@@ -3,10 +3,10 @@ from typing import List
 
 import pytest
 from datasets import disable_caching, load_dataset
+from pie_core import AnnotationLayer, Document, annotation_field
+from pie_modules.annotations import LabeledSpan
 from pie_modules.document.processing import tokenize_document
-from pytorch_ie.annotations import LabeledSpan
-from pytorch_ie.core import AnnotationList, Document, annotation_field
-from pytorch_ie.documents import (
+from pie_modules.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )
@@ -186,7 +186,7 @@ def _assert_no_span_overlap(document: Document, text_field: str, span_layer: str
 def test_assert_no_span_overlap():
     @dataclasses.dataclass
     class TextDocumentWithEntities(TextBasedDocument):
-        entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
+        entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
     doc0 = TextDocumentWithEntities(text="abcdefghijklmnop")
     doc0.entities.append(LabeledSpan(start=0, end=4, label="A"))
