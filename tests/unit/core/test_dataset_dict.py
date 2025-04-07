@@ -5,6 +5,7 @@ from typing import Dict, Iterable, Optional, Union
 
 import datasets
 import pytest
+from pytorch_ie import WithDocumentTypeMixin
 from pytorch_ie.annotations import Label, LabeledSpan
 from pytorch_ie.core import AnnotationList, Document, annotation_field
 from pytorch_ie.documents import TextBasedDocument, TextDocument
@@ -635,7 +636,38 @@ def test_to_document_type(dataset_dict, downcast):
         assert all(isinstance(doc, TestDocumentWithLabel) for doc in split)
 
 
-def test_to_document_resolve(dataset_dict):
+def test_to_document_type_from_with_document_type(dataset_dict, caplog):
+    class MyWithDocumentType(WithDocumentTypeMixin):
+        DOCUMENT_TYPE = TestDocumentWithLabel
+
+    with_document_type = MyWithDocumentType()
+    dataset_dict.register_document_converter(convert_to_document_with_label)
+    with caplog.at_level(logging.INFO):
+        dataset_dict_converted = dataset_dict.to_document_type(with_document_type)
+    assert (
+        caplog.messages[-1]
+        == f"convert the dataset to the document type that is specified by MyWithDocumentType: {TestDocumentWithLabel}"
+    )
+    assert dataset_dict_converted.document_type == TestDocumentWithLabel
+    for split in dataset_dict_converted.values():
+        assert all(isinstance(doc, TestDocumentWithLabel) for doc in split)
+
+
+def test_to_document_type_from_with_document_type_no_document_type(dataset_dict, caplog):
+    class MyWithDocumentType(WithDocumentTypeMixin):
+        pass
+
+    without_document_type = MyWithDocumentType()
+
+    with caplog.at_level(logging.WARNING):
+        dataset_dict_converted = dataset_dict.to_document_type(without_document_type)
+    assert caplog.messages == [
+        "MyWithDocumentType does not specify a document type. The dataset can not be automatically converted to a document type."
+    ]
+    assert dataset_dict_converted.document_type == dataset_dict.document_type
+
+
+def test_to_document_type_resolve(dataset_dict):
     dataset_dict.register_document_converter(convert_to_document_with_label)
     dataset_dict_converted = dataset_dict.to_document_type(f"{TEST_MODULE}.TestDocumentWithLabel")
     assert dataset_dict_converted.document_type == TestDocumentWithLabel

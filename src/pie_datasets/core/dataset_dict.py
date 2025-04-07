@@ -16,6 +16,7 @@ from typing import (
 )
 
 import datasets
+from pytorch_ie.core import WithDocumentTypeMixin
 from pytorch_ie.core.document import Document
 from pytorch_ie.utils.hydra import resolve_target, serialize_document_type
 
@@ -313,7 +314,7 @@ class DatasetDict(datasets.DatasetDict):
 
     def to_document_type(
         self,
-        document_type: Union[Type[Document], str],
+        document_type: Union[Type[Document], str, WithDocumentTypeMixin],
         downcast: bool = True,
         **kwargs,
     ) -> "DatasetDict":
@@ -321,14 +322,28 @@ class DatasetDict(datasets.DatasetDict):
         document converter.
 
         Args:
-            document_type: document type to convert the documents to. Can be a subclass of Document or string that
-                can be resolved to such a type.
+            document_type: document type to convert the documents to. Can be a subclass of Document
+                or string that can be resolved to such a type, or a class that implements the
+                `WithDocumentTypeMixin` interface.
             downcast: if `True` (default), the dataset is converted to the new document type even
                 if it already has a document type that is a superclass of the new document type.
                 If `False`, no conversion is done in this case.
         """
 
-        if isinstance(document_type, str):
+        if isinstance(document_type, WithDocumentTypeMixin):
+            name = type(document_type).__name__
+            if document_type.document_type is None:
+                logger.warning(
+                    f"{name} does not specify a document type. The dataset can "
+                    f"not be automatically converted to a document type."
+                )
+                return self
+            logger.info(
+                f"convert the dataset to the document type that is specified by {name}: "
+                f"{document_type.document_type}"
+            )
+            resolved_document_type = document_type.document_type
+        elif isinstance(document_type, str):
             resolved_document_type = resolve_target(document_type)
         else:
             resolved_document_type = document_type
