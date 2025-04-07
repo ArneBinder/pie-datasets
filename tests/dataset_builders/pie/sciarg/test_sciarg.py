@@ -4,10 +4,10 @@ from typing import Any, List, Optional, Sequence, Type
 
 import datasets
 import pytest
+from pie_core import Annotation, AnnotationLayer, Document, annotation_field
+from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
 from pie_modules.document.processing import tokenize_document
-from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
-from pytorch_ie.core import Annotation, AnnotationLayer, Document, annotation_field
-from pytorch_ie.documents import (
+from pie_modules.documents import (
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
     TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
     TextDocumentWithLabeledPartitions,
