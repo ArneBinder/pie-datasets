@@ -1,31 +1,23 @@
 import dataclasses
 import logging
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict
 
 import datasets
 from pie_modules.document.processing import token_based_document_to_text_based
+from pie_modules.utils.sequence_tagging import (
+    tag_sequence_to_token_spans,
+    token_spans_to_tag_sequence,
+)
 from pytorch_ie.annotations import BinaryRelation, LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TokenBasedDocument,
 )
-from pytorch_ie.utils.span import bio_tags_to_spans
 
 from pie_datasets import GeneratorBasedBuilder
 
 log = logging.getLogger(__name__)
-
-
-def labels_and_spans_to_bio_tags(
-    labels: List[str], spans: List[Tuple[int, int]], sequence_length: int
-) -> List[str]:
-    bio_tags = ["O"] * sequence_length
-    for label, (start, end) in zip(labels, spans):
-        bio_tags[start] = f"B-{label}"
-        for i in range(start + 1, end):
-            bio_tags[i] = f"I-{label}"
-    return bio_tags
 
 
 @dataclasses.dataclass
@@ -57,7 +49,7 @@ def example_to_document(
         )
     ]
     spans_with_label = sorted(
-        bio_tags_to_spans(tag_sequence), key=lambda label_and_span: label_and_span[1][0]
+        tag_sequence_to_token_spans(tag_sequence), key=lambda label_and_span: label_and_span[1][0]
     )
     labels, spans = zip(*spans_with_label)
     span_unit_labels, span_roles, span_parent_offsets = zip(
@@ -108,10 +100,12 @@ def document_to_example(
         for unit_label, role, parent_offset in zip(unit_labels, roles, parent_offsets)
     ]
 
-    tag_sequence = labels_and_spans_to_bio_tags(
-        labels=labels,
-        spans=[(unit.start, unit.end) for unit in document.units],
-        sequence_length=len(document.tokens),
+    tag_sequence = token_spans_to_tag_sequence(
+        labeled_spans=[
+            (label, (unit.start, unit.end)) for label, unit in zip(labels, document.units)
+        ],
+        base_sequence_length=len(document.tokens),
+        coding_scheme="IOB2",
     )
     bio_tags, unit_labels, roles, parent_offsets = zip(
         *[tag.split("-", maxsplit=3) for tag in tag_sequence]
