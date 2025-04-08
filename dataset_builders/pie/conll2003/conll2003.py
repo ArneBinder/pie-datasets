@@ -1,12 +1,35 @@
 from dataclasses import dataclass
+from typing import List, Sequence, Tuple
 
 import datasets
+from pie_modules.utils.sequence_tagging import tag_sequence_to_token_spans
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextDocument, TextDocumentWithLabeledSpans
-from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
 
 from pie_datasets import GeneratorBasedBuilder
+
+
+def tokens_and_tags_to_text_and_labeled_spans(
+    tokens: Sequence[str], tags: Sequence[str]
+) -> Tuple[str, Sequence[LabeledSpan]]:
+    start = 0
+    token_offsets: List[Tuple[int, int]] = []
+    for token in tokens:
+        end = start + len(token)
+        token_offsets.append((start, end))
+        # we add a space after each token
+        start = end + 1
+
+    text = " ".join(tokens)
+
+    spans: List[LabeledSpan] = []
+    for label, (start, end) in tag_sequence_to_token_spans(tag_sequence=tags):
+        spans.append(
+            LabeledSpan(start=token_offsets[start][0], end=token_offsets[end][1], label=label)
+        )
+
+    return text, spans
 
 
 @dataclass
