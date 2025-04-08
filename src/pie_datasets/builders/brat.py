@@ -62,6 +62,8 @@ class BratMultiSpan(Annotation):
     score: float = dataclasses.field(default=1.0, compare=False)
 
     def __post_init__(self) -> None:
+        if isinstance(self.slices, list):
+            object.__setattr__(self, "slices", tuple(tuple(s) for s in self.slices))
         _post_init_single_label(self)
 
     def __str__(self) -> str:
