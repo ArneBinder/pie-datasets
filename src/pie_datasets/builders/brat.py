@@ -49,7 +49,10 @@ class BratSpan(Annotation):
         return str(self.target[self.start : self.end])
 
     def resolve(self) -> Any:
-        return self.label, super().resolve()
+        if self.is_attached:
+            return self.label, self.target[self.start : self.end]
+        else:
+            raise ValueError(f"{self} is not attached to a target.")
 
 
 @dataclasses.dataclass(eq=True, frozen=True)
