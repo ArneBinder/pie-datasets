@@ -39,11 +39,9 @@ optional = true
 
 [tool.poetry.group.dev.dependencies]
 # >=0.13.5 because of https://github.com/ArneBinder/pie-modules/pull/135
-pie-modules = ">=0.13.5,<0.16.0"
-# TODO:
-# 1) set to release that uses pie-core when available
-# 2) remove when pie-modules does not anymore depend on pytorch-ie
-pytorch-ie = { git = "https://github.com/ArneBinder/pytorch-ie.git", branch = "use_pie_core_v2" }
+#pie-modules = ">=0.13.5,<0.16.0"
+# TODO: use release version
+pie-modules = { git = "https://github.com/ArneBinder/pie-modules.git", branch = "use_pie_core" }
 torch = [
     # default
     {version = "^2.1.0+cpu", source = "pytorch", markers = "sys_platform != 'darwin' or (platform_machine != 'arm64' and platform_machine != 'x86_64')"},
