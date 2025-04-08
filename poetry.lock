@@ -1242,13 +1242,13 @@ pytorch-lightning = ">=2.1.0,<3.0.0"
 
 [[package]]
 name = "pie-modules"
-version = "0.15.4"
+version = "0.15.3"
 description = "Model and Taskmodule implementations for PyTorch-IE"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "pie_modules-0.15.4-py3-none-any.whl", hash = "sha256:0d20d8579dbdc90cd5f66b4b0c2c80800377bb105daf6b8fcd3d6e9a585c14f4"},
-    {file = "pie_modules-0.15.4.tar.gz", hash = "sha256:2dbedb1ff3f64439c8c8816e9639cbe4e455fa3a253ef15b855f54528dced46d"},
+    {file = "pie_modules-0.15.3-py3-none-any.whl", hash = "sha256:e224301609fd9ad8f4e9c2e0b05526c3ee6133843ada37db6874c98fd5a47290"},
+    {file = "pie_modules-0.15.3.tar.gz", hash = "sha256:b72aa119731c63ab83f19880c3a658f62f89ea2bddba3c4598d60dd42cd01284"},
 ]
 
 [package.dependencies]
@@ -2480,4 +2480,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "8d93ec800756a4631adf47e5c6218b28dcfbd1eb2723fa2f30d5b957446464c5"
+content-hash = "42e8bf55d85accf9ef8bd7901d5554bdbc6331e728c7fdc0699c0e93982c4139"
