@@ -36,6 +36,10 @@ pyarrow = "^13"
 
 [tool.poetry.group.dev.dependencies]
 pie-modules = ">=0.11.1,<0.13.0"
+# TODO:
+# 1) set to release that uses pie-core when available
+# 2) remove when pie-modules does not anymore depend on pytorch-ie
+pytorch-ie = { git = "https://github.com/ArneBinder/pytorch-ie.git", branch = "use_pie_core_v2" }
 torch = [
     # default
     {version = "^2.1.0+cpu", source = "pytorch", markers = "sys_platform != 'darwin' or (platform_machine != 'arm64' and platform_machine != 'x86_64')"},

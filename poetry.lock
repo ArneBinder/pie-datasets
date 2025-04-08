@@ -1478,23 +1478,28 @@ files = [
 
 [[package]]
 name = "pytorch-ie"
-version = "0.31.0"
+version = "0.31.7"
 description = "State-of-the-art Information Extraction in PyTorch"
 optional = false
-python-versions = "<4.0,>=3.9"
-files = [
-    {file = "pytorch_ie-0.31.0-py3-none-any.whl", hash = "sha256:d1149c0f866fb2de76421435e89bfe0143b27af11618e10d67f54fdffe95f8cd"},
-    {file = "pytorch_ie-0.31.0.tar.gz", hash = "sha256:16294458f07ecb5c1bb0c0bda3ab79740d4457dfcab5e2269dc747efa09893a6"},
-]
+python-versions = "^3.9"
+files = []
+develop = false
 
 [package.dependencies]
-absl-py = ">=1.0.0,<2.0.0"
+absl-py = "^1.0.0"
 fsspec = "<2023.9.0"
-pandas = ">=2.0.0,<3.0.0"
-pytorch-lightning = ">=2,<3"
+pandas = "^2.0.0"
+pie-core = ">=0.1.0,<0.2.0"
+pytorch-lightning = "^2"
 torch = ">=1.10"
-torchmetrics = ">=1,<2"
-transformers = ">=4.18,<5.0"
+torchmetrics = "^1"
+transformers = "^4.18"
+
+[package.source]
+type = "git"
+url = "https://github.com/ArneBinder/pytorch-ie.git"
+reference = "use_pie_core_v2"
+resolved_reference = "0aeb3b7180f73a238c2503c9a19f48f76aa1aa66"
 
 [[package]]
 name = "pytorch-lightning"
@@ -2537,4 +2542,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "387d1ab777791227cfcd4ea613755a892a2fa772fa9201826de6fd1e9b78206d"
+content-hash = "ab530388504f4eddfc83b2d780569598e7feccaf415066703fda8f0a5aaca5ba"
