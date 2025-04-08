@@ -231,8 +231,18 @@ def test_cast_document_type_rename_target_not_available(dataset_train):
         )
 
 
-def test_cast_document_type_rename_wrong_type(dataset_train):
+def test_cast_document_type_rename_wrong_annotation_type(dataset_train):
+
+    # works per default (uses keep_annotation_types=False internally)
+    casted = dataset_train.cast_document_type(
+        DocumentWithEntsWrongType, field_mapping={"entities": "ents"}
+    )
+    assert casted.document_type is DocumentWithEntsWrongType
+
+    # fails if keep_annotation_types=True
     with pytest.raises(ValueError, match=re.escape("new field is not the same as old field:")):
         dataset_train.cast_document_type(
-            DocumentWithEntsWrongType, field_mapping={"entities": "ents"}
+            DocumentWithEntsWrongType,
+            field_mapping={"entities": "ents"},
+            keep_annotation_types=True,
         )

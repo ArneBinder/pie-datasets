@@ -88,6 +88,7 @@ def _check_fields_for_casting(
     current_document_type: Type[Document],
     new_document_type: Type[Document],
     column_names: list[str],
+    check_annotation_types: bool = True,
 ) -> Tuple[Set[str], Set[str]]:
     original_fields = {field.name: field for field in current_document_type.fields()}
     new_fields = {field.name: field for field in new_document_type.fields()}
@@ -112,16 +113,17 @@ def _check_fields_for_casting(
     removed_field_names = set(original_fields) - set(new_fields) - set(field_mapping)
 
     # Sanity checks
-    kept_field_names = set(original_fields_mapped) & set(new_fields)
-    for f_name_mapped in kept_field_names:
-        f = original_fields_mapped[f_name_mapped]
-        new_f = new_fields[f_name_mapped]
-        if not (
-            f.type == new_f.type
-            and f.default == new_f.default
-            and f.default_factory == new_f.default_factory
-        ):
-            raise ValueError(f"new field is not the same as old field:\n{new_f}\nvs\n{f}")
+    if check_annotation_types:
+        kept_field_names = set(original_fields_mapped) & set(new_fields)
+        for f_name_mapped in kept_field_names:
+            f = original_fields_mapped[f_name_mapped]
+            new_f = new_fields[f_name_mapped]
+            if not (
+                f.type == new_f.type
+                and f.default == new_f.default
+                and f.default_factory == new_f.default_factory
+            ):
+                raise ValueError(f"new field is not the same as old field:\n{new_f}\nvs\n{f}")
 
     return removed_field_names, added_field_names
 
@@ -421,6 +423,7 @@ class Dataset(datasets.Dataset, Sequence[D]):
         new_document_type: Type[D],
         remove_columns: bool = False,
         field_mapping: Optional[Dict[str, str]] = None,
+        keep_annotation_types: bool = False,
     ) -> "Dataset":
         field_mapping = field_mapping or {}
 
@@ -429,6 +432,7 @@ class Dataset(datasets.Dataset, Sequence[D]):
             current_document_type=self.document_type,
             new_document_type=new_document_type,
             column_names=self.column_names,
+            check_annotation_types=keep_annotation_types,
         )
 
         new_hf_dataset = datasets.Dataset(**self.get_base_kwargs(self))
@@ -621,6 +625,7 @@ class IterableDataset(datasets.IterableDataset):
         new_document_type: Type[D],
         remove_columns: bool = False,
         field_mapping: Optional[Dict[str, str]] = None,
+        keep_annotation_types: bool = False,
     ) -> "IterableDataset":
         field_mapping = field_mapping or {}
 
@@ -629,6 +634,7 @@ class IterableDataset(datasets.IterableDataset):
             current_document_type=self.document_type,
             new_document_type=new_document_type,
             column_names=self.column_names,
+            check_annotation_types=keep_annotation_types,
         )
         hidden_columns = set(self.hidden_columns)
         new_hf_dataset = datasets.IterableDataset(**self.get_base_kwargs(self))
