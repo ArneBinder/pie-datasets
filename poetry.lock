@@ -1424,13 +1424,20 @@ files = [
 ]
 
 [package.dependencies]
-absl-py = ">=1.0.0,<2.0.0"
+absl-py = "^1.0.0"
 fsspec = "<2023.9.0"
-pandas = ">=2.0.0,<3.0.0"
-pytorch-lightning = ">=2,<3"
+pandas = "^2.0.0"
+pie-core = ">=0.1.0,<0.2.0"
+pytorch-lightning = "^2"
 torch = ">=1.10"
-torchmetrics = ">=1,<2"
-transformers = ">=4.18,<5.0"
+torchmetrics = "^1"
+transformers = "^4.18"
+
+[package.source]
+type = "git"
+url = "https://github.com/ArneBinder/pytorch-ie.git"
+reference = "use_pie_core_v2"
+resolved_reference = "0aeb3b7180f73a238c2503c9a19f48f76aa1aa66"
 
 [[package]]
 name = "pytorch-lightning"
