@@ -43,6 +43,11 @@ class BratSpan(Annotation):
     def __post_init__(self) -> None:
         _post_init_single_label(self)
 
+    def __str__(self) -> str:
+        if not self.is_attached:
+            return super().__str__()
+        return str(self.target[self.start : self.end])
+
     def resolve(self) -> Any:
         return self.label, super().resolve()
 
