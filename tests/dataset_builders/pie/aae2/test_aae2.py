@@ -17,7 +17,11 @@ from dataset_builders.pie.aae2.aae2 import (
     remove_cross_partition_relations,
 )
 from pie_datasets import DatasetDict
-from pie_datasets.builders.brat import BratAttribute, BratDocumentWithMergedSpans
+from pie_datasets.builders.brat import (
+    BratAttribute,
+    BratDocumentWithMergedSpans,
+    BratSpan,
+)
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
     TestTokenDocumentWithLabeledSpansAndBinaryRelations,
@@ -170,9 +174,9 @@ def test_convert_aae2_claim_attributions_to_relations(method):
         text="This is an example claim. This is the first major claim. "
         "This is the second major claim."
     )
-    claim = LabeledSpan(start=0, end=25, label="Claim")
-    first_majorclaim = LabeledSpan(start=26, end=56, label="MajorClaim")
-    second_majorclaim = LabeledSpan(start=57, end=88, label="MajorClaim")
+    claim = BratSpan(start=0, end=25, label="Claim")
+    first_majorclaim = BratSpan(start=26, end=56, label="MajorClaim")
+    second_majorclaim = BratSpan(start=57, end=88, label="MajorClaim")
     sample_doc.spans.extend([claim, first_majorclaim, second_majorclaim])
     # sanity check (works only after labeled spans were added to the document)
     assert str(claim) == "This is an example claim."
