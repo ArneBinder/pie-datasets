@@ -4,7 +4,7 @@ from pathlib import Path
 from typing import Union
 
 import pytest
-from fixtures.dataset.taskmodule import TestTaskModule
+from common.taskmodule import TestTaskModule
 from pytorch_ie import Document
 from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
 from pytorch_ie.core import AnnotationList, annotation_field
