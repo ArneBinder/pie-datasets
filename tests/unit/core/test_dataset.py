@@ -4,10 +4,9 @@ from pathlib import Path
 from typing import Union
 
 import pytest
-from pytorch_ie import Document
-from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
-from pytorch_ie.core import AnnotationList, annotation_field
-from pytorch_ie.core.taskmodule import (
+from pie_core import (
+    AnnotationLayer,
+    Document,
     IterableTaskEncodingDataset,
     TaskEncodingDataset,
     TaskEncodingSequence,
