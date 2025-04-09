@@ -12,9 +12,9 @@ import logging
 from typing import Dict, Iterator, List, Optional, Sequence, Tuple, TypedDict
 
 import numpy as np
+from pie_core import AnnotationLayer, TaskEncoding, TaskModule, annotation_field
 from pie_modules.annotations import Label
 from pie_modules.documents import TextBasedDocument
-from pytorch_ie import AnnotationLayer, TaskEncoding, TaskModule, annotation_field
 from typing_extensions import TypeAlias
 
 logger = logging.getLogger(__name__)
