@@ -3,10 +3,8 @@ from dataclasses import dataclass
 from pathlib import Path
 from typing import Union
 
-import numpy
 import pytest
-import torch
-from pyexpat import features
+from fixtures.dataset.taskmodule import TestTaskModule
 from pytorch_ie import Document
 from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
 from pytorch_ie.core import AnnotationList, annotation_field
@@ -16,7 +14,6 @@ from pytorch_ie.core.taskmodule import (
     TaskEncodingSequence,
 )
 from pytorch_ie.documents import TextBasedDocument
-from pytorch_ie.taskmodules import TransformerSpanClassificationTaskModule
 
 from pie_datasets import Dataset, IterableDataset
 from pie_datasets.core.dataset import (
@@ -319,34 +316,26 @@ def test_to_document_type_not_found(dataset_with_converter_functions):
 
 
 @pytest.fixture(scope="module")
-def taskmodule():
-    # TODO: use a mock taskmodule instead
-    tokenizer_name_or_path = "bert-base-cased"
-    taskmodule = TransformerSpanClassificationTaskModule(
-        tokenizer_name_or_path=tokenizer_name_or_path,
-        entity_annotation="entities",
-    )
-    return taskmodule
+def taskmodule() -> TestTaskModule:
+    tm = TestTaskModule(labels=["Negative", "Positive"])
+    tm.post_prepare()
+    return tm
 
 
 @pytest.fixture
 def model_output():
     return {
-        "logits": torch.from_numpy(
-            numpy.log(
-                [
-                    # O, ORG, PER
-                    [0.5, 0.2, 0.3],
-                    [0.1, 0.1, 0.8],
-                    [0.1, 0.5, 0.4],
-                    [0.1, 0.4, 0.5],
-                    [0.1, 0.6, 0.3],
-                ]
-            )
-        ),
-        "start_indices": torch.tensor([1, 1, 7, 1, 6]),
-        "end_indices": torch.tensor([2, 4, 7, 4, 6]),
-        "batch_indices": torch.tensor([0, 1, 1, 2, 2]),
+        "logits": [
+            # eight entries in total
+            [0.0513, 0.7510, -0.3345],
+            [0.7510, 0.0513, -0.3345],
+            [0.0513, -0.3345, 0.7510],
+            [0.7510, -0.3345, 0.0513],
+            [-0.3345, 0.0513, 0.7510],
+            [-0.3345, 0.7510, 0.0513],
+            [0.0513, 0.7510, -0.3345],
+            [-0.3345, 0.0513, 0.7510],
+        ]
     }
 
 
@@ -356,12 +345,16 @@ def model_output():
 def test_dataset_with_taskmodule(
     maybe_iterable_dataset, taskmodule, model_output, encode_target, inplace, as_dataset
 ):
-    train_dataset = maybe_iterable_dataset["train"]
+    def add_label(doc: TestDocumentWithLabel) -> TestDocumentWithLabel:
+        # Add a label to the document
+        doc.label.append(Label(label="O"))
+        return doc
 
-    taskmodule.prepare(train_dataset)
-    assert set(taskmodule.label_to_id.keys()) == {"PER", "ORG", "O"}
-    assert [taskmodule.id_to_label[i] for i in range(3)] == ["O", "ORG", "PER"]
-    assert taskmodule.label_to_id["O"] == 0
+    train_dataset = (
+        maybe_iterable_dataset["train"]
+        .cast_document_type(TestDocumentWithLabel, remove_columns=True)
+        .map(add_label)
+    )
 
     as_task_encoding_sequence = not encode_target
     as_iterator = isinstance(train_dataset, (IterableDataset, Iterator))
@@ -408,23 +401,22 @@ def test_dataset_with_taskmodule(
 
     task_encoding_list = list(task_encodings)
     assert len(task_encoding_list) == 8
-    task_encoding = task_encoding_list[5]
-    document = list(train_dataset)[5]
-    assert task_encoding.document == document
-    assert "input_ids" in task_encoding.inputs
-    assert (
-        taskmodule.tokenizer.decode(task_encoding.inputs["input_ids"], skip_special_tokens=True)
-        == document.text
-    )
+    for task_encoding, document in zip(task_encoding_list, train_dataset):
+        assert task_encoding.document == document
+        tokens = taskmodule.token_ids2tokens(task_encoding.inputs)
+        assert document.text == " ".join(tokens)
+        assert task_encoding.has_targets == encode_target
 
     if encode_target:
-        assert task_encoding.targets == [
-            (1, 4, taskmodule.label_to_id["PER"]),
-            (6, 6, taskmodule.label_to_id["ORG"]),
-            (9, 9, taskmodule.label_to_id["ORG"]),
+        all_targets = [
+            task_encoding.targets
+            for task_encoding in task_encoding_list
+            if task_encoding.has_targets
         ]
+        # we just added the "O" label to the documents
+        assert all_targets == [0] * 8
     else:
-        assert not task_encoding.has_targets
+        assert not any(task_encoding.has_targets for task_encoding in task_encoding_list)
 
     unbatched_outputs = taskmodule.unbatch_output(model_output)
 
@@ -434,25 +426,34 @@ def test_dataset_with_taskmodule(
         inplace=inplace,
     )
 
+    if encode_target and as_iterator:
+        # in this case, the result is empty because the iterator is exhausted
+        assert decoded_documents == []
+        return
+
     if isinstance(train_dataset, Dataset):
         assert len(decoded_documents) == len(train_dataset)
 
     assert {id(doc) for doc in decoded_documents}.isdisjoint({id(doc) for doc in train_dataset})
 
-    expected_scores = [0.8, 0.5, 0.5, 0.6]
-    i = 0
-    for document in decoded_documents:
-        for entity_expected, entity_decoded in zip(
-            document["entities"], document["entities"].predictions
-        ):
-            assert entity_expected.start == entity_decoded.start
-            assert entity_expected.end == entity_decoded.end
-            assert entity_expected.label == entity_decoded.label
-            assert expected_scores[i] == pytest.approx(entity_decoded.score)
-            i += 1
+    resolved_predictions_with_scores = [
+        [(label.resolve(), label.score) for label in doc.label.predictions]
+        for doc in decoded_documents
+    ]
+
+    assert resolved_predictions_with_scores == [
+        [("Negative", 0.5451)],
+        [("O", 0.5451)],
+        [("Positive", 0.5451)],
+        [("O", 0.5451)],
+        [("Positive", 0.5451)],
+        [("Negative", 0.5451)],
+        [("Negative", 0.5451)],
+        [("Positive", 0.5451)],
+    ]
 
     for document in train_dataset:
-        assert not document["entities"].predictions
+        assert not document.label.predictions
 
 
 @pytest.mark.parametrize("as_iterable_dataset", [False, True])
