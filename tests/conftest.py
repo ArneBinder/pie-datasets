@@ -6,9 +6,9 @@ from pathlib import Path
 import pkg_resources
 import pytest
 from datasets import load_dataset
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
-from pytorch_ie.core import AnnotationList, annotation_field
-from pytorch_ie.documents import TextBasedDocument
+from pie_core import AnnotationLayer, annotation_field
+from pie_modules.annotations import BinaryRelation, LabeledSpan, Span
+from pie_modules.documents import TextBasedDocument
 
 from pie_datasets import DatasetDict
 from tests import FIXTURES_ROOT
@@ -42,9 +42,9 @@ def documents(dataset):
 
 @dataclasses.dataclass
 class TestDocument(TextBasedDocument):
-    sentences: AnnotationList[Span] = annotation_field(target="text")
-    entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
-    relations: AnnotationList[BinaryRelation] = annotation_field(target="entities")
+    sentences: AnnotationLayer[Span] = annotation_field(target="text")
+    entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+    relations: AnnotationLayer[BinaryRelation] = annotation_field(target="entities")
 
 
 def example_to_doc_dict(example):

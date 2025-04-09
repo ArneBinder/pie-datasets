@@ -2,9 +2,9 @@ from typing import List
 
 import pytest
 from datasets import disable_caching
+from pie_core import Document
 from pie_modules.document.processing import tokenize_document
-from pytorch_ie.core import Document
-from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+from pie_modules.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.abstrct.abstrct import AbstRCT

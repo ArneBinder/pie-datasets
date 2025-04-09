@@ -2,7 +2,7 @@ from typing import List
 
 import pyarrow as pa
 from datasets.formatting.formatting import Formatter
-from pytorch_ie.core.document import Document
+from pie_core import Document
 
 
 class DocumentFormatter(Formatter[Document, list, List[Document]]):

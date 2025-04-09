@@ -3,9 +3,9 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple
 
 import datasets
-from pytorch_ie.annotations import LabeledSpan, NaryRelation, Span
-from pytorch_ie.core import Annotation, AnnotationList, annotation_field
-from pytorch_ie.documents import (
+from pie_core import Annotation, AnnotationLayer, annotation_field
+from pie_modules.annotations import LabeledSpan, NaryRelation, Span
+from pie_modules.documents import (
     TextDocumentWithLabeledSpansAndLabeledPartitions,
     TokenBasedDocument,
 )
@@ -43,17 +43,17 @@ class Predicate(Span):
 @dataclasses.dataclass
 class Conll2012OntonotesV5Document(TokenBasedDocument):
     pos_tags: Optional[List[str]] = None
-    sentences: AnnotationList[Span] = annotation_field(target="tokens")
-    parse_trees: AnnotationList[Attribute] = annotation_field(target="sentences")
-    speakers: AnnotationList[Attribute] = annotation_field(target="sentences")
-    parts: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
-    coref_mentions: AnnotationList[Span] = annotation_field(target="tokens")
-    coref_clusters: AnnotationList[SpanSet] = annotation_field(target="coref_mentions")
-    srl_arguments: AnnotationList[Span] = annotation_field(target="tokens")
-    srl_relations: AnnotationList[NaryRelation] = annotation_field(target="srl_arguments")
-    entities: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
-    predicates: AnnotationList[Predicate] = annotation_field(target="tokens")
-    word_senses: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
+    sentences: AnnotationLayer[Span] = annotation_field(target="tokens")
+    parse_trees: AnnotationLayer[Attribute] = annotation_field(target="sentences")
+    speakers: AnnotationLayer[Attribute] = annotation_field(target="sentences")
+    parts: AnnotationLayer[LabeledSpan] = annotation_field(target="tokens")
+    coref_mentions: AnnotationLayer[Span] = annotation_field(target="tokens")
+    coref_clusters: AnnotationLayer[SpanSet] = annotation_field(target="coref_mentions")
+    srl_arguments: AnnotationLayer[Span] = annotation_field(target="tokens")
+    srl_relations: AnnotationLayer[NaryRelation] = annotation_field(target="srl_arguments")
+    entities: AnnotationLayer[LabeledSpan] = annotation_field(target="tokens")
+    predicates: AnnotationLayer[Predicate] = annotation_field(target="tokens")
+    word_senses: AnnotationLayer[LabeledSpan] = annotation_field(target="tokens")
 
 
 def bio2spans(bio: List[str], offset: int = 0) -> List[LabeledSpan]:
