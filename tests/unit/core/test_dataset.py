@@ -4,7 +4,6 @@ from pathlib import Path
 from typing import Union
 
 import pytest
-from common.taskmodule import TestTaskModule
 from pytorch_ie import Document
 from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
 from pytorch_ie.core import AnnotationList, annotation_field
@@ -21,6 +20,7 @@ from pie_datasets.core.dataset import (
     concatenate_datasets,
     get_pie_dataset_type,
 )
+from tests.common.taskmodule import TestTaskModule
 from tests.conftest import TestDocument
 from tests.unit.core import TEST_PACKAGE
 
