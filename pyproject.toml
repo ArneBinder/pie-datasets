@@ -35,8 +35,7 @@ numpy = "<2.0.0"
 pyarrow = "^13"
 
 [tool.poetry.group.dev.dependencies]
-# TODO: use pie-modules release 0.15.4 (including https://github.com/ArneBinder/pie-modules/pull/174) when available
-pie-modules = { git = "https://github.com/ArneBinder/pie-modules.git", branch = "main" }
+pie-modules = ">=0.15.4,<0.16.0"
 torch = [
     # default
     {version = "^2.1.0+cpu", source = "pytorch", markers = "sys_platform != 'darwin' or (platform_machine != 'arm64' and platform_machine != 'x86_64')"},

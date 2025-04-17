@@ -1227,24 +1227,20 @@ xml = ["lxml (>=4.9.2)"]
 
 [[package]]
 name = "pie-modules"
-version = "0.15.3"
+version = "0.15.4"
 description = "Model and Taskmodule implementations for PyTorch-IE"
 optional = false
-python-versions = "^3.9"
-files = []
-develop = false
+python-versions = "<4.0,>=3.9"
+files = [
+    {file = "pie_modules-0.15.4-py3-none-any.whl", hash = "sha256:0d20d8579dbdc90cd5f66b4b0c2c80800377bb105daf6b8fcd3d6e9a585c14f4"},
+    {file = "pie_modules-0.15.4.tar.gz", hash = "sha256:2dbedb1ff3f64439c8c8816e9639cbe4e455fa3a253ef15b855f54528dced46d"},
+]
 
 [package.dependencies]
 pytorch-ie = ">=0.31.2,<0.32.0"
-pytorch-lightning = "^2.1.0"
-torchmetrics = "^1"
+pytorch-lightning = ">=2.1.0,<3.0.0"
+torchmetrics = ">=1,<2"
 transformers = ">=4.35.0,<4.37.0"
-
-[package.source]
-type = "git"
-url = "https://github.com/ArneBinder/pie-modules.git"
-reference = "main"
-resolved_reference = "f0fc9c11013ba73456c9ac97eb32a647444e8173"
 
 [[package]]
 name = "platformdirs"
@@ -2462,4 +2458,4 @@ multidict = ">=4.0"
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.9"
-content-hash = "2a6b52fca532a10a22eda50347a1b65eaf5c13b18882e71aefa84b6e4278c06b"
+content-hash = "b0dd3c812ca7b850e5cad85966299972a483f70124cdd0729d3e51904ae5b609"
