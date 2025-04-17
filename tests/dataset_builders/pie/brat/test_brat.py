@@ -2,15 +2,16 @@ from typing import Any, Union
 
 import datasets
 import pytest
-from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pytorch_ie.core import Annotation
-from pytorch_ie.documents import TextBasedDocument
+from pie_core import Annotation
 
 from dataset_builders.pie.brat.brat import Brat
 from pie_datasets.builders.brat import (
     BratAttribute,
     BratDocument,
     BratDocumentWithMergedSpans,
+    BratMultiSpan,
+    BratRelation,
+    BratSpan,
     document_to_example,
     example_to_document,
 )
@@ -28,14 +29,14 @@ SPLIT_SIZES = {"train": 2}
 def resolve_annotation(annotation: Annotation) -> Any:
     if annotation.target is None:
         return None
-    if isinstance(annotation, LabeledMultiSpan):
+    if isinstance(annotation, BratMultiSpan):
         return (
             [annotation.target[start:end] for start, end in annotation.slices],
             annotation.label,
         )
-    elif isinstance(annotation, LabeledSpan):
+    elif isinstance(annotation, BratSpan):
         return (annotation.target[annotation.start : annotation.end], annotation.label)
-    elif isinstance(annotation, BinaryRelation):
+    elif isinstance(annotation, BratRelation):
         return (
             resolve_annotation(annotation.head),
             annotation.label,
@@ -223,6 +224,9 @@ def test_example_to_document_and_back_all(hf_dataset, merge_fragmented_spans):
     for split_name, split in hf_dataset.items():
         for hf_example in split:
             doc = example_to_document(hf_example, merge_fragmented_spans=merge_fragmented_spans)
-            assert isinstance(doc, TextBasedDocument)
+            if merge_fragmented_spans:
+                assert isinstance(doc, BratDocumentWithMergedSpans)
+            else:
+                assert isinstance(doc, BratDocument)
             hf_example_back = document_to_example(doc)
             assert hf_example == hf_example_back
