@@ -2,7 +2,7 @@ import json
 
 import pytest
 from datasets import disable_caching, load_dataset
-from pie_modules.documents import TextDocumentWithLabeledSpansAndLabeledPartitions
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndLabeledPartitions
 
 from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
     Conll2012Ontonotesv5,

@@ -3,10 +3,10 @@ import logging
 from typing import Any, Dict, List, Optional
 
 import datasets
-from pie_core import Annotation, AnnotationLayer, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledSpan
 from pie_modules.document.processing.text_span_trimmer import trim_text_spans
-from pie_modules.documents import (
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan
+from pytorch_ie.core import Annotation, AnnotationList, annotation_field
+from pytorch_ie.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )
@@ -32,9 +32,9 @@ class Attribute(Annotation):
 
 @dataclasses.dataclass
 class CDCPDocument(TextBasedDocument):
-    propositions: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
-    relations: AnnotationLayer[BinaryRelation] = annotation_field(target="propositions")
-    urls: AnnotationLayer[Attribute] = annotation_field(target="propositions")
+    propositions: AnnotationList[LabeledSpan] = annotation_field(target="text")
+    relations: AnnotationList[BinaryRelation] = annotation_field(target="propositions")
+    urls: AnnotationList[Attribute] = annotation_field(target="propositions")
 
 
 def example_to_document(
