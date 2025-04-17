@@ -3,9 +3,9 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional
 
 import datasets
-from pie_core import AnnotationLayer, Document, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledSpan, Span
-from pie_modules.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+from pytorch_ie import AnnotationLayer, Document, annotation_field
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 from pie_datasets import ArrowBasedBuilder
 

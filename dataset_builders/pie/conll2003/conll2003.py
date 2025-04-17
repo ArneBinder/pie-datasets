@@ -2,10 +2,10 @@ from dataclasses import dataclass
 from typing import List, Sequence, Tuple
 
 import datasets
-from pie_core import AnnotationLayer, annotation_field
-from pie_modules.annotations import LabeledSpan
-from pie_modules.documents import TextBasedDocument, TextDocumentWithLabeledSpans
 from pie_modules.utils.sequence_tagging import tag_sequence_to_token_spans
+from pytorch_ie.annotations import LabeledSpan
+from pytorch_ie.core import AnnotationList, annotation_field
+from pytorch_ie.documents import TextDocument, TextDocumentWithLabeledSpans
 
 from pie_datasets import GeneratorBasedBuilder
 
@@ -33,8 +33,8 @@ def tokens_and_tags_to_text_and_labeled_spans(
 
 
 @dataclass
-class CoNLL2003Document(TextBasedDocument):
-    entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+class CoNLL2003Document(TextDocument):
+    entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
 
 
 class Conll2003(GeneratorBasedBuilder):
