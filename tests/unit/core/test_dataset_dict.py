@@ -5,7 +5,16 @@ from typing import Dict, Iterable, Optional, Union
 
 import datasets
 import pytest
-from pie_core import AnnotationLayer, Document, WithDocumentTypeMixin, annotation_field
+from pie_core import (
+    AnnotationLayer,
+    Document,
+    EnterDatasetDictMixin,
+    EnterDatasetMixin,
+    ExitDatasetDictMixin,
+    ExitDatasetMixin,
+    WithDocumentTypeMixin,
+    annotation_field,
+)
 from pie_modules.annotations import Label, LabeledSpan
 from pie_modules.documents import TextBasedDocument
 
@@ -15,12 +24,6 @@ from pie_datasets import (
     IterableDataset,
     concatenate_dataset_dicts,
     load_dataset,
-)
-from pie_datasets.core.dataset_dict import (
-    EnterDatasetDictMixin,
-    EnterDatasetMixin,
-    ExitDatasetDictMixin,
-    ExitDatasetMixin,
 )
 from tests import DATASET_BUILDERS_ROOT, FIXTURES_ROOT
 from tests.conftest import CREATE_FIXTURE_DATA, TestDocument
