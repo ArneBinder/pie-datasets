@@ -1227,13 +1227,13 @@ xml = ["lxml (>=4.9.2)"]
 
 [[package]]
 name = "pie-core"
-version = "0.1.0"
+version = "0.1.2"
 description = "Core modules of PyTorch-IE"
 optional = false
 python-versions = "<4.0,>=3.9"
 files = [
-    {file = "pie_core-0.1.0-py3-none-any.whl", hash = "sha256:6992e0f79deb838b73c64b3baa6ff112dc91a6ab2676d24583c51a82646a7dbb"},
-    {file = "pie_core-0.1.0.tar.gz", hash = "sha256:1211be9608be1eea24eded1f424c7b077c48155947287645b215387768f4d755"},
+    {file = "pie_core-0.1.2-py3-none-any.whl", hash = "sha256:2118e7e0d7002182e3c071e7806eece73ce7d68789cf6a0b8a3a718cf3eb910d"},
+    {file = "pie_core-0.1.2.tar.gz", hash = "sha256:08c883a2e7618f0bfdeaa428a51a95753cbf3a9b12eb5cca1ab3263d98177303"},
 ]
 
 [package.dependencies]
@@ -1421,17 +1421,15 @@ name = "pytorch-ie"
 version = "0.31.7"
 description = "State-of-the-art Information Extraction in PyTorch"
 optional = false
-python-versions = "<4.0,>=3.9"
-files = [
-    {file = "pytorch_ie-0.31.7-py3-none-any.whl", hash = "sha256:1d4dc2ecbc929b0d4da99e2b39ccfe0a828535ac2fbf8eeb646c8540eac1a5a4"},
-    {file = "pytorch_ie-0.31.7.tar.gz", hash = "sha256:90660fd6db7f167dbce22ac09d5be74281ca1728ec24daf8e371f6d0606da53a"},
-]
+python-versions = "^3.9"
+files = []
+develop = false
 
 [package.dependencies]
 absl-py = "^1.0.0"
 fsspec = "<2023.9.0"
 pandas = "^2.0.0"
-pie-core = ">=0.1.0,<0.2.0"
+pie-core = ">=0.1.1,<0.2.0"
 pytorch-lightning = "^2"
 torch = ">=1.10"
 torchmetrics = "^1"
@@ -1441,7 +1439,7 @@ transformers = "^4.18"
 type = "git"
 url = "https://github.com/ArneBinder/pytorch-ie.git"
 reference = "use_pie_core_v2"
-resolved_reference = "0aeb3b7180f73a238c2503c9a19f48f76aa1aa66"
+resolved_reference = "a5f9902a40293b1cd6d5ef54571934aceba2bd00"
 
 [[package]]
 name = "pytorch-lightning"
