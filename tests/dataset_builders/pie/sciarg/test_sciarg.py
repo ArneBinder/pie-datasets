@@ -4,10 +4,10 @@ from typing import Any, List, Optional, Sequence, Type
 
 import datasets
 import pytest
+from pie_core import Annotation, AnnotationLayer, Document, annotation_field
+from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
 from pie_modules.document.processing import tokenize_document
-from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
-from pytorch_ie.core import Annotation, AnnotationLayer, Document, annotation_field
-from pytorch_ie.documents import (
+from pie_modules.documents import (
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
     TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
     TextDocumentWithLabeledPartitions,
@@ -23,6 +23,9 @@ from pie_datasets.builders.brat import (
     BratAttribute,
     BratDocument,
     BratDocumentWithMergedSpans,
+    BratMultiSpan,
+    BratRelation,
+    BratSpan,
 )
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
@@ -76,14 +79,14 @@ LABELED_PARTITION_COUNTS = {"Abstract": 40, "H1": 340, "Title": 40}
 def resolve_annotation(annotation: Annotation) -> Any:
     if annotation.target is None:
         return None
-    if isinstance(annotation, LabeledSpan):
+    if isinstance(annotation, (LabeledSpan, BratSpan)):
         return annotation.target[annotation.start : annotation.end], annotation.label
-    elif isinstance(annotation, LabeledMultiSpan):
+    elif isinstance(annotation, (LabeledMultiSpan, BratMultiSpan)):
         return (
             tuple(annotation.target[start:end] for start, end in annotation.slices),
             annotation.label,
         )
-    elif isinstance(annotation, BinaryRelation):
+    elif isinstance(annotation, (BinaryRelation, BratRelation)):
         return (
             resolve_annotation(annotation.head),
             annotation.label,
@@ -109,13 +112,13 @@ def sort_annotations(annotations: Sequence[Annotation]) -> List[Annotation]:
     if len(annotations) == 0:
         return []
     annotation = annotations[0]
-    if isinstance(annotation, LabeledSpan):
+    if isinstance(annotation, (LabeledSpan, BratSpan)):
         return sorted(annotations, key=lambda a: (a.start, a.end, a.label))
     elif isinstance(annotation, Span):
         return sorted(annotations, key=lambda a: (a.start, a.end))
-    elif isinstance(annotation, LabeledMultiSpan):
+    elif isinstance(annotation, (LabeledMultiSpan, BratMultiSpan)):
         return sorted(annotations, key=lambda a: (a.slices, a.label))
-    elif isinstance(annotation, BinaryRelation):
+    elif isinstance(annotation, (BinaryRelation, BratRelation)):
         if isinstance(annotation.head, LabeledSpan) and isinstance(annotation.tail, LabeledSpan):
             return sorted(
                 annotations,
