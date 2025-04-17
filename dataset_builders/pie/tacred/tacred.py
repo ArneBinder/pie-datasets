@@ -2,10 +2,10 @@ from dataclasses import dataclass, field
 from typing import Any, Dict, Optional
 
 import datasets
-from pie_core import Annotation, AnnotationLayer, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledSpan
 from pie_modules.document.processing import token_based_document_to_text_based
-from pie_modules.documents import (
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan
+from pytorch_ie.core import Annotation, AnnotationList, annotation_field
+from pytorch_ie.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TokenBasedDocument,
 )
@@ -29,17 +29,17 @@ class TokenAttribute(Annotation):
 
 @dataclass
 class TacredDocument(TokenBasedDocument):
-    stanford_ner: AnnotationLayer[TokenAttribute] = annotation_field(target="tokens")
-    stanford_pos: AnnotationLayer[TokenAttribute] = annotation_field(target="tokens")
-    entities: AnnotationLayer[LabeledSpan] = annotation_field(target="tokens")
-    relations: AnnotationLayer[BinaryRelation] = annotation_field(target="entities")
-    dependency_relations: AnnotationLayer[TokenRelation] = annotation_field(target="tokens")
+    stanford_ner: AnnotationList[TokenAttribute] = annotation_field(target="tokens")
+    stanford_pos: AnnotationList[TokenAttribute] = annotation_field(target="tokens")
+    entities: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
+    relations: AnnotationList[BinaryRelation] = annotation_field(target="entities")
+    dependency_relations: AnnotationList[TokenRelation] = annotation_field(target="tokens")
 
 
 @dataclass
 class SimpleTacredDocument(TokenBasedDocument):
-    labeled_spans: AnnotationLayer[LabeledSpan] = annotation_field(target="tokens")
-    binary_relations: AnnotationLayer[BinaryRelation] = annotation_field(target="labeled_spans")
+    labeled_spans: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
+    binary_relations: AnnotationList[BinaryRelation] = annotation_field(target="labeled_spans")
 
 
 def example_to_document(

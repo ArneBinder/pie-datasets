@@ -3,8 +3,8 @@ import os
 
 import pytest
 from datasets import ClassLabel, load_dataset
-from pie_core import Document
-from pie_modules.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+from pytorch_ie.core import Document
+from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 from dataset_builders.pie.tacred.tacred import (
     Tacred,

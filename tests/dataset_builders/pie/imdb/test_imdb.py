@@ -1,7 +1,7 @@
 import datasets
 import pytest
 from datasets import disable_caching, load_dataset
-from pie_core import Document
+from pytorch_ie.core import Document
 
 from dataset_builders.pie.imdb.imdb import Imdb
 from pie_datasets import Dataset, IterableDataset

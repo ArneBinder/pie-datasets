@@ -1,6 +1,6 @@
 import pytest
 from datasets import disable_caching, load_dataset
-from pie_core import Document
+from pytorch_ie import Document
 
 from dataset_builders.pie.tbga.tbga import (
     Tbga,
