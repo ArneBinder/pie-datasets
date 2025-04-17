@@ -1,4 +1,2 @@
 pie-datasets>=0.6.0,<0.11.0
-# TODO: use release when available
-#pie-modules>=0.8.0,<0.12.0
-pie-modules @ git+https://github.com/ArneBinder/pie-modules@main
+pie-modules>=0.15.4,<0.16.0
