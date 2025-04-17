@@ -3,9 +3,9 @@ import logging
 from typing import Any
 
 import datasets
-from pie_core import AnnotationLayer, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledSpan, Span
-from pie_modules.documents import (
+from pytorch_ie import AnnotationLayer, annotation_field
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan, Span
+from pytorch_ie.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )

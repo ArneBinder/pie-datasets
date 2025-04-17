@@ -6,9 +6,9 @@ import re
 from pathlib import Path
 from typing import List, Optional
 
-from pie_core import AnnotationLayer, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledSpan
-from pie_modules.documents import TokenBasedDocument
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan
+from pytorch_ie.core import AnnotationList, annotation_field
+from pytorch_ie.documents import TokenBasedDocument
 
 from tests import FIXTURES_ROOT
 
@@ -77,17 +77,17 @@ def _load_json(fn: str):
 
 @dataclasses.dataclass
 class TestTokenDocumentWithLabeledSpans(TokenBasedDocument):
-    labeled_spans: AnnotationLayer[LabeledSpan] = annotation_field(target="tokens")
+    labeled_spans: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
 
 
 @dataclasses.dataclass
 class TestTokenDocumentWithLabeledSpansAndBinaryRelations(TestTokenDocumentWithLabeledSpans):
-    binary_relations: AnnotationLayer[BinaryRelation] = annotation_field(target="labeled_spans")
+    binary_relations: AnnotationList[BinaryRelation] = annotation_field(target="labeled_spans")
 
 
 @dataclasses.dataclass
 class TestTokenDocumentWithLabeledPartitions(TokenBasedDocument):
-    labeled_partitions: AnnotationLayer[LabeledSpan] = annotation_field(target="tokens")
+    labeled_partitions: AnnotationList[LabeledSpan] = annotation_field(target="tokens")
 
 
 @dataclasses.dataclass

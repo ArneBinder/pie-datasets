@@ -1,7 +1,7 @@
 import datasets
 import pytest
-from pie_core import Document
-from pie_modules.documents import TextDocumentWithLabeledSpans
+from pytorch_ie.core import Document
+from pytorch_ie.documents import TextDocumentWithLabeledSpans
 
 from dataset_builders.pie.conll2003.conll2003 import Conll2003
 from pie_datasets import DatasetDict

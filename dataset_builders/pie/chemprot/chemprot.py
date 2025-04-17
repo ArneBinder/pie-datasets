@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 import datasets
-from pie_core import Document
-from pie_modules.annotations import BinaryRelation, LabeledSpan
-from pie_modules.documents import (
+from pytorch_ie import Document
+from pytorch_ie.annotations import BinaryRelation, LabeledSpan
+from pytorch_ie.documents import (
     AnnotationLayer,
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
