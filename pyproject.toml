@@ -24,7 +24,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pytorch-ie = ">=0.30.3,<0.32.0"
+pie-core = ">=0.1.0,<0.2.0"
 # <2.16.0 because of https://github.com/ArneBinder/pie-datasets/issues/93
 datasets = ">=2.14.0,<2.16.0"
 # should not be necessary, but see https://github.com/ArneBinder/pie-datasets/issues/164
@@ -35,7 +35,10 @@ numpy = "<2.0.0"
 pyarrow = "^13"
 
 [tool.poetry.group.dev.dependencies]
-pie-modules = ">=0.15.4,<0.16.0"
+# >=0.13.5 because of https://github.com/ArneBinder/pie-modules/pull/135
+#pie-modules = ">=0.13.5,<0.16.0"
+# TODO: use release version
+pie-modules = { git = "https://github.com/ArneBinder/pie-modules.git", branch = "use_pie_core" }
 torch = [
     # default
     {version = "^2.1.0+cpu", source = "pytorch", markers = "sys_platform != 'darwin' or (platform_machine != 'arm64' and platform_machine != 'x86_64')"},

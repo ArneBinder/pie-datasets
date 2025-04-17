@@ -18,7 +18,7 @@ from typing import (
 import datasets
 import pandas as pd
 from datasets.formatting import _register_formatter
-from pytorch_ie.core.document import Document
+from pie_core import Document
 
 from .document_formatter import DocumentFormatter
 
