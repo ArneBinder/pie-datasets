@@ -1,4 +1,4 @@
-from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+from pie_modules.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 from pie_datasets.builders import BratBuilder, BratConfig
 from pie_datasets.builders.brat import BratDocumentWithMergedSpans
