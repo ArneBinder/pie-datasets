@@ -6,13 +6,13 @@ import datasets
 from pie_core import AnnotationLayer, annotation_field
 from pie_modules.annotations import BinaryRelation, LabeledSpan
 from pie_modules.document.processing import token_based_document_to_text_based
-from pie_modules.utils.sequence_tagging import (
-    tag_sequence_to_token_spans,
-    token_spans_to_tag_sequence,
-)
 from pie_modules.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TokenBasedDocument,
+)
+from pie_modules.utils.sequence_tagging import (
+    tag_sequence_to_token_spans,
+    token_spans_to_tag_sequence,
 )
 
 from pie_datasets import GeneratorBasedBuilder
