@@ -39,6 +39,7 @@ pyarrow = "^13"
 #pie-modules = ">=0.13.5,<0.16.0"
 # TODO: use release version
 pie-modules = { git = "https://github.com/ArneBinder/pie-modules.git", branch = "use_pie_core" }
+# TODO: remove as soon as pie-core does not depend on torch (via pytorch-lightning) anymore
 torch = [
     # default
     {version = "^2.1.0+cpu", source = "pytorch", markers = "sys_platform != 'darwin' or (platform_machine != 'arm64' and platform_machine != 'x86_64')"},
