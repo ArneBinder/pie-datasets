@@ -1,8 +1,7 @@
 # pie-datasets
 
-<a href="https://pytorch.org/get-started/locally/"><img alt="PyTorch" src="https://img.shields.io/badge/PyTorch-ee4c2c?logo=pytorch&logoColor=white"></a>
-<a href="https://pytorchlightning.ai/"><img alt="Lightning" src="https://img.shields.io/badge/-Lightning-792ee5?logo=pytorchlightning&logoColor=white"></a>
-<a href="https://github.com/ChristophAlt/pytorch-ie"><img alt="PyTorch-IE" src="https://img.shields.io/badge/-PyTorch--IE-017F2F?style=flat&logo=github&labelColor=gray"></a><br>
+<a href="https://github.com/ArneBinder/pie-core"><img alt="PythonIE" src="https://img.shields.io/badge/-PythonIE-017F2F?style=flat&logo=github&labelColor=gray"></a>
+<a href="https://github.com/huggingface/datasets"><img alt="Huggingface Datasets" src="https://img.shields.io/badge/-Datasets-darkslateblue?style=flat&logo=huggingface&labelColor=darkslateblue"></a><br>
 
 [![PyPI](https://img.shields.io/pypi/v/pie-datasets.svg)][pypi status]
 [![Tests](https://github.com/arnebinder/pie-datasets/workflows/Tests/badge.svg)][tests]
@@ -10,10 +9,15 @@
 [![pre-commit](https://img.shields.io/badge/pre--commit-enabled-brightgreen?logo=pre-commit&logoColor=white)][pre-commit]
 [![Black](https://img.shields.io/badge/code%20style-black-000000.svg)][black]
 
-Dataset building scripts and utilities for [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie). We parse all datasets into a common format that can be
+Dataset building scripts and utilities for [PythonIE](https://github.com/ArneBinder/pie-core). We parse all datasets into a common format that can be
 loaded directly from the Huggingface Hub. Taking advantage of
 [Huggingface datasets](https://huggingface.co/docs/datasets), the documents are cached in an arrow table and
 serialized / deserialized on the fly. Any changes or preprocessing applied to the documents will be cached as well.
+
+## Available datasets
+
+See [here](https://huggingface.co/pie) for a list of available datasets. Note, that you can easily add your own
+datasets by following the [instructions below](#how-to-create-your-own-pie-dataset).
 
 ## Setup
 
@@ -26,11 +30,6 @@ To install the latest version from GitHub:
 ```bash
 pip install git+https://git@github.com/ArneBinder/pie-datasets.git
 ```
-
-## Available datasets
-
-See [here](https://huggingface.co/pie) for a list of available datasets. Note, that you can easily add your own
-datasets by following the [instructions below](#how-to-create-your-own-pie-dataset).
 
 ## Usage
 
@@ -120,9 +119,9 @@ Example where the function returns a different document type:
 ```python
 from dataclasses import dataclass
 
-from pytorch_ie.core import AnnotationLayer, annotation_field
-from pytorch_ie.documents import TextBasedDocument
-from pytorch_ie.annotations import LabeledSpan, Span
+from pie_core import AnnotationLayer, annotation_field
+from pie_modules.documents import TextBasedDocument
+from pie_modules.annotations import LabeledSpan, Span
 from pie_datasets import load_dataset
 
 @dataclass
@@ -177,10 +176,10 @@ converted_dataset = dataset.to_document_type(CoNLL2003DocumentWithWords)
 
 Note, that some of the PIE datasets come with default document converters. For instance, the
 [PIE conll2003 dataset](https://huggingface.co/datasets/pie/conll2003) comes with one that converts
-the dataset to `pytorch_ie.documents.TextDocumentWithLabeledSpans`. These documents work with the
+the dataset to `pie_modules.documents.TextDocumentWithLabeledSpans`. These documents work with the
 PIE taskmodules for
-[token classification](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/taskmodules/transformer_token_classification.py)
-and [span classification](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/taskmodules/transformer_span_classification.py)
+[token classification](https://github.com/ArneBinder/pytorch-ie/blob/main/src/pytorch_ie/taskmodules/transformer_token_classification.py)
+and [span classification](https://github.com/ArneBinder/pytorch-ie/blob/main/src/pytorch_ie/taskmodules/transformer_span_classification.py)
 out-of-the-box. The following code will load the dataset and convert it to the required document type:
 
 ```python
@@ -206,9 +205,9 @@ dataset from that, you have to implement:
 ```python
 from dataclasses import dataclass
 
-from pytorch_ie.annotations import LabeledSpan
-from pytorch_ie.core import AnnotationLayer, annotation_field
-from pytorch_ie.documents import TextBasedDocument
+from pie_core import AnnotationLayer, annotation_field
+from pie_modules.annotations import LabeledSpan
+from pie_modules.documents import TextBasedDocument
 
 @dataclass
 class CoNLL2003Document(TextBasedDocument):
@@ -219,9 +218,9 @@ Here we derive from `TextBasedDocument` that has a simple `text` string as base 
 `CoNLL2003Document` adds one single annotation layer called `entities` that consists of `LabeledSpan`s which
 reference the `text` field of the document. You can add further annotation types by adding `AnnotationLayer`
 fields that may also reference (i.e. `target`) other annotations as you like. The package
-[pytorch_ie.annotations](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/annotations.py)
+[pie_modules.annotations](https://github.com/ArneBinder/pie_modules/blob/main/src/pie_modules/annotations.py)
 contains some predefined annotation types and the package
-[pytorch_ie.documents](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) defines
+[pie_modules.documents](https://github.com/ArneBinder/pie_modules/blob/main/src/pie_modules/documents.py) defines
 some document types that you can use as base classes.
 
 2. A dataset config. This is similar to
@@ -244,13 +243,13 @@ class CoNLL2003Config(datasets.BuilderConfig):
 3. A dataset builder class. This should inherit from
    [`pie_datasets.GeneratorBasedBuilder`](src/pie_datasets/core/builder.py) which is a wrapper around the
    [Huggingface dataset builder class](https://huggingface.co/docs/datasets/v2.4.0/en/package_reference/builder_classes#datasets.GeneratorBasedBuilder)
-   with some utility functionality to work with PyTorch-IE `Documents`. The key elements to implement are: `DOCUMENT_TYPE`,
+   with some utility functionality to work with Python-IE `Documents`. The key elements to implement are: `DOCUMENT_TYPE`,
    `BASE_DATASET_PATH`, and `_generate_document`.
 
 ```python
-
-from pytorch_ie.documents import TextDocumentWithLabeledSpans
-from pytorch_ie.utils.span import tokens_and_tags_to_text_and_labeled_spans
+from pie_modules.annotations import LabeledSpan
+from pie_modules.documents import TextDocumentWithLabeledSpans
+from pie_modules.utils.sequence_tagging import tag_sequence_to_token_spans
 from pie_datasets import GeneratorBasedBuilder
 
 class Conll2003(GeneratorBasedBuilder):
@@ -276,13 +275,27 @@ class Conll2003(GeneratorBasedBuilder):
     def _generate_document_kwargs(self, dataset):
         return {"int_to_str": dataset.features["ner_tags"].feature.int2str}
 
-    # Define how a Pytorch-IE Document will be created from a Huggingface dataset example.
+    # Define how a Python-IE Document will be created from a Huggingface dataset example.
     def _generate_document(self, example, int_to_str):
         doc_id = example["id"]
         tokens = example["tokens"]
         ner_tags = [int_to_str(tag) for tag in example["ner_tags"]]
 
-        text, ner_spans = tokens_and_tags_to_text_and_labeled_spans(tokens=tokens, tags=ner_tags)
+        start = 0
+        token_offsets: list[tuple[int, int]] = []
+        for token in tokens:
+            end = start + len(token)
+            token_offsets.append((start, end))
+            # we add a space after each token
+            start = end + 1
+
+        text = " ".join(tokens)
+
+        ner_spans: list[LabeledSpan] = []
+        for label, (start, end) in tag_sequence_to_token_spans(tag_sequence=ner_tags):
+            ner_spans.append(
+                LabeledSpan(start=token_offsets[start][0], end=token_offsets[end][1], label=label)
+            )
 
         document = CoNLL2003Document(text=text, id=doc_id)
 
