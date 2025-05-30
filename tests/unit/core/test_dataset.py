@@ -4,14 +4,7 @@ from pathlib import Path
 from typing import Union
 
 import pytest
-from pie_core import (
-    AnnotationLayer,
-    Document,
-    IterableTaskEncodingDataset,
-    TaskEncodingDataset,
-    TaskEncodingSequence,
-    annotation_field,
-)
+from pie_core import AnnotationLayer, Document, TaskEncodingSequence, annotation_field
 from pie_modules.annotations import BinaryRelation, Label, LabeledSpan, Span
 from pie_modules.documents import TextBasedDocument
 
