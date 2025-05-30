@@ -1230,19 +1230,23 @@ name = "pie-core"
 version = "0.1.2"
 description = "Core modules of PyTorch-IE"
 optional = false
-python-versions = "<4.0,>=3.9"
-files = [
-    {file = "pie_core-0.1.2-py3-none-any.whl", hash = "sha256:2118e7e0d7002182e3c071e7806eece73ce7d68789cf6a0b8a3a718cf3eb910d"},
-    {file = "pie_core-0.1.2.tar.gz", hash = "sha256:08c883a2e7618f0bfdeaa428a51a95753cbf3a9b12eb5cca1ab3263d98177303"},
-]
+python-versions = "^3.9"
+files = []
+develop = false
 
 [package.dependencies]
 huggingface_hub = ">=0.23.4,<0.26.0"
-pytorch-lightning = ">=2.1.0,<3.0.0"
+torch = "^2.1.0"
+
+[package.source]
+type = "git"
+url = "https://github.com/ArneBinder/pie-core.git"
+reference = "main"
+resolved_reference = "74d6311615e4c233dcc6ffb79c674405c122a884"
 
 [[package]]
 name = "pie-modules"
-version = "0.15.5"
+version = "0.15.6"
 description = "Model and Taskmodule implementations for PyTorch-IE"
 optional = false
 python-versions = "^3.9"
@@ -1259,7 +1263,7 @@ transformers = ">=4.35.0,<4.37.0"
 type = "git"
 url = "https://github.com/ArneBinder/pie-modules.git"
 reference = "use_pie_core"
-resolved_reference = "0dc9fd77e218e2aaba24653e331d1a293f532c72"
+resolved_reference = "0014d243f6283a15092039996b8d45ac7b06848b"
 
 [[package]]
 name = "platformdirs"
@@ -1429,7 +1433,7 @@ develop = false
 absl-py = "^1.0.0"
 fsspec = "<2023.9.0"
 pandas = "^2.0.0"
-pie-core = ">=0.1.1,<0.2.0"
+pie-core = {git = "https://github.com/ArneBinder/pie-core.git", branch = "main"}
 pytorch-lightning = "^2"
 torch = ">=1.10"
 torchmetrics = "^1"
@@ -1439,7 +1443,7 @@ transformers = "^4.18"
 type = "git"
 url = "https://github.com/ArneBinder/pytorch-ie.git"
 reference = "use_pie_core_v2"
-resolved_reference = "a5f9902a40293b1cd6d5ef54571934aceba2bd00"
+resolved_reference = "97aabe47992f715de6a9ab85f951c986b3868303"
 
 [[package]]
 name = "pytorch-lightning"
