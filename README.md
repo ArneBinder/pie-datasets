@@ -317,9 +317,9 @@ load the dataset with `pie_datasets.load_dataset`, the script has to be located 
    git clone https://github.com/ArneBinder/pie-datasets
    cd pie-datasets
    ```
-3. Create a virtual environment and install the dependencies:
+3. Create a virtual environment and install the dependencies (including development dependencies):
    ```bash
-   poetry install
+   poetry install --with dev
    ```
 
 Finally, to run any of the below commands, you need to activate the virtual environment:

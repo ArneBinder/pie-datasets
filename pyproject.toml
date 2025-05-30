@@ -34,6 +34,9 @@ numpy = "<2.0.0"
 # this was manually added because we get a conflict with pyarrow otherwise
 pyarrow = "^13"
 
+[tool.poetry.group.dev]
+optional = true
+
 [tool.poetry.group.dev.dependencies]
 pie-modules = ">=0.15.4,<0.16.0"
 torch = [
