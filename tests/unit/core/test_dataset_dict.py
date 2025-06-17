@@ -114,7 +114,7 @@ def test_to_json_and_back_serialize_document_type(dataset_dict, tmp_path):
             assert doc1 == doc2
 
 
-def test_to_json_and_back_append(dataset_dict, tmp_path):
+def test_to_json_and_back_append(dataset_dict, tmp_path, caplog):
     path = Path(tmp_path) / "dataset_dict"
 
     dataset_dict1 = DatasetDict(
@@ -123,8 +123,10 @@ def test_to_json_and_back_append(dataset_dict, tmp_path):
     dataset_dict2 = DatasetDict(
         {split_name: Dataset.from_documents(docs[2:]) for split_name, docs in dataset_dict.items()}
     )
+    caplog.clear()
     dataset_dict1.to_json(path)
     dataset_dict2.to_json(path)
+    assert len(caplog.messages) == 0
     dataset_dict_from_json = DatasetDict.from_json(
         data_dir=str(path),
     )
@@ -132,6 +134,32 @@ def test_to_json_and_back_append(dataset_dict, tmp_path):
     for split in dataset_dict:
         assert len(dataset_dict_from_json[split]) == len(dataset_dict[split])
         for doc1, doc2 in zip(dataset_dict_from_json[split], dataset_dict[split]):
+            assert doc1 == doc2
+
+
+def test_to_json_and_back_append_overwrite(dataset_dict, tmp_path, caplog):
+    path = Path(tmp_path) / "dataset_dict"
+
+    dataset_dict1 = DatasetDict(
+        {split_name: Dataset.from_documents(docs[:2]) for split_name, docs in dataset_dict.items()}
+    )
+    dataset_dict2 = DatasetDict(
+        {split_name: Dataset.from_documents(docs[2:]) for split_name, docs in dataset_dict.items()}
+    )
+    caplog.clear()
+    dataset_dict1.to_json(path)
+    dataset_dict2.to_json(path, mode="w")
+    assert len(caplog.messages) == 1
+    assert caplog.messages[0].startswith("Dataset serialization directory")
+    assert caplog.messages[0].endswith("already exists, removing it to overwrite existing files.")
+
+    dataset_dict_from_json = DatasetDict.from_json(
+        data_dir=str(path),
+    )
+    assert set(dataset_dict_from_json) == set(dataset_dict2)
+    for split in dataset_dict:
+        assert len(dataset_dict_from_json[split]) == len(dataset_dict2[split])
+        for doc1, doc2 in zip(dataset_dict_from_json[split], dataset_dict2[split]):
             assert doc1 == doc2
 
 
