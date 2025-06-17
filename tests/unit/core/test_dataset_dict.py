@@ -184,6 +184,17 @@ def test_to_json_and_back_append_metadata_mismatch(dataset_dict, tmp_path):
     )
 
 
+def test_to_json_unknown_mode(dataset_dict, tmp_path):
+    path = Path(tmp_path) / "dataset_dict"
+
+    with pytest.raises(ValueError) as excinfo:
+        dataset_dict.to_json(path, mode="unknown_mode")
+    assert (
+        str(excinfo.value)
+        == 'mode must be "a" (append) or "w" (overwrite), but is "unknown_mode".'
+    )
+
+
 def test_document_type_empty_no_splits():
     with pytest.raises(ValueError) as excinfo:
         DatasetDict().document_type

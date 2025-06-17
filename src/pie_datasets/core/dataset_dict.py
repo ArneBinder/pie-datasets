@@ -233,7 +233,7 @@ class DatasetDict(datasets.DatasetDict):
             with open(path / METADATA_FILE_NAME, "w") as f:
                 json.dump(metadata, f, indent=2)
         else:
-            raise ValueError(f"mode must be 'a' (append) or 'w' (overwrite), but is {mode}.")
+            raise ValueError(f'mode must be "a" (append) or "w" (overwrite), but is "{mode}".')
 
         # save the splits
         for split, dataset in self.items():
