@@ -195,7 +195,7 @@ class DatasetDict(datasets.DatasetDict):
 
         Args:
             path: path to the output directory
-            mode: mode for writing the data. Can be either "a" (append) or "w" (overwrite).
+            mode: mode for writing the data. Can be either "a" (append) or "w" (overwrite). Default is "a".
             **kwargs: additional keyword arguments for `json.dump()`
         """
 
