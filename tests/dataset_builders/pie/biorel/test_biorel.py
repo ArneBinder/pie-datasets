@@ -1,13 +1,11 @@
-import datasets
 import pytest
 from datasets import disable_caching, load_dataset
-from pytorch_ie import Document
+from pie_core import Document
 
 from dataset_builders.pie.biorel.biorel import (
     BioRel,
     BioRelDocument,
     convert_to_text_document_with_labeled_spans_and_binary_relations,
-    document_to_example,
     example_to_document,
 )
 from pie_datasets import IterableDataset
