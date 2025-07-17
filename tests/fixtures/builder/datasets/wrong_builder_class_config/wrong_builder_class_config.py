@@ -4,7 +4,7 @@ from typing import Type
 import datasets
 from pie_modules.annotations import LabeledSpan
 from pie_core import AnnotationLayer, annotation_field
-from pie_modules.documents import TextDocument
+from pie_modules.documents import TextBasedDocument
 
 from pie_datasets import ArrowBasedBuilder
 from tests import FIXTURES_ROOT
@@ -24,7 +24,7 @@ class ExampleConfig(datasets.BuilderConfig):
 
 
 @dataclass
-class ExampleDocument(TextDocument):
+class ExampleDocument(TextBasedDocument):
     entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
 
