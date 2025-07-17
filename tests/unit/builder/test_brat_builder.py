@@ -3,7 +3,7 @@ import logging
 from typing import Union
 
 import pytest
-from pytorch_ie import AnnotationLayer, AnnotationList, annotation_field
+from pie_core import AnnotationLayer, annotation_field
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.documents import TextBasedDocument
 
@@ -245,7 +245,7 @@ def test_brat_attribute():
     @dataclasses.dataclass
     class ExampleDocument(TextBasedDocument):
         spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
-        attributes: AnnotationList[BratAttribute] = annotation_field(target="spans")
+        attributes: AnnotationLayer[BratAttribute] = annotation_field(target="spans")
 
     doc = ExampleDocument(text="Jane lives in Berlin.")
     span = LabeledSpan(start=0, end=4, label="person")
@@ -265,7 +265,7 @@ def test_brat_note():
     @dataclasses.dataclass
     class ExampleDocument(TextBasedDocument):
         spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
-        notes: AnnotationList[BratNote] = annotation_field(target="spans")
+        notes: AnnotationLayer[BratNote] = annotation_field(target="spans")
 
     doc = ExampleDocument(text="Jane lives in Berlin.")
     span = LabeledSpan(start=0, end=4, label="person")

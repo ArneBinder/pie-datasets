@@ -17,9 +17,8 @@ from typing import (
 )
 
 import datasets
-from pytorch_ie.core import WithDocumentTypeMixin
-from pytorch_ie.core.document import Document
-from pytorch_ie.utils.hydra import resolve_target, serialize_document_type
+from pie_core import Document, WithDocumentTypeMixin
+from pie_core.utils.hydra import resolve_target, serialize_document_type
 
 from .dataset import (
     Dataset,

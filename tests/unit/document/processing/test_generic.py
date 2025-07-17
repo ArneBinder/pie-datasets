@@ -1,7 +1,7 @@
 import dataclasses
 
 import pytest
-from pytorch_ie import AnnotationLayer, annotation_field
+from pie_core import AnnotationLayer, annotation_field
 from pytorch_ie.annotations import LabeledSpan
 from pytorch_ie.documents import TextBasedDocument, TextDocumentWithLabeledSpans
 

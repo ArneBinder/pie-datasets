@@ -2,8 +2,8 @@ import re
 from dataclasses import dataclass
 
 import pytest
+from pie_core import AnnotationLayer, annotation_field
 from pytorch_ie.annotations import LabeledSpan, Span
-from pytorch_ie.core import AnnotationList, annotation_field
 from pytorch_ie.documents import TextBasedDocument
 
 from pie_datasets import Dataset, IterableDataset
@@ -11,12 +11,12 @@ from pie_datasets import Dataset, IterableDataset
 
 @dataclass
 class CoNLL2002Document(TextBasedDocument):
-    entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
+    entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
 
 @dataclass
 class DocumentWithParts(TextBasedDocument):
-    parts: AnnotationList[Span] = annotation_field(target="text")
+    parts: AnnotationLayer[Span] = annotation_field(target="text")
 
 
 @dataclass
@@ -26,12 +26,12 @@ class CoNLL2002WithPartsDocument(CoNLL2002Document, DocumentWithParts):
 
 @dataclass
 class DocumentWithEnts(TextBasedDocument):
-    ents: AnnotationList[LabeledSpan] = annotation_field(target="text")
+    ents: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
 
 @dataclass
 class DocumentWithEntsWrongType(TextBasedDocument):
-    ents: AnnotationList[Span] = annotation_field(target="text")
+    ents: AnnotationLayer[Span] = annotation_field(target="text")
 
 
 @dataclass
@@ -41,8 +41,8 @@ class DocumentWithEntsAndParts(DocumentWithParts, DocumentWithEnts):
 
 @dataclass
 class DocumentWithPartsAndEntitiesSwapped(TextBasedDocument):
-    parts: AnnotationList[LabeledSpan] = annotation_field(target="text")
-    entities: AnnotationList[Span] = annotation_field(target="text")
+    parts: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+    entities: AnnotationLayer[Span] = annotation_field(target="text")
 
 
 @pytest.fixture()
