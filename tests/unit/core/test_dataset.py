@@ -4,15 +4,9 @@ from pathlib import Path
 from typing import Union
 
 import pytest
-from pytorch_ie import Document
-from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
-from pytorch_ie.core import AnnotationList, annotation_field
-from pytorch_ie.core.taskmodule import (
-    IterableTaskEncodingDataset,
-    TaskEncodingDataset,
-    TaskEncodingSequence,
-)
-from pytorch_ie.documents import TextBasedDocument
+from pie_core import AnnotationLayer, Document, TaskEncodingSequence, annotation_field
+from pie_modules.annotations import BinaryRelation, Label, LabeledSpan, Span
+from pie_modules.documents import TextBasedDocument
 
 from pie_datasets import Dataset, IterableDataset
 from pie_datasets.core.dataset import (
@@ -89,15 +83,15 @@ def test_dataset_map_batched(maybe_iterable_dataset):
 def test_dataset_map_with_result_document_type(maybe_iterable_dataset):
     @dataclass
     class TestDocument(TextBasedDocument):
-        sentences: AnnotationList[Span] = annotation_field(target="text")
-        entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
-        relations: AnnotationList[BinaryRelation] = annotation_field(target="entities")
+        sentences: AnnotationLayer[Span] = annotation_field(target="text")
+        entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+        relations: AnnotationLayer[BinaryRelation] = annotation_field(target="entities")
 
     @dataclass
     class TestDocumentWithTokensButNoRelations(TextBasedDocument):
-        sentences: AnnotationList[Span] = annotation_field(target="text")
-        tokens: AnnotationList[Span] = annotation_field(target="text")
-        entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
+        sentences: AnnotationLayer[Span] = annotation_field(target="text")
+        tokens: AnnotationLayer[Span] = annotation_field(target="text")
+        entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
     def clear_relations_and_add_one_token(
         document: TestDocument,
@@ -148,7 +142,7 @@ def test_get_pie_dataset_type(hf_dataset, iterable_hf_dataset):
 
 @dataclass
 class TestDocumentWithLabel(TextBasedDocument):
-    label: AnnotationList[Label] = annotation_field()
+    label: AnnotationLayer[Label] = annotation_field()
 
 
 def convert_to_document_with_label(document: TestDocument) -> TestDocumentWithLabel:
@@ -177,7 +171,7 @@ def test_register_document_converter_function(dataset_with_converter_functions):
 
 @dataclass
 class TestDocumentWithLabeledSpans(TextBasedDocument):
-    spans: AnnotationList[LabeledSpan] = annotation_field(target="text")
+    spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
 
 @pytest.fixture
@@ -266,8 +260,8 @@ def test_to_document_type_noop(maybe_iterable_dataset):
 def test_to_document_type_convert_and_cast(dataset_with_converter_functions):
     @dataclass
     class TestDocumentWithLabelAndSpans(TestDocumentWithLabel):
-        label: AnnotationList[Label] = annotation_field()
-        spans: AnnotationList[Span] = annotation_field(target="text")
+        label: AnnotationLayer[Label] = annotation_field()
+        spans: AnnotationLayer[Span] = annotation_field(target="text")
 
     assert dataset_with_converter_functions.document_type == TestDocument
     # The only converter is registered for TestDocumentWithLabel, but we request a conversion to
@@ -294,7 +288,7 @@ def test_to_document_type_not_found(dataset_with_converter_functions):
 
     @dataclass
     class TestDocumentWithSpans(TestDocument):
-        spans: AnnotationList[Span] = annotation_field(target="text")
+        spans: AnnotationLayer[Span] = annotation_field(target="text")
 
     # The only converter is registered for TestDocumentWithLabel, but we request a conversion to
     # TestDocumentWithSpans. This is not a valid type because it is neither a subclass nor a superclass of
@@ -341,9 +335,12 @@ def model_output():
 
 @pytest.mark.parametrize("encode_target", [False, True])
 @pytest.mark.parametrize("inplace", [False, True])
-@pytest.mark.parametrize("as_dataset", [False, True])
 def test_dataset_with_taskmodule(
-    maybe_iterable_dataset, taskmodule, model_output, encode_target, inplace, as_dataset
+    maybe_iterable_dataset,
+    taskmodule,
+    model_output,
+    encode_target,
+    inplace,
 ):
     def add_label(doc: TestDocumentWithLabel) -> TestDocumentWithLabel:
         # Add a label to the document
@@ -363,41 +360,20 @@ def test_dataset_with_taskmodule(
             with pytest.raises(
                 ValueError, match="can not return a TaskEncodingSequence as Iterator"
             ):
-                taskmodule.encode(
-                    train_dataset, encode_target=encode_target, as_dataset=as_dataset
-                )
-            return
-        if as_dataset:
-            with pytest.raises(
-                ValueError, match="can not return a TaskEncodingSequence as a dataset"
-            ):
-                taskmodule.encode(
-                    train_dataset, encode_target=encode_target, as_dataset=as_dataset
-                )
+                taskmodule.encode(train_dataset, encode_target=encode_target)
             return
 
-    task_encodings = taskmodule.encode(
-        train_dataset, encode_target=encode_target, as_dataset=as_dataset
-    )
+    task_encodings = taskmodule.encode(train_dataset, encode_target=encode_target)
 
     if as_iterator:
         if as_task_encoding_sequence:
             raise NotImplementedError("this is not yet implemented")
-        if as_dataset:
-            assert isinstance(task_encodings, IterableTaskEncodingDataset)
-        else:
-            assert isinstance(task_encodings, Iterator)
+        assert isinstance(task_encodings, Iterator)
     else:
-        if as_dataset:
-            if as_task_encoding_sequence:
-                raise NotImplementedError("this is not yet implemented")
-            else:
-                assert isinstance(task_encodings, TaskEncodingDataset)
+        if as_task_encoding_sequence:
+            assert isinstance(task_encodings, TaskEncodingSequence)
         else:
-            if as_task_encoding_sequence:
-                assert isinstance(task_encodings, TaskEncodingSequence)
-            else:
-                assert isinstance(task_encodings, Sequence)
+            assert isinstance(task_encodings, Sequence)
 
     task_encoding_list = list(task_encodings)
     assert len(task_encoding_list) == 8

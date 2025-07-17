@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 import datasets
-from pytorch_ie.annotations import LabeledSpan
-from pytorch_ie.core import AnnotationList, annotation_field
-from pytorch_ie.documents import TextDocument
+from pie_modules.annotations import LabeledSpan
+from pie_core import AnnotationLayer, annotation_field
+from pie_modules.documents import TextDocument
 
 from pie_datasets import GeneratorBasedBuilder
 from tests import FIXTURES_ROOT
@@ -24,7 +24,7 @@ class ExampleConfig(datasets.BuilderConfig):
 
 @dataclass
 class ExampleDocument(TextDocument):
-    entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
+    entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
 
 class Example(GeneratorBasedBuilder):

@@ -5,10 +5,9 @@ from typing import Dict, Iterable, Optional, Union
 
 import datasets
 import pytest
-from pytorch_ie import WithDocumentTypeMixin
-from pytorch_ie.annotations import Label, LabeledSpan
-from pytorch_ie.core import AnnotationList, Document, annotation_field
-from pytorch_ie.documents import TextBasedDocument, TextDocument
+from pie_core import AnnotationLayer, Document, WithDocumentTypeMixin, annotation_field
+from pie_modules.annotations import Label, LabeledSpan
+from pie_modules.documents import TextBasedDocument, TextDocument
 
 from pie_datasets import (
     Dataset,
@@ -48,7 +47,7 @@ def test_create_fixture_data():
 
 @dataclass
 class DocumentWithEntitiesAndRelations(TextBasedDocument):
-    entities: AnnotationList[LabeledSpan] = annotation_field(target="text")
+    entities: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
 
 @pytest.fixture(scope="module")
@@ -612,7 +611,7 @@ def test_cast_document_type(dataset_dict):
 
 @dataclass
 class TestDocumentWithLabel(TextDocument):
-    label: AnnotationList[Label] = annotation_field()
+    label: AnnotationLayer[Label] = annotation_field()
 
 
 def convert_to_document_with_label(document: TestDocument) -> TestDocumentWithLabel:
@@ -735,7 +734,7 @@ def test_to_document_type_noop(dataset_dict):
 def test_to_document_type_dont_downcast_noop(dataset_dict, caplog):
     @dataclass
     class DocumentWithEntitiesRelationsAndPartitions(DocumentWithEntitiesAndRelations):
-        partitions: AnnotationList[LabeledSpan] = annotation_field(target="text")
+        partitions: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
     # nothing should happen, since the document is a superclass of the requested type
     with caplog.at_level(logging.INFO):

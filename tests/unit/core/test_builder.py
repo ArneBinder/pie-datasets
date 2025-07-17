@@ -7,9 +7,9 @@ from typing import Type
 import pytest
 from datasets import DatasetBuilder, Version
 from datasets.load import dataset_module_factory, import_main_class
-from pytorch_ie.annotations import LabeledSpan, Span
-from pytorch_ie.core import AnnotationList, annotation_field
-from pytorch_ie.documents import TextBasedDocument, TextDocumentWithSpans
+from pie_core import AnnotationLayer, annotation_field
+from pie_modules.annotations import LabeledSpan, Span
+from pie_modules.documents import TextBasedDocument, TextDocumentWithSpans
 
 from pie_datasets.core.builder import PieDatasetBuilder
 from tests import FIXTURES_ROOT
@@ -155,7 +155,7 @@ def test_wrong_builder_class_config():
 def test_builder_with_document_converters_rename():
     @dataclass
     class RenamedExampleDocument(TextBasedDocument):
-        spans: AnnotationList[LabeledSpan] = annotation_field(target="text")
+        spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
     dataset_module = dataset_module_factory(str(DATASETS_ROOT / "single_config"))
     builder_cls: Type[PieDatasetBuilder] = import_main_class(dataset_module.module_path)
@@ -174,7 +174,7 @@ def test_builder_with_document_converters_rename():
 
 @dataclass
 class ExampleDocumentWithSimpleSpans(TextBasedDocument):
-    spans: AnnotationList[Span] = annotation_field(target="text")
+    spans: AnnotationLayer[Span] = annotation_field(target="text")
 
 
 def convert_example_document_to_example_document_with_simple_spans(
@@ -189,7 +189,7 @@ def convert_example_document_to_example_document_with_simple_spans(
 def test_builder_with_document_converters_resolve_document_type_and_converter():
     @dataclass
     class RenamedExampleDocument(TextBasedDocument):
-        spans: AnnotationList[LabeledSpan] = annotation_field(target="text")
+        spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
     dataset_module = dataset_module_factory(str(DATASETS_ROOT / "single_config"))
     builder_cls: Type[PieDatasetBuilder] = import_main_class(dataset_module.module_path)

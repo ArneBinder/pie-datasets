@@ -4,9 +4,9 @@ from collections import defaultdict
 from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datasets
-from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pytorch_ie.core import Annotation, AnnotationList, Document, annotation_field
-from pytorch_ie.documents import TextBasedDocument
+from pie_core import Annotation, AnnotationLayer, Document, annotation_field
+from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
+from pie_modules.documents import TextBasedDocument
 
 from pie_datasets import GeneratorBasedBuilder
 
@@ -37,22 +37,22 @@ class BratNote(Annotation):
 
 @dataclasses.dataclass
 class BratDocument(TextBasedDocument):
-    spans: AnnotationList[LabeledMultiSpan] = annotation_field(target="text")
-    relations: AnnotationList[BinaryRelation] = annotation_field(target="spans")
-    span_attributes: AnnotationList[BratAttribute] = annotation_field(target="spans")
-    relation_attributes: AnnotationList[BratAttribute] = annotation_field(target="relations")
-    notes: AnnotationList[BratNote] = annotation_field(
+    spans: AnnotationLayer[LabeledMultiSpan] = annotation_field(target="text")
+    relations: AnnotationLayer[BinaryRelation] = annotation_field(target="spans")
+    span_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="spans")
+    relation_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="relations")
+    notes: AnnotationLayer[BratNote] = annotation_field(
         targets=["spans", "relations", "span_attributes", "relation_attributes"]
     )
 
 
 @dataclasses.dataclass
 class BratDocumentWithMergedSpans(TextBasedDocument):
-    spans: AnnotationList[LabeledSpan] = annotation_field(target="text")
-    relations: AnnotationList[BinaryRelation] = annotation_field(target="spans")
-    span_attributes: AnnotationList[BratAttribute] = annotation_field(target="spans")
-    relation_attributes: AnnotationList[BratAttribute] = annotation_field(target="relations")
-    notes: AnnotationList[BratNote] = annotation_field(
+    spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
+    relations: AnnotationLayer[BinaryRelation] = annotation_field(target="spans")
+    span_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="spans")
+    relation_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="relations")
+    notes: AnnotationLayer[BratNote] = annotation_field(
         targets=["spans", "relations", "span_attributes", "relation_attributes"]
     )
 
