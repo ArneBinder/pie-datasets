@@ -3,8 +3,8 @@ from dataclasses import dataclass
 
 import pytest
 from pie_core import AnnotationLayer, annotation_field
-from pytorch_ie.annotations import LabeledSpan, Span
-from pytorch_ie.documents import TextBasedDocument
+from pie_modules.annotations import LabeledSpan, Span
+from pie_modules.documents import TextBasedDocument
 
 from pie_datasets import Dataset, IterableDataset
 

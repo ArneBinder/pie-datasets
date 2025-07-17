@@ -8,8 +8,8 @@ import pytest
 from datasets import DatasetBuilder, Version
 from datasets.load import dataset_module_factory, import_main_class
 from pie_core import AnnotationLayer, annotation_field
-from pytorch_ie.annotations import LabeledSpan, Span
-from pytorch_ie.documents import TextBasedDocument, TextDocumentWithSpans
+from pie_modules.annotations import LabeledSpan, Span
+from pie_modules.documents import TextBasedDocument, TextDocumentWithSpans
 
 from pie_datasets.core.builder import PieDatasetBuilder
 from tests import FIXTURES_ROOT

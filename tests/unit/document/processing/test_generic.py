@@ -2,8 +2,8 @@ import dataclasses
 
 import pytest
 from pie_core import AnnotationLayer, annotation_field
-from pytorch_ie.annotations import LabeledSpan
-from pytorch_ie.documents import TextBasedDocument, TextDocumentWithLabeledSpans
+from pie_modules.annotations import LabeledSpan
+from pie_modules.documents import TextBasedDocument, TextDocumentWithLabeledSpans
 
 from pie_datasets.document.processing import Caster, Converter, Pipeline
 

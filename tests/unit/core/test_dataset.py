@@ -5,9 +5,9 @@ from typing import Union
 
 import pytest
 from pie_core import AnnotationLayer, Document, TaskEncodingSequence, annotation_field
-from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
+from pie_modules.annotations import BinaryRelation, Label, LabeledSpan, Span
+from pie_modules.documents import TextBasedDocument
 from pytorch_ie.dataset import IterableTaskEncodingDataset, TaskEncodingDataset
-from pytorch_ie.documents import TextBasedDocument
 
 from pie_datasets import Dataset, IterableDataset
 from pie_datasets.core.dataset import (

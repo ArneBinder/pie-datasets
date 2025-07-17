@@ -2,9 +2,9 @@ from dataclasses import dataclass
 from typing import Type
 
 import datasets
-from pytorch_ie.annotations import LabeledSpan
+from pie_modules.annotations import LabeledSpan
 from pie_core import AnnotationLayer, annotation_field
-from pytorch_ie.documents import TextDocument
+from pie_modules.documents import TextDocument
 
 from pie_datasets import GeneratorBasedBuilder
 from tests import FIXTURES_ROOT

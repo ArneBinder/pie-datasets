@@ -5,8 +5,8 @@ from typing import Any, Dict, List, Optional, Tuple, Union
 
 import datasets
 from pie_core import Annotation, AnnotationLayer, Document, annotation_field
-from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pytorch_ie.documents import TextBasedDocument
+from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
+from pie_modules.documents import TextBasedDocument
 
 from pie_datasets import GeneratorBasedBuilder
 

@@ -6,8 +6,8 @@ from typing import Dict, Iterable, Optional, Union
 import datasets
 import pytest
 from pie_core import AnnotationLayer, Document, WithDocumentTypeMixin, annotation_field
-from pytorch_ie.annotations import Label, LabeledSpan
-from pytorch_ie.documents import TextBasedDocument, TextDocument
+from pie_modules.annotations import Label, LabeledSpan
+from pie_modules.documents import TextBasedDocument, TextDocument
 
 from pie_datasets import (
     Dataset,
