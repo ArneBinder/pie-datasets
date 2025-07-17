@@ -1,7 +1,8 @@
+import dataclasses
 import logging
 from typing import Union
 
-from pie_core import Document
+from pie_core import AnnotationLayer, Document, annotation_field
 from pie_modules.document.processing import (
     RegexPartitioner,
     RelationArgumentSorter,
@@ -16,7 +17,12 @@ from pie_modules.documents import (
 )
 
 from pie_datasets.builders import BratBuilder, BratConfig
-from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
+from pie_datasets.builders.brat import (
+    BratAttribute,
+    BratDocument,
+    BratDocumentWithMergedSpans,
+    BratNote,
+)
 from pie_datasets.core.dataset import DocumentConvertersType
 from pie_datasets.document.processing import Caster, Pipeline
 
@@ -24,6 +30,35 @@ logger = logging.getLogger(__name__)
 
 URL = "http://data.dws.informatik.uni-mannheim.de/sci-arg/compiled_corpus.zip"
 SPLIT_PATHS = {"train": "compiled_corpus"}
+
+
+@dataclasses.dataclass
+class ConvertedBratDocument(TextDocumentWithLabeledMultiSpansAndBinaryRelations):
+    span_attributes: AnnotationLayer[BratAttribute] = annotation_field(
+        target="labeled_multi_spans"
+    )
+    relation_attributes: AnnotationLayer[BratAttribute] = annotation_field(
+        target="binary_relations"
+    )
+    notes: AnnotationLayer[BratNote] = annotation_field(
+        targets=[
+            "labeled_multi_spans",
+            "binary_relations",
+            "span_attributes",
+            "relation_attributes",
+        ]
+    )
+
+
+@dataclasses.dataclass
+class ConvertedBratDocumentWithMergedSpans(TextDocumentWithLabeledSpansAndBinaryRelations):
+    span_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="labeled_spans")
+    relation_attributes: AnnotationLayer[BratAttribute] = annotation_field(
+        target="binary_relations"
+    )
+    notes: AnnotationLayer[BratNote] = annotation_field(
+        targets=["labeled_spans", "binary_relations", "span_attributes", "relation_attributes"]
+    )
 
 
 def get_common_converter_pipeline_steps(target_document_type: type[Document]) -> dict:
@@ -106,13 +141,36 @@ class SciArg(BratBuilder):
     def _generate_document(self, example, **kwargs):
         document = super()._generate_document(example, **kwargs)
         if self.config.resolve_parts_of_same:
-            document = SpansViaRelationMerger(
-                relation_layer="relations",
+            # we need to convert the document to a different type to be able to merge the spans:
+            # SpansViaRelationMerger expects the spans to be of type LabeledSpan,
+            # but the document has spans of type BratSpan
+            converted_doc = document.as_type(
+                ConvertedBratDocumentWithMergedSpans,
+                field_mapping={
+                    "spans": "labeled_spans",
+                    "relations": "binary_relations",
+                },
+                keep_remaining=True,
+            )
+            merged_document = SpansViaRelationMerger(
+                relation_layer="binary_relations",
                 link_relation_label="parts_of_same",
                 create_multi_spans=True,
-                result_document_type=BratDocument,
-                result_field_mapping={"spans": "spans", "relations": "relations"},
-            )(document)
+                result_document_type=ConvertedBratDocument,
+                result_field_mapping={
+                    "labeled_spans": "labeled_multi_spans",
+                    "binary_relations": "binary_relations",
+                    "span_attributes": "span_attributes",
+                    "relation_attributes": "relation_attributes",
+                    "notes": "notes",
+                },
+            )(converted_doc)
+            # convert back to BratDocument
+            document = merged_document.as_type(
+                BratDocument,
+                field_mapping={"labeled_multi_spans": "spans", "binary_relations": "relations"},
+                keep_remaining=True,
+            )
         else:
             # some documents have duplicate relations, remove them
             remove_duplicate_relations(document)
