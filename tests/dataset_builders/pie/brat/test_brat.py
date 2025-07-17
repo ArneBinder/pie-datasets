@@ -2,9 +2,9 @@ from typing import Any, Union
 
 import datasets
 import pytest
-from pytorch_ie.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pytorch_ie.core import Annotation
-from pytorch_ie.documents import TextBasedDocument
+from pie_core import Annotation
+from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
+from pie_modules.documents import TextBasedDocument
 
 from dataset_builders.pie.brat.brat import Brat
 from pie_datasets.builders.brat import (

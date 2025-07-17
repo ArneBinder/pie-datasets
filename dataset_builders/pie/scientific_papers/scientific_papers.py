@@ -2,13 +2,8 @@ import dataclasses
 from typing import Any, Dict, List
 
 import datasets
-from pytorch_ie.core import (
-    Annotation,
-    AnnotationLayer,
-    AnnotationList,
-    annotation_field,
-)
-from pytorch_ie.documents import TextBasedDocument
+from pie_core import Annotation, AnnotationLayer, annotation_field
+from pie_modules.documents import TextBasedDocument
 
 from pie_datasets import GeneratorBasedBuilder
 
@@ -38,7 +33,7 @@ class ScientificPapersDocument(TextBasedDocument):
     """A PIE document for scientific papers dataset."""
 
     abstract: AnnotationLayer[AbstractiveSummary] = annotation_field()
-    section_names: AnnotationList[SectionName] = annotation_field()
+    section_names: AnnotationLayer[SectionName] = annotation_field()
 
 
 def example_to_document(

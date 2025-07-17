@@ -1,1 +1,2 @@
-pie-datasets>=0.3.0,<0.11.0
+pie-datasets @ git+https://github.com/ArneBinder/pie-datasets@main
+pie-modules>=0.15.9,<0.16.0
