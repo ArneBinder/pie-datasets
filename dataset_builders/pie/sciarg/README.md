@@ -9,7 +9,7 @@ Therefore, the `sciarg` dataset as described here follows the data structure fro
 ```python
 from pie_datasets import load_dataset
 from pie_datasets.builders.brat import BratDocumentWithMergedSpans, BratDocument
-from pytorch_ie.documents import TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+from pie_modules.documents import TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
 
 # load default version
 dataset = load_dataset("pie/sciarg")
@@ -74,20 +74,20 @@ See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema)
 
 The dataset provides document converters for the following target document types:
 
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
   - `LabeledSpans`, converted from `BratDocument`'s `spans`
     - labels: `background_claim`, `own_claim`, `data`
     - if `spans` contain whitespace at the beginning and/or the end, the whitespace are trimmed out.
   - `BinraryRelations`, converted from `BratDocument`'s `relations`
     - labels: `supports`, `contradicts`, `semantically_same`, `parts_of_same`
     - if the `relations` label is `semantically_same` or `parts_of_same`, they are merged if they are the same arguments after sorting.
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
+- `pie_modules.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
   - `LabeledSpans`, as above
   - `BinaryRelations`, as above
   - `LabeledPartitions`, partitioned `BratDocument`'s `text`, according to the paragraph, using regex.
     - labels: `title`, `abstract`, `H1`
 
-See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
+See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
 definitions.
 
 ### Data Splits

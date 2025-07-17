@@ -2,10 +2,10 @@ from typing import List
 
 import pytest
 from datasets import disable_caching
+from pie_core import Document
+from pie_modules.annotations import BinaryRelation, LabeledSpan
 from pie_modules.document.processing import tokenize_document
-from pytorch_ie.annotations import BinaryRelation, LabeledSpan
-from pytorch_ie.core import Document
-from pytorch_ie.documents import (
+from pie_modules.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )

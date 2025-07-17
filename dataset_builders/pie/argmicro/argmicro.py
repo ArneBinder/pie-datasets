@@ -6,9 +6,9 @@ from itertools import combinations
 from typing import Any, Dict, List, Optional, Set, Tuple
 
 import datasets
-from pytorch_ie.annotations import BinaryRelation, Label, LabeledSpan, Span
-from pytorch_ie.core import Annotation, AnnotationList, annotation_field
-from pytorch_ie.documents import (
+from pie_core import Annotation, AnnotationLayer, annotation_field
+from pie_modules.annotations import BinaryRelation, Label, LabeledSpan, Span
+from pie_modules.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )
@@ -42,10 +42,10 @@ class MultiRelation(Annotation):
 @dataclasses.dataclass
 class ArgMicroDocument(TextBasedDocument):
     topic_id: Optional[str] = None
-    stance: AnnotationList[Label] = annotation_field()
-    edus: AnnotationList[Span] = annotation_field(target="text")
-    adus: AnnotationList[LabeledAnnotationCollection] = annotation_field(target="edus")
-    relations: AnnotationList[MultiRelation] = annotation_field(target="adus")
+    stance: AnnotationLayer[Label] = annotation_field()
+    edus: AnnotationLayer[Span] = annotation_field(target="text")
+    adus: AnnotationLayer[LabeledAnnotationCollection] = annotation_field(target="edus")
+    relations: AnnotationLayer[MultiRelation] = annotation_field(target="adus")
 
 
 def example_to_document(
