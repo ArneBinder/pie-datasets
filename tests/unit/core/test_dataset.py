@@ -7,7 +7,6 @@ import pytest
 from pie_core import AnnotationLayer, Document, TaskEncodingSequence, annotation_field
 from pie_modules.annotations import BinaryRelation, Label, LabeledSpan, Span
 from pie_modules.documents import TextBasedDocument
-from pytorch_ie.dataset import IterableTaskEncodingDataset, TaskEncodingDataset
 
 from pie_datasets import Dataset, IterableDataset
 from pie_datasets.core.dataset import (
@@ -336,9 +335,12 @@ def model_output():
 
 @pytest.mark.parametrize("encode_target", [False, True])
 @pytest.mark.parametrize("inplace", [False, True])
-@pytest.mark.parametrize("as_dataset", [False, True])
 def test_dataset_with_taskmodule(
-    maybe_iterable_dataset, taskmodule, model_output, encode_target, inplace, as_dataset
+    maybe_iterable_dataset,
+    taskmodule,
+    model_output,
+    encode_target,
+    inplace,
 ):
     def add_label(doc: TestDocumentWithLabel) -> TestDocumentWithLabel:
         # Add a label to the document
@@ -358,41 +360,20 @@ def test_dataset_with_taskmodule(
             with pytest.raises(
                 ValueError, match="can not return a TaskEncodingSequence as Iterator"
             ):
-                taskmodule.encode(
-                    train_dataset, encode_target=encode_target, as_dataset=as_dataset
-                )
-            return
-        if as_dataset:
-            with pytest.raises(
-                ValueError, match="can not return a TaskEncodingSequence as a dataset"
-            ):
-                taskmodule.encode(
-                    train_dataset, encode_target=encode_target, as_dataset=as_dataset
-                )
+                taskmodule.encode(train_dataset, encode_target=encode_target)
             return
 
-    task_encodings = taskmodule.encode(
-        train_dataset, encode_target=encode_target, as_dataset=as_dataset
-    )
+    task_encodings = taskmodule.encode(train_dataset, encode_target=encode_target)
 
     if as_iterator:
         if as_task_encoding_sequence:
             raise NotImplementedError("this is not yet implemented")
-        if as_dataset:
-            assert isinstance(task_encodings, IterableTaskEncodingDataset)
-        else:
-            assert isinstance(task_encodings, Iterator)
+        assert isinstance(task_encodings, Iterator)
     else:
-        if as_dataset:
-            if as_task_encoding_sequence:
-                raise NotImplementedError("this is not yet implemented")
-            else:
-                assert isinstance(task_encodings, TaskEncodingDataset)
+        if as_task_encoding_sequence:
+            assert isinstance(task_encodings, TaskEncodingSequence)
         else:
-            if as_task_encoding_sequence:
-                assert isinstance(task_encodings, TaskEncodingSequence)
-            else:
-                assert isinstance(task_encodings, Sequence)
+            assert isinstance(task_encodings, Sequence)
 
     task_encoding_list = list(task_encodings)
     assert len(task_encoding_list) == 8
