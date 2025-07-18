@@ -15,14 +15,14 @@ in order to support clinicians' daily tasks in information finding and evidence-
 ```python
 from pie_datasets import load_dataset
 from pie_datasets.builders.brat import BratDocumentWithMergedSpans
-from pytorch_ie.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+from pie_modules.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 # load default version
 dataset = load_dataset("pie/abstrct")
 assert isinstance(dataset["neoplasm_train"][0], BratDocumentWithMergedSpans)
 
 # if required, normalize the document type (see section Document Converters below)
-dataset_converted = dataset.to_document_type("pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations")
+dataset_converted = dataset.to_document_type("pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations")
 assert isinstance(dataset_converted["neoplasm_train"][0], TextDocumentWithLabeledSpansAndBinaryRelations)
 
 # get first relation in the first document
@@ -57,13 +57,13 @@ See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema)
 
 The dataset provides document converters for the following target document types:
 
-- `pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
   - `LabeledSpans`, converted from `BratDocumentWithMergedSpans`'s `spans`
     - labels: `MajorClaim`, `Claim`, `Premise`
   - `BinraryRelations`, converted from `BratDocumentWithMergedSpans`'s `relations`
     - labels: `Support`, `Partial-Attack`, `Attack`
 
-See [here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type definitions.
+See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type definitions.
 
 ### Data Splits
 
@@ -142,7 +142,7 @@ input:
   revision: 277dc703fd78614635e86fe57c636b54931538b2
 ```
 
-For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py)).
+For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py)).
 
 #### Relation argument (outer) token distance per label
 

@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 import datasets
-from pytorch_ie.annotations import Label
-from pytorch_ie.documents import TextDocumentWithLabel
+from pie_modules.annotations import Label
+from pie_modules.documents import TextDocumentWithLabel
 
 from pie_datasets import GeneratorBasedBuilder
 

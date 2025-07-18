@@ -16,7 +16,7 @@ and the following annotation layers:
 - `label` (annotation type: `Label`, target: `None`)
 
 See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) and
-[here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/annotations.py) for the annotation
+[here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) for the annotation
 type definitions.
 
 ## Document Converters
@@ -26,5 +26,5 @@ The dataset provides predefined document converters for the following target doc
 - `pie_modules.documents.ExtractiveQADocument` (simple cast without any conversion)
 
 See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) and
-[here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
+[here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
 definitions.

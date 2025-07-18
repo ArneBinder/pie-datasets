@@ -32,7 +32,7 @@ and the following annotation layers:
 - `type` (str): entity type classifying the expression
 
 See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) and
-[here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/annotations.py) for the annotation
+[here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) for the annotation
 type definitions.
 
 ## Document Converters
@@ -52,5 +52,5 @@ The dataset provides predefined document converters for the following target doc
     there is no rule is applicable (cf [here](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-323/tables/7)).
 
 See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) and
-[here](https://github.com/ChristophAlt/pytorch-ie/blob/main/src/pytorch_ie/documents.py) for the document type
+[here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
 definitions.
