@@ -1,11 +1,11 @@
 import dataclasses
 from collections import Counter
-from typing import Any, List, Optional, Sequence, Type
+from typing import Optional, Type
 
 import datasets
 import pytest
-from pie_core import Annotation, AnnotationLayer, Document, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan, Span
+from pie_core import AnnotationLayer, Document, annotation_field
+from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
 from pie_modules.document.processing import tokenize_document
 from pie_modules.documents import (
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
@@ -19,11 +19,7 @@ from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.sciarg.sciarg import SciArg, remove_duplicate_relations
 from pie_datasets import DatasetDict
-from pie_datasets.builders.brat import (
-    BratAttribute,
-    BratDocument,
-    BratDocumentWithMergedSpans,
-)
+from pie_datasets.builders.brat import BratDocument, BratDocumentWithMergedSpans
 from tests.dataset_builders.common import (
     PIE_BASE_PATH,
     PIE_DS_FIXTURE_DATA_PATH,
@@ -71,75 +67,6 @@ FULL_LABEL_COUNTS_CONVERTED = {
     for variant, counts in FULL_LABEL_COUNTS.items()
 }
 LABELED_PARTITION_COUNTS = {"Abstract": 40, "H1": 340, "Title": 40}
-
-
-def resolve_annotation(annotation: Annotation) -> Any:
-    if annotation.target is None:
-        return None
-    if isinstance(annotation, LabeledSpan):
-        return annotation.target[annotation.start : annotation.end], annotation.label
-    elif isinstance(annotation, LabeledMultiSpan):
-        return (
-            tuple(annotation.target[start:end] for start, end in annotation.slices),
-            annotation.label,
-        )
-    elif isinstance(annotation, BinaryRelation):
-        return (
-            resolve_annotation(annotation.head),
-            annotation.label,
-            resolve_annotation(annotation.tail),
-        )
-    elif isinstance(annotation, BratAttribute):
-        result = (resolve_annotation(annotation.annotation), annotation.label)
-        if annotation.value is not None:
-            return result + (annotation.value,)
-        else:
-            return result
-    elif isinstance(annotation, BinaryRelation):
-        return (
-            resolve_annotation(annotation.head),
-            annotation.label,
-            resolve_annotation(annotation.tail),
-        )
-    else:
-        raise TypeError(f"Unknown annotation type: {type(annotation)}")
-
-
-def sort_annotations(annotations: Sequence[Annotation]) -> List[Annotation]:
-    if len(annotations) == 0:
-        return []
-    annotation = annotations[0]
-    if isinstance(annotation, LabeledSpan):
-        return sorted(annotations, key=lambda a: (a.start, a.end, a.label))
-    elif isinstance(annotation, Span):
-        return sorted(annotations, key=lambda a: (a.start, a.end))
-    elif isinstance(annotation, LabeledMultiSpan):
-        return sorted(annotations, key=lambda a: (a.slices, a.label))
-    elif isinstance(annotation, BinaryRelation):
-        if isinstance(annotation.head, LabeledSpan) and isinstance(annotation.tail, LabeledSpan):
-            return sorted(
-                annotations,
-                key=lambda a: (a.head.start, a.head.end, a.label, a.tail.start, a.tail.end),
-            )
-        elif isinstance(annotation.head, LabeledMultiSpan) and isinstance(
-            annotation.tail, LabeledMultiSpan
-        ):
-            return sorted(
-                annotations,
-                key=lambda a: (a.head.slices, a.label, a.tail.slices),
-            )
-        else:
-            raise ValueError(
-                f"Unsupported relation type for BinaryRelation arguments: "
-                f"{type(annotation.head)}, {type(annotation.tail)}"
-            )
-    else:
-        raise ValueError(f"Unsupported annotation type: {type(annotation)}")
-
-
-def resolve_annotations(annotations: Sequence[Annotation]) -> List[Any]:
-    sorted_annotations = sort_annotations(annotations)
-    return [resolve_annotation(a) for a in sorted_annotations]
 
 
 @pytest.fixture(scope="module", params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS])
@@ -309,130 +236,186 @@ def test_converted_document(converted_document, dataset_variant):
         if isinstance(doc, TextDocumentWithLabeledSpansAndBinaryRelations):
             # check the entities
             assert len(doc.labeled_spans) == 183
+            # TODO: why do we need to sort, why is the order not deterministic?
             # sort the entities by their start position and convert them to tuples
             # check the first ten entities after sorted
-            sorted_entity_tuples = resolve_annotations(doc.labeled_spans)
+            sorted_entity_tuples = [ann.resolve() for ann in sorted(doc.labeled_spans)]
             # Checking the first ten entities
             assert sorted_entity_tuples[:10] == [
                 (
+                    "background_claim",
                     "complicated 3D character models are widely used in fields of entertainment, virtual reality, medicine etc",
-                    "background_claim",
                 ),
                 (
+                    "background_claim",
                     "The range of breathtaking realistic 3D models is only limited by the creativity of artists and resolution of devices",
-                    "background_claim",
                 ),
                 (
+                    "background_claim",
                     "Driving 3D models in a natural and believable manner is not trivial",
-                    "background_claim",
                 ),
-                ("the model is very detailed", "data"),
-                ("playback of animation becomes quite heavy and time consuming", "data"),
-                ("a frame goes wrong", "data"),
-                ("a production cannot afford major revisions", "background_claim"),
-                ("resculpting models", "data"),
-                ("re-rigging skeletons", "data"),
+                ("data", "the model is very detailed"),
+                ("data", "playback of animation becomes quite heavy and time consuming"),
+                ("data", "a frame goes wrong"),
+                ("background_claim", "a production cannot afford major revisions"),
+                ("data", "resculpting models"),
+                ("data", "re-rigging skeletons"),
                 (
-                    "providing a flexible and efficient solution to animation remains an open problem",
                     "own_claim",
+                    "providing a flexible and efficient solution to animation remains an open problem",
                 ),
             ]
 
             # check the relations
             assert len(doc.binary_relations) == 116
-            relation_tuples = resolve_annotations(doc.binary_relations)
+            sorted_relation_tuples = doc.binary_relations.resolve()
             # check the first ten relations
-            assert relation_tuples[:13] == [
+            assert sorted_relation_tuples[:13] == [
                 (
-                    ("the model is very detailed", "data"),
                     "supports",
                     (
-                        "Driving 3D models in a natural and believable manner is not trivial",
-                        "background_claim",
+                        ("background_claim", "a production cannot afford major revisions"),
+                        (
+                            "own_claim",
+                            "providing a flexible and efficient solution to animation remains an open problem",
+                        ),
                     ),
                 ),
                 (
-                    ("playback of animation becomes quite heavy and time consuming", "data"),
                     "supports",
                     (
-                        "Driving 3D models in a natural and believable manner is not trivial",
-                        "background_claim",
+                        ("data", "its ease of implementation"),
+                        (
+                            "background_claim",
+                            "SSD is widely used in games, virtual reality and other realtime applications",
+                        ),
                     ),
                 ),
                 (
-                    ("a frame goes wrong", "data"),
-                    "supports",
-                    ("a production cannot afford major revisions", "background_claim"),
-                ),
-                (
-                    ("a production cannot afford major revisions", "background_claim"),
                     "supports",
                     (
-                        "providing a flexible and efficient solution to animation remains an open problem",
-                        "own_claim",
+                        ("data", "low cost of computing"),
+                        (
+                            "background_claim",
+                            "SSD is widely used in games, virtual reality and other realtime applications",
+                        ),
                     ),
                 ),
                 (
-                    ("resculpting models", "data"),
-                    "supports",
-                    ("a production cannot afford major revisions", "background_claim"),
-                ),
-                (
-                    ("re-rigging skeletons", "data"),
-                    "supports",
-                    ("a production cannot afford major revisions", "background_claim"),
-                ),
-                (("1", "data"), "supports", ("A nice review of SSD is given", "background_claim")),
-                (
-                    (
-                        "SSD is widely used in games, virtual reality and other realtime applications",
-                        "background_claim",
-                    ),
                     "supports",
                     (
-                        "Skeleton Subspace Deformation (SSD) is the predominant approach to character skinning at present",
-                        "background_claim",
+                        (
+                            "background_claim",
+                            "editing in the rest pose will influence most other poses",
+                        ),
+                        ("background_claim", "This approach is not commonly applied"),
                     ),
                 ),
                 (
-                    ("its ease of implementation", "data"),
-                    "supports",
-                    (
-                        "SSD is widely used in games, virtual reality and other realtime applications",
-                        "background_claim",
-                    ),
-                ),
-                (
-                    ("low cost of computing", "data"),
-                    "supports",
-                    (
-                        "SSD is widely used in games, virtual reality and other realtime applications",
-                        "background_claim",
-                    ),
-                ),
-                (
-                    (
-                        "artists will edit the geometry of characters in the rest pose to fine-tune animations",
-                        "background_claim",
-                    ),
                     "contradicts",
-                    ("This approach is not commonly applied", "background_claim"),
-                ),
-                (
                     (
-                        "editing in the rest pose will influence most other poses",
-                        "background_claim",
+                        (
+                            "background_claim",
+                            "artists will edit the geometry of characters in the rest pose to fine-tune animations",
+                        ),
+                        ("background_claim", "This approach is not commonly applied"),
                     ),
-                    "supports",
-                    ("This approach is not commonly applied", "background_claim"),
                 ),
                 (
-                    ("For those applications that require visual fidelity", "background_claim"),
+                    "contradicts",
+                    (
+                        (
+                            "background_claim",
+                            "the animator specifies the PSD examples after the SSD has been performed",
+                        ),
+                        (
+                            "background_claim",
+                            "the examples are best interpolated in the rest pose, before the SSD has been applied",
+                        ),
+                    ),
+                ),
+                (
+                    "contradicts",
+                    (
+                        (
+                            "background_claim",
+                            "PSD may be used as a compensation to the underlying SSD",
+                        ),
+                        (
+                            "background_claim",
+                            "the examples are best interpolated in the rest pose, before the SSD has been applied",
+                        ),
+                    ),
+                ),
+                (
+                    "supports",
+                    (
+                        (
+                            "background_claim",
+                            "the examples are best interpolated in the rest pose, before the SSD has been applied",
+                        ),
+                        (
+                            "background_claim",
+                            "the action of the SSD and any other deformations must be “inverted” in order to push the example compensation before these operations",
+                        ),
+                    ),
+                ),
+                (
+                    "semantically_same",
+                    (
+                        (
+                            "own_claim",
+                            "this inverse strategy has a better performance than the same framework without it",
+                        ),
+                        ("own_claim", "this approach will improve the quality of deformation"),
+                    ),
+                ),
+                (
+                    "supports",
+                    (
+                        ("data", "the high cost of computing"),
+                        (
+                            "background_claim",
+                            "they are seldom applied to interactive applications",
+                        ),
+                    ),
+                ),
+                (
+                    "supports",
+                    (
+                        ("data", "complicated algorithms"),
+                        (
+                            "background_claim",
+                            "they are seldom applied to interactive applications",
+                        ),
+                    ),
+                ),
+                (
+                    "contradicts",
+                    (
+                        (
+                            "background_claim",
+                            "this category can generate more believable animation effects compared to its geometric counterpart",
+                        ),
+                        (
+                            "background_claim",
+                            "they are seldom applied to interactive applications",
+                        ),
+                    ),
+                ),
+                (
                     "parts_of_same",
-                    ("SSD serves only as a basic framework", "background_claim"),
+                    (
+                        ("background_claim", "Pose Space Deformation"),
+                        (
+                            "background_claim",
+                            "combines shape blending and Skeleton Subspace Deformation by formulating a scattered data interpolation problem over sculpted (or otherwise obtained) example poses",
+                        ),
+                    ),
                 ),
             ]
-            counter = Counter([rt[1] for rt in relation_tuples])
+
+            counter = Counter([rt[0] for rt in sorted_relation_tuples])
             assert dict(counter) == {
                 "supports": 93,
                 "contradicts": 8,
@@ -444,253 +427,169 @@ def test_converted_document(converted_document, dataset_variant):
         else:
             raise ValueError(f"Unknown document type: {type(doc)}")
     elif dataset_variant == "resolve_parts_of_same":
-        # if isinstance(doc, TextDocumentWithLabeledSpansAndBinaryRelations):
-        #     # check the entities
-        #     assert len(doc.labeled_spans) == 177
-        #     # sort the labeled spans by their start position and convert them to tuples
-        #     sorted_entity_tuples = resolve_annotations(doc.labeled_spans)
-        #     # check the first ten entities
-        #     assert sorted_entity_tuples[:10] == [
-        #         (
-        #             "complicated 3D character models are widely used in fields of entertainment, virtual reality, medicine etc",
-        #             "background_claim",
-        #         ),
-        #         (
-        #             "The range of breathtaking realistic 3D models is only limited by the creativity of artists and resolution of devices",
-        #             "background_claim",
-        #         ),
-        #         (
-        #             "Driving 3D models in a natural and believable manner is not trivial",
-        #             "background_claim",
-        #         ),
-        #         ("the model is very detailed", "data"),
-        #         ("playback of animation becomes quite heavy and time consuming", "data"),
-        #         ("a frame goes wrong", "data"),
-        #         ("a production cannot afford major revisions", "background_claim"),
-        #         ("resculpting models", "data"),
-        #         ("re-rigging skeletons", "data"),
-        #         (
-        #             "providing a flexible and efficient solution to animation remains an open problem",
-        #             "own_claim",
-        #         ),
-        #     ]
-        #
-        #     # this comes out of the 13th relation which is a parts_of_same relation (see above)
-        #     assert sorted_entity_tuples[20] == (
-        #         "For those applications that require visual fidelity, such as movies, SSD serves only as a basic framework",
-        #         "background_claim",
-        #     )
-        #
-        #     # check the relations
-        #     assert len(doc.binary_relations) == 110
-        #     relation_tuples = resolve_annotations(doc.binary_relations)
-        #     # check the first ten relations
-        #     assert relation_tuples[:10] == [
-        #         (
-        #             ("the model is very detailed", "data"),
-        #             "supports",
-        #             (
-        #                 "Driving 3D models in a natural and believable manner is not trivial",
-        #                 "background_claim",
-        #             ),
-        #         ),
-        #         (
-        #             ("playback of animation becomes quite heavy and time consuming", "data"),
-        #             "supports",
-        #             (
-        #                 "Driving 3D models in a natural and believable manner is not trivial",
-        #                 "background_claim",
-        #             ),
-        #         ),
-        #         (
-        #             ("a frame goes wrong", "data"),
-        #             "supports",
-        #             ("a production cannot afford major revisions", "background_claim"),
-        #         ),
-        #         (
-        #             ("a production cannot afford major revisions", "background_claim"),
-        #             "supports",
-        #             (
-        #                 "providing a flexible and efficient solution to animation remains an open problem",
-        #                 "own_claim",
-        #             ),
-        #         ),
-        #         (
-        #             ("resculpting models", "data"),
-        #             "supports",
-        #             ("a production cannot afford major revisions", "background_claim"),
-        #         ),
-        #         (
-        #             ("re-rigging skeletons", "data"),
-        #             "supports",
-        #             ("a production cannot afford major revisions", "background_claim"),
-        #         ),
-        #         (("1", "data"), "supports", ("A nice review of SSD is given", "background_claim")),
-        #         (
-        #             (
-        #                 "SSD is widely used in games, virtual reality and other realtime applications",
-        #                 "background_claim",
-        #             ),
-        #             "supports",
-        #             (
-        #                 "Skeleton Subspace Deformation (SSD) is the predominant approach to character skinning at present",
-        #                 "background_claim",
-        #             ),
-        #         ),
-        #         (
-        #             ("its ease of implementation", "data"),
-        #             "supports",
-        #             (
-        #                 "SSD is widely used in games, virtual reality and other realtime applications",
-        #                 "background_claim",
-        #             ),
-        #         ),
-        #         (
-        #             ("low cost of computing", "data"),
-        #             "supports",
-        #             (
-        #                 "SSD is widely used in games, virtual reality and other realtime applications",
-        #                 "background_claim",
-        #             ),
-        #         ),
-        #     ]
-        #     counter = Counter([rt[1] for rt in relation_tuples])
-        #     assert dict(counter) == {"supports": 93, "contradicts": 8, "semantically_same": 9}
 
         if isinstance(doc, TextDocumentWithLabeledMultiSpansAndBinaryRelations):
             # check the entities
             assert len(doc.labeled_multi_spans) == 177
+            # TODO: why do we need to sort, why is the order not deterministic?
             # sort the labeled spans by their start position and convert them to tuples
-            sorted_span_tuples = resolve_annotations(doc.labeled_multi_spans)
+            sorted_span_tuples = [ann.resolve() for ann in sorted(doc.labeled_multi_spans)]
             # check the first ten entities
             assert sorted_span_tuples[:10] == [
                 (
+                    "background_claim",
                     (
                         "complicated 3D character models are widely used in fields of entertainment, virtual reality, medicine etc",
                     ),
-                    "background_claim",
                 ),
                 (
+                    "background_claim",
                     (
                         "The range of breathtaking realistic 3D models is only limited by the creativity of artists and resolution of devices",
                     ),
-                    "background_claim",
                 ),
                 (
+                    "background_claim",
                     ("Driving 3D models in a natural and believable manner is not trivial",),
-                    "background_claim",
                 ),
-                (("the model is very detailed",), "data"),
-                (("playback of animation becomes quite heavy and time consuming",), "data"),
-                (("a frame goes wrong",), "data"),
-                (("a production cannot afford major revisions",), "background_claim"),
-                (("resculpting models",), "data"),
-                (("re-rigging skeletons",), "data"),
+                ("data", ("the model is very detailed",)),
+                ("data", ("playback of animation becomes quite heavy and time consuming",)),
+                ("data", ("a frame goes wrong",)),
+                ("background_claim", ("a production cannot afford major revisions",)),
+                ("data", ("resculpting models",)),
+                ("data", ("re-rigging skeletons",)),
                 (
+                    "own_claim",
                     (
                         "providing a flexible and efficient solution to animation remains an open problem",
                     ),
-                    "own_claim",
                 ),
             ]
 
             # this comes out of the 13th relation which is a parts_of_same relation (see above)
             assert sorted_span_tuples[20] == (
+                "background_claim",
                 (
                     "For those applications that require visual fidelity",
                     "SSD serves only as a basic framework",
                 ),
-                "background_claim",
             )
 
             # check the relations
             assert len(doc.binary_relations) == 110
-            relation_tuples = resolve_annotations(doc.binary_relations)
+            # TODO: why do we need to sort, why is the order not deterministic?
+            # sort the relations by their head and tail and convert them to tuples
+            sorted_relation_tuples = [ann.resolve() for ann in sorted(doc.binary_relations)]
             # check the first ten relations
-            assert relation_tuples[:10] == [
+            assert sorted_relation_tuples[:10] == [
                 (
-                    (("the model is very detailed",), "data"),
                     "supports",
                     (
-                        ("Driving 3D models in a natural and believable manner is not trivial",),
-                        "background_claim",
+                        ("data", ("the model is very detailed",)),
+                        (
+                            "background_claim",
+                            (
+                                "Driving 3D models in a natural and believable manner is not trivial",
+                            ),
+                        ),
                     ),
                 ),
                 (
-                    (("playback of animation becomes quite heavy and time consuming",), "data"),
-                    "supports",
-                    (
-                        ("Driving 3D models in a natural and believable manner is not trivial",),
-                        "background_claim",
-                    ),
-                ),
-                (
-                    (("a frame goes wrong",), "data"),
-                    "supports",
-                    (("a production cannot afford major revisions",), "background_claim"),
-                ),
-                (
-                    (("a production cannot afford major revisions",), "background_claim"),
                     "supports",
                     (
                         (
-                            "providing a flexible and efficient solution to animation remains an open problem",
+                            "data",
+                            ("playback of animation becomes quite heavy and time consuming",),
                         ),
-                        "own_claim",
+                        (
+                            "background_claim",
+                            (
+                                "Driving 3D models in a natural and believable manner is not trivial",
+                            ),
+                        ),
                     ),
                 ),
                 (
-                    (("resculpting models",), "data"),
-                    "supports",
-                    (("a production cannot afford major revisions",), "background_claim"),
-                ),
-                (
-                    (("re-rigging skeletons",), "data"),
-                    "supports",
-                    (("a production cannot afford major revisions",), "background_claim"),
-                ),
-                (
-                    (("1",), "data"),
-                    "supports",
-                    (("A nice review of SSD is given",), "background_claim"),
-                ),
-                (
-                    (
-                        (
-                            "SSD is widely used in games, virtual reality and other realtime applications",
-                        ),
-                        "background_claim",
-                    ),
                     "supports",
                     (
-                        (
-                            "Skeleton Subspace Deformation (SSD) is the predominant approach to character skinning at present",
-                        ),
-                        "background_claim",
+                        ("data", ("a frame goes wrong",)),
+                        ("background_claim", ("a production cannot afford major revisions",)),
                     ),
                 ),
                 (
-                    (("its ease of implementation",), "data"),
                     "supports",
                     (
+                        ("background_claim", ("a production cannot afford major revisions",)),
                         (
-                            "SSD is widely used in games, virtual reality and other realtime applications",
+                            "own_claim",
+                            (
+                                "providing a flexible and efficient solution to animation remains an open problem",
+                            ),
                         ),
-                        "background_claim",
                     ),
                 ),
                 (
-                    (("low cost of computing",), "data"),
+                    "supports",
+                    (
+                        ("data", ("resculpting models",)),
+                        ("background_claim", ("a production cannot afford major revisions",)),
+                    ),
+                ),
+                (
+                    "supports",
+                    (
+                        ("data", ("re-rigging skeletons",)),
+                        ("background_claim", ("a production cannot afford major revisions",)),
+                    ),
+                ),
+                (
+                    "supports",
+                    (("data", ("1",)), ("background_claim", ("A nice review of SSD is given",))),
+                ),
+                (
                     "supports",
                     (
                         (
-                            "SSD is widely used in games, virtual reality and other realtime applications",
+                            "background_claim",
+                            (
+                                "SSD is widely used in games, virtual reality and other realtime applications",
+                            ),
                         ),
-                        "background_claim",
+                        (
+                            "background_claim",
+                            (
+                                "Skeleton Subspace Deformation (SSD) is the predominant approach to character skinning at present",
+                            ),
+                        ),
+                    ),
+                ),
+                (
+                    "supports",
+                    (
+                        ("data", ("its ease of implementation",)),
+                        (
+                            "background_claim",
+                            (
+                                "SSD is widely used in games, virtual reality and other realtime applications",
+                            ),
+                        ),
+                    ),
+                ),
+                (
+                    "supports",
+                    (
+                        ("data", ("low cost of computing",)),
+                        (
+                            "background_claim",
+                            (
+                                "SSD is widely used in games, virtual reality and other realtime applications",
+                            ),
+                        ),
                     ),
                 ),
             ]
-            counter = Counter([rt[1] for rt in relation_tuples])
+
+            counter = Counter([rt[0] for rt in sorted_relation_tuples])
             assert dict(counter) == {"supports": 93, "contradicts": 8, "semantically_same": 9}
         elif doc is None:
             pass
