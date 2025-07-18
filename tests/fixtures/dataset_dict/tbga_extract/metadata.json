@@ -1,3 +1,3 @@
 {
-  "document_type": "pytorch_ie.documents.TextDocumentWithLabeledSpansAndBinaryRelations"
+  "document_type": "pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations"
 }
