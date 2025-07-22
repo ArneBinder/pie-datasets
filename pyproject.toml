@@ -24,8 +24,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-# TODO: require pie-core >=0.2.0,<0.3.0 and move pie-modules to dev dependencies
-pie-modules = ">=0.15.9,<0.16.0"
+pie-core = ">=0.2.0,<0.3.0"
 # <2.16.0 because of https://github.com/ArneBinder/pie-datasets/issues/93
 datasets = ">=2.14.0,<2.16.0"
 # should not be necessary, but see https://github.com/ArneBinder/pie-datasets/issues/164
@@ -39,6 +38,7 @@ pyarrow = "^13"
 optional = true
 
 [tool.poetry.group.dev.dependencies]
+pie-modules = ">=0.15.9,<0.16.0"
 pytest = "^7.4.2"
 pytest-cov = "^4.1.0"
 pre-commit = "^3.4.0"
