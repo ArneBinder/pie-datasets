@@ -2,7 +2,6 @@ from typing import Union
 
 import datasets
 import pytest
-from pie_modules.documents import TextBasedDocument
 
 from dataset_builders.pie.brat.brat import Brat
 from pie_datasets.builders.brat import (
@@ -184,6 +183,9 @@ def test_example_to_document_and_back_all(hf_dataset, merge_fragmented_spans):
     for split_name, split in hf_dataset.items():
         for hf_example in split:
             doc = example_to_document(hf_example, merge_fragmented_spans=merge_fragmented_spans)
-            assert isinstance(doc, TextBasedDocument)
+            if merge_fragmented_spans:
+                assert isinstance(doc, BratDocumentWithMergedSpans)
+            else:
+                assert isinstance(doc, BratDocument)
             hf_example_back = document_to_example(doc)
             assert hf_example == hf_example_back
