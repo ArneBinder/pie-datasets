@@ -1,5 +1,5 @@
 import logging
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from functools import wraps
 from inspect import Signature, isclass, signature
 from typing import (
@@ -16,9 +16,12 @@ from typing import (
 )
 
 import datasets
-import pandas as pd
 from datasets.formatting import _register_formatter
 from pie_core import Document
+from pie_core.utils.dictionary import (
+    dict_of_lists2list_of_dicts,
+    list_of_dicts2dict_of_lists,
+)
 
 from .document_formatter import DocumentFormatter
 
@@ -27,51 +30,41 @@ logger = logging.getLogger(__name__)
 _register_formatter(DocumentFormatter, "document")
 
 
-def decorate_convert_to_dict_of_lists(f):
-    """Decorate the mapped function, so that converts a single Document to a dict, and a list of
-    Documents into a dict of lists."""
+def decorate_convert_document_back(f):
+    """Decorate the mapped function, so that its return value is converted back to a dict.
+
+    If the input is a list, it converts the list of Documents to a dict of lists.
+    """
 
     @wraps(f)
     def decorated(item, *args, **kwargs):
         if isinstance(item, list):
-            # Convert a list of dicts into a dict of lists.
-            return pd.DataFrame([e.asdict() for e in f(item, *args, **kwargs)]).to_dict(
-                orient="list"
-            )
+            return list_of_dicts2dict_of_lists([e.asdict() for e in f(item, *args, **kwargs)])
         else:
             return f(item, *args, **kwargs).asdict()
 
     return decorated
 
 
-E = TypeVar("E")
-
-
-def dl_to_ld(dict_list: Dict[str, List[E]]) -> List[Dict[str, E]]:
-    # Convert a dict of lists to a list of dicts
-    return [dict(zip(dict_list, t)) for t in zip(*dict_list.values())]
-
-
-def ld_to_dl(
-    list_dict: List[Dict[str, E]], keys: Optional[Iterable[str]] = None
-) -> Dict[str, List[E]]:
-    # Convert a list of dicts to a dict of lists.
-    # Provide keys to create the expected format when lists are empty.
-    if keys is None:
-        keys = list_dict[0]
-    return {k: [dic[k] for dic in list_dict] for k in keys}
-
-
 def decorate_convert_to_document_and_back(f, document_type: Type[Document], batched: bool):
+    """Decorate the mapped function, so that it converts a dict to a Document and the result back
+    to a dict.
+
+    If batched is True, it converts a list of dicts to a list of Documents and the result back to a
+    dict of lists.
+    """
+
     @wraps(f)
     def decorated(item, *args, **kwargs):
         if batched:
             # Convert a list of dicts into a dict of lists.
-            return ld_to_dl(
+            return list_of_dicts2dict_of_lists(
                 [
                     e.asdict()
                     for e in f(
-                        [document_type.fromdict(x) for x in dl_to_ld(item)], *args, **kwargs
+                        [document_type.fromdict(x) for x in dict_of_lists2list_of_dicts(item)],
+                        *args,
+                        **kwargs,
                     )
                 ],
                 # passing the keys allows to work correctly with empty lists
@@ -384,7 +377,7 @@ class Dataset(datasets.Dataset, Sequence[D]):
     ) -> "Dataset":
         dataset = super().map(
             function=(
-                decorate_convert_to_dict_of_lists(function)
+                decorate_convert_document_back(function)
                 if as_documents and function is not None
                 else function
             ),
