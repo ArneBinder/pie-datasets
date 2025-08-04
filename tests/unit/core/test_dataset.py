@@ -80,6 +80,29 @@ def test_dataset_map_batched(maybe_iterable_dataset):
     assert sum(len(doc.relations) for doc in train_dataset) == 7
 
 
+def test_empty_dataset_map(maybe_iterable_empty_dataset):
+    train_dataset = maybe_iterable_empty_dataset["train"]
+    assert train_dataset.document_type is TestDocument
+
+    def clear_relations(document):
+        document.relations.clear()
+        return document
+
+    mapped_dataset = train_dataset.map(clear_relations)
+    assert mapped_dataset.document_type is TestDocument
+
+
+def test_empty_dataset_map_batched(maybe_iterable_empty_dataset):
+    train_dataset = maybe_iterable_empty_dataset["train"]
+    assert train_dataset.document_type is TestDocument
+
+    def clear_relations_batched(documents):
+        return documents
+
+    mapped_dataset = train_dataset.map(clear_relations_batched, batched=True, batch_size=2)
+    assert mapped_dataset.document_type is TestDocument
+
+
 def test_dataset_map_with_result_document_type(maybe_iterable_dataset):
     @dataclass
     class TestDocument(TextBasedDocument):
