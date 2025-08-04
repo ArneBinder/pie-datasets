@@ -38,10 +38,17 @@ def decorate_convert_document_back(f):
 
     @wraps(f)
     def decorated(item, *args, **kwargs):
-        if isinstance(item, list):
-            return list_of_dicts2dict_of_lists([e.asdict() for e in f(item, *args, **kwargs)])
+        doc_or_docs = f(item, *args, **kwargs)
+        if isinstance(doc_or_docs, Document):
+            return doc_or_docs.asdict()
+        elif isinstance(doc_or_docs, list):
+            # if the result is a list, we assume that the output is a list of Documents
+            # and convert it to a dict of lists
+            return list_of_dicts2dict_of_lists([e.asdict() for e in doc_or_docs])
         else:
-            return f(item, *args, **kwargs).asdict()
+            raise TypeError(
+                f"The function {f} should return a Document or a list of Documents, but returned {type(doc_or_docs)}"
+            )
 
     return decorated
 
