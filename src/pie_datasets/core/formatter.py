@@ -27,9 +27,7 @@ class TaskEncodingFormatter(Formatter[TaskEncoding, List, List[TaskEncoding]]):
         super().__init__(features=None)
 
     def construct_task_encoding(self, row: Dict[str, Any]) -> TaskEncoding:
-        return TaskEncoding(
-            document=Document(), inputs=row["inputs"], targets=row.get("targets", None)
-        )
+        return TaskEncoding(inputs=row["inputs"], targets=row.get("targets", None))
 
     def format_row(self, pa_table: pa.Table) -> TaskEncoding:
         row = self.python_arrow_extractor().extract_row(pa_table)
