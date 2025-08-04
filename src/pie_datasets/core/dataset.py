@@ -366,6 +366,20 @@ class Dataset(datasets.Dataset, Sequence[D]):
             **kwargs,
         )
 
+    def map_to_hf(
+        self, function: Optional[Callable] = None, as_documents: bool = True, **map_kwargs
+    ) -> datasets.Dataset:
+        """Map the dataset using a function and return a Huggingface Dataset.
+
+        Args:
+            function (Optional[Callable], optional): The function to apply to each example. Defaults to None.
+            as_documents (bool, optional): Whether the function returns documents. Defaults to True.
+            **map_kwargs: Additional keyword arguments for the Huggingface Dataset.map method.
+        """
+        if function is not None and as_documents:
+            function = decorate_convert_document_back(function)
+        return super().map(function=function, **map_kwargs)
+
     def map(
         self,
         function: Optional[Callable] = None,
@@ -390,10 +404,9 @@ class Dataset(datasets.Dataset, Sequence[D]):
         as_documents: bool = True,
         result_document_type: Optional[Type[Document]] = None,
     ) -> "Dataset":
-        if function is not None and as_documents:
-            function = decorate_convert_document_back(function)
-        dataset = super().map(
+        dataset = self.map_to_hf(
             function=function,
+            as_documents=as_documents,
             with_indices=with_indices,
             with_rank=with_rank,
             input_columns=input_columns,
@@ -589,14 +602,21 @@ class IterableDataset(datasets.IterableDataset):
             **kwargs,
         )
 
-    def map(  # type: ignore
+    def map_to_hf(
         self,
         function: Optional[Callable] = None,
-        batched: bool = False,
         as_documents: bool = True,
-        result_document_type: Optional[Type[Document]] = None,
-        **kwargs,
-    ) -> "IterableDataset":
+        batched: bool = False,
+        **map_kwargs,
+    ) -> datasets.IterableDataset:
+        """Map the dataset using a function and return a Huggingface IterableDataset.
+
+        Args:
+            function (Optional[Callable], optional): The function to apply to each example. Defaults to None.
+            as_documents (bool, optional): Whether the function returns documents. Defaults to True.
+            batched (bool, optional): Whether to apply the function in batches. Defaults to False.
+            **map_kwargs: Additional keyword arguments for the Huggingface IterableDataset.map method.
+        """
         if function is not None:
             if as_documents:
                 function = decorate_convert_to_document_and_back(
@@ -606,11 +626,15 @@ class IterableDataset(datasets.IterableDataset):
                 function = decorate_convert_to_document(
                     function, document_type=self.document_type, batched=batched
                 )
-        dataset_mapped = super().map(
-            function=function,
-            batched=batched,
-            **kwargs,
-        )
+        return super().map(function=function, batched=batched, **map_kwargs)
+
+    def map(  # type: ignore
+        self,
+        function: Optional[Callable] = None,
+        result_document_type: Optional[Type[Document]] = None,
+        **map_kwargs,
+    ) -> "IterableDataset":
+        dataset_mapped = self.map_to_hf(**map_kwargs)
 
         if result_document_type is None:
             result_document_type = self.document_type
