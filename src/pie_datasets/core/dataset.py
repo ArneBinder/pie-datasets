@@ -46,6 +46,25 @@ def decorate_convert_document_back(f):
     return decorated
 
 
+def decorate_convert_to_document(f, document_type: Type[Document], batched: bool):
+    """Decorate the mapped function, so that it converts a dict to a Document.
+
+    If batched is True, it converts a list of dicts to a list of Documents.
+    """
+
+    @wraps(f)
+    def decorated(item, *args, **kwargs):
+        if batched:
+            return [
+                document_type.fromdict(x)
+                for x in f(dict_of_lists2list_of_dicts(item), *args, **kwargs)
+            ]
+        else:
+            return document_type.fromdict(item)
+
+    return decorated
+
+
 def decorate_convert_to_document_and_back(f, document_type: Type[Document], batched: bool):
     """Decorate the mapped function, so that it converts a dict to a Document and the result back
     to a dict.
@@ -71,7 +90,16 @@ def decorate_convert_to_document_and_back(f, document_type: Type[Document], batc
                 keys=item.keys(),
             )
         else:
-            return f(document_type.fromdict(item), *args, **kwargs).asdict()
+            # given a single input, the function may still return a list of Documents
+            doc_or_docs = f(document_type.fromdict(item), *args, **kwargs)
+            if isinstance(doc_or_docs, Document):
+                return doc_or_docs.asdict()
+            elif isinstance(doc_or_docs, list):
+                return list_of_dicts2dict_of_lists([doc.asdict() for doc in doc_or_docs])
+            else:
+                raise TypeError(
+                    f"The function {f} should return a Document or a list of Documents, but returned {type(doc_or_docs)}"
+                )
 
     return decorated
 
@@ -375,12 +403,10 @@ class Dataset(datasets.Dataset, Sequence[D]):
         as_documents: bool = True,
         result_document_type: Optional[Type[Document]] = None,
     ) -> "Dataset":
+        if function is not None and as_documents:
+            function = decorate_convert_document_back(function)
         dataset = super().map(
-            function=(
-                decorate_convert_document_back(function)
-                if as_documents and function is not None
-                else function
-            ),
+            function=function,
             with_indices=with_indices,
             with_rank=with_rank,
             input_columns=input_columns,
@@ -584,14 +610,17 @@ class IterableDataset(datasets.IterableDataset):
         result_document_type: Optional[Type[Document]] = None,
         **kwargs,
     ) -> "IterableDataset":
-        dataset_mapped = super().map(
-            function=(
-                decorate_convert_to_document_and_back(
+        if function is not None:
+            if as_documents:
+                function = decorate_convert_to_document_and_back(
                     function, document_type=self.document_type, batched=batched
                 )
-                if as_documents and function is not None
-                else function
-            ),
+            else:
+                function = decorate_convert_to_document(
+                    function, document_type=self.document_type, batched=batched
+                )
+        dataset_mapped = super().map(
+            function=function,
             batched=batched,
             **kwargs,
         )
