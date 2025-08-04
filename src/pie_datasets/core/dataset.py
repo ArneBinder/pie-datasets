@@ -634,7 +634,7 @@ class IterableDataset(datasets.IterableDataset):
         result_document_type: Optional[Type[Document]] = None,
         **map_kwargs,
     ) -> "IterableDataset":
-        dataset_mapped = self.map_to_hf(**map_kwargs)
+        dataset_mapped = self.map_to_hf(function=function, **map_kwargs)
 
         if result_document_type is None:
             result_document_type = self.document_type
