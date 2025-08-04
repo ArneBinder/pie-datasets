@@ -2,8 +2,7 @@ from typing import Any, Dict, List
 
 import pyarrow as pa
 from datasets.formatting.formatting import Formatter
-from pytorch_ie import TaskEncoding
-from pytorch_ie.core.document import Document
+from pie_core import Document, TaskEncoding
 
 
 class DocumentFormatter(Formatter[Document, list, List[Document]]):
