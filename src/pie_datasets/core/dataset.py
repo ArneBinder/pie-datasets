@@ -62,12 +62,10 @@ def decorate_convert_to_document(f, document_type: Type[Document], batched: bool
     @wraps(f)
     def decorated(item, *args, **kwargs):
         if batched:
-            return [
-                document_type.fromdict(x)
-                for x in f(dict_of_lists2list_of_dicts(item), *args, **kwargs)
-            ]
+            items = dict_of_lists2list_of_dicts(item)
+            return f([document_type.fromdict(e) for e in items], *args, **kwargs)
         else:
-            return document_type.fromdict(item)
+            return f(document_type.fromdict(item), *args, **kwargs)
 
     return decorated
 
