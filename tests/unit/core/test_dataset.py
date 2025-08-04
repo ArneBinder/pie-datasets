@@ -5,6 +5,7 @@ from typing import Union
 
 import pytest
 from pie_core import AnnotationLayer, Document, TaskEncodingSequence, annotation_field
+from pie_core.utils.dictionary import list_of_dicts2dict_of_lists
 from pie_modules.annotations import BinaryRelation, Label, LabeledSpan, Span
 from pie_modules.documents import TextBasedDocument
 
@@ -48,33 +49,26 @@ def test_dataset_index(dataset):
     assert [doc.id for doc in train_dataset[2:5]] == ["train_doc3", "train_doc4", "train_doc5"]
 
 
-def test_dataset_map(maybe_iterable_dataset):
+def clear_relations(document):
+    document.relations.clear()
+    return document
+
+
+def clear_relations_return_dict(document):
+    document.relations.clear()
+    return document.asdict()
+
+
+@pytest.mark.parametrize("as_documents", [True, False])
+def test_dataset_map(maybe_iterable_dataset, as_documents):
     train_dataset = maybe_iterable_dataset["train"]
 
-    def clear_relations(document):
-        document.relations.clear()
-        return document
-
     assert sum(len(doc.relations) for doc in train_dataset) == 7
 
-    mapped_dataset1 = train_dataset.map(clear_relations)
-
-    assert sum(len(doc.relations) for doc in mapped_dataset1) == 0
-    assert sum(len(doc.relations) for doc in train_dataset) == 7
-
-
-def test_dataset_map_batched(maybe_iterable_dataset):
-    train_dataset = maybe_iterable_dataset["train"]
-
-    def clear_relations_batched(documents):
-        assert len(documents) == 2
-        for document in documents:
-            document.relations.clear()
-        return documents
-
-    assert sum(len(doc.relations) for doc in train_dataset) == 7
-
-    mapped_dataset1 = train_dataset.map(clear_relations_batched, batched=True, batch_size=2)
+    if as_documents:
+        mapped_dataset1 = train_dataset.map(clear_relations, as_documents=as_documents)
+    else:
+        mapped_dataset1 = train_dataset.map(clear_relations_return_dict, as_documents=as_documents)
 
     assert sum(len(doc.relations) for doc in mapped_dataset1) == 0
     assert sum(len(doc.relations) for doc in train_dataset) == 7
@@ -84,20 +78,46 @@ def test_empty_dataset_map(maybe_iterable_empty_dataset):
     train_dataset = maybe_iterable_empty_dataset["train"]
     assert train_dataset.document_type is TestDocument
 
-    def clear_relations(document):
-        document.relations.clear()
-        return document
-
     mapped_dataset = train_dataset.map(clear_relations)
     assert mapped_dataset.document_type is TestDocument
+
+
+def clear_relations_batched(documents):
+    assert len(documents) == 2
+    for document in documents:
+        document.relations.clear()
+    return documents
+
+
+def clear_relations_batched_dict(documents):
+    assert len(documents) == 2
+    for document in documents:
+        document.relations.clear()
+    return list_of_dicts2dict_of_lists([doc.asdict() for doc in documents])
+
+
+@pytest.mark.parametrize("as_documents", [True, False])
+def test_dataset_map_batched(maybe_iterable_dataset, as_documents):
+    train_dataset = maybe_iterable_dataset["train"]
+
+    assert sum(len(doc.relations) for doc in train_dataset) == 7
+
+    if as_documents:
+        mapped_dataset1 = train_dataset.map(
+            clear_relations_batched, batched=True, batch_size=2, as_documents=as_documents
+        )
+    else:
+        mapped_dataset1 = train_dataset.map(
+            clear_relations_batched_dict, batched=True, batch_size=2, as_documents=as_documents
+        )
+
+    assert sum(len(doc.relations) for doc in mapped_dataset1) == 0
+    assert sum(len(doc.relations) for doc in train_dataset) == 7
 
 
 def test_empty_dataset_map_batched(maybe_iterable_empty_dataset):
     train_dataset = maybe_iterable_empty_dataset["train"]
     assert train_dataset.document_type is TestDocument
-
-    def clear_relations_batched(documents):
-        return documents
 
     mapped_dataset = train_dataset.map(clear_relations_batched, batched=True, batch_size=2)
     assert mapped_dataset.document_type is TestDocument
