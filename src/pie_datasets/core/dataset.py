@@ -42,8 +42,6 @@ def decorate_convert_document_back(f):
         if isinstance(doc_or_docs, Document):
             return doc_or_docs.asdict()
         elif isinstance(doc_or_docs, list):
-            # if the result is a list, we assume that the output is a list of Documents
-            # and convert it to a dict of lists
             return list_of_dicts2dict_of_lists([e.asdict() for e in doc_or_docs])
         else:
             raise TypeError(
@@ -62,10 +60,11 @@ def decorate_convert_to_document(f, document_type: Type[Document], batched: bool
     @wraps(f)
     def decorated(item, *args, **kwargs):
         if batched:
-            items = dict_of_lists2list_of_dicts(item)
-            return f([document_type.fromdict(e) for e in items], *args, **kwargs)
+            docs = [document_type.fromdict(e) for e in dict_of_lists2list_of_dicts(item)]
+            return f(docs, *args, **kwargs)
         else:
-            return f(document_type.fromdict(item), *args, **kwargs)
+            doc = document_type.fromdict(item)
+            return f(doc, *args, **kwargs)
 
     return decorated
 
@@ -81,30 +80,13 @@ def decorate_convert_to_document_and_back(f, document_type: Type[Document], batc
     @wraps(f)
     def decorated(item, *args, **kwargs):
         if batched:
-            # Convert a list of dicts into a dict of lists.
-            return list_of_dicts2dict_of_lists(
-                [
-                    e.asdict()
-                    for e in f(
-                        [document_type.fromdict(x) for x in dict_of_lists2list_of_dicts(item)],
-                        *args,
-                        **kwargs,
-                    )
-                ],
-                # passing the keys allows to work correctly with empty lists
-                keys=item.keys(),
-            )
+            docs = [document_type.fromdict(e) for e in dict_of_lists2list_of_dicts(item)]
+            mapped_docs = f(docs, *args, **kwargs)
+            return list_of_dicts2dict_of_lists([e.asdict() for e in mapped_docs])
         else:
-            # given a single input, the function may still return a list of Documents
-            doc_or_docs = f(document_type.fromdict(item), *args, **kwargs)
-            if isinstance(doc_or_docs, Document):
-                return doc_or_docs.asdict()
-            elif isinstance(doc_or_docs, list):
-                return list_of_dicts2dict_of_lists([doc.asdict() for doc in doc_or_docs])
-            else:
-                raise TypeError(
-                    f"The function {f} should return a Document or a list of Documents, but returned {type(doc_or_docs)}"
-                )
+            doc = document_type.fromdict(item)
+            mapped_doc = f(doc, *args, **kwargs)
+            return mapped_doc.asdict()
 
     return decorated
 
