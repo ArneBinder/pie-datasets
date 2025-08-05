@@ -9,7 +9,7 @@ from .dataset import (
     Dataset,
     DocumentConvertersType,
     IterableDataset,
-    decorate_convert_to_dict_of_lists,
+    decorate_convert_document_back,
     get_pie_dataset_type,
 )
 
@@ -190,7 +190,7 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
                 f"the builder has no DOCUMENT_TYPE or DOCUMENT_TYPES[{self.config.name}] defined"
             )
 
-        fn = decorate_convert_to_dict_of_lists(self._generate_document)
+        fn = decorate_convert_document_back(self._generate_document)
         fn_kwargs = self._generate_document_kwargs(dataset)
         mapped_dataset = dataset.map(fn, fn_kwargs=fn_kwargs)
         dataset_type = get_pie_dataset_type(mapped_dataset)

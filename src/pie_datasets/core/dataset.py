@@ -1,5 +1,5 @@
 import logging
-from collections.abc import Iterable, Sequence
+from collections.abc import Sequence
 from functools import wraps
 from inspect import Signature, isclass, signature
 from typing import (
@@ -16,9 +16,12 @@ from typing import (
 )
 
 import datasets
-import pandas as pd
 from datasets.formatting import _register_formatter
 from pie_core import Document
+from pie_core.utils.dictionary import (
+    dict_of_lists2list_of_dicts,
+    list_of_dicts2dict_of_lists,
+)
 
 from .document_formatter import DocumentFormatter
 
@@ -27,58 +30,63 @@ logger = logging.getLogger(__name__)
 _register_formatter(DocumentFormatter, "document")
 
 
-def decorate_convert_to_dict_of_lists(f):
-    """Decorate the mapped function, so that converts a single Document to a dict, and a list of
-    Documents into a dict of lists."""
+def decorate_convert_document_back(f):
+    """Decorate the mapped function, so that its return value is converted back to a dict.
+
+    If the input is a list, it converts the list of Documents to a dict of lists.
+    """
 
     @wraps(f)
     def decorated(item, *args, **kwargs):
-        if isinstance(item, list):
-            # Convert a list of dicts into a dict of lists.
-            return pd.DataFrame([e.asdict() for e in f(item, *args, **kwargs)]).to_dict(
-                orient="list"
-            )
+        doc_or_docs = f(item, *args, **kwargs)
+        if isinstance(doc_or_docs, Document):
+            return doc_or_docs.asdict()
+        elif isinstance(doc_or_docs, list):
+            return list_of_dicts2dict_of_lists([e.asdict() for e in doc_or_docs])
         else:
-            return f(item, *args, **kwargs).asdict()
+            raise TypeError(
+                f"The function {f} should return a Document or a list of Documents, but returned {type(doc_or_docs)}"
+            )
 
     return decorated
 
 
-E = TypeVar("E")
+def decorate_convert_to_document(f, document_type: Type[Document], batched: bool):
+    """Decorate the mapped function, so that it converts a dict to a Document.
 
+    If batched is True, it converts a list of dicts to a list of Documents.
+    """
 
-def dl_to_ld(dict_list: Dict[str, List[E]]) -> List[Dict[str, E]]:
-    # Convert a dict of lists to a list of dicts
-    return [dict(zip(dict_list, t)) for t in zip(*dict_list.values())]
-
-
-def ld_to_dl(
-    list_dict: List[Dict[str, E]], keys: Optional[Iterable[str]] = None
-) -> Dict[str, List[E]]:
-    # Convert a list of dicts to a dict of lists.
-    # Provide keys to create the expected format when lists are empty.
-    if keys is None:
-        keys = list_dict[0]
-    return {k: [dic[k] for dic in list_dict] for k in keys}
-
-
-def decorate_convert_to_document_and_back(f, document_type: Type[Document], batched: bool):
     @wraps(f)
     def decorated(item, *args, **kwargs):
         if batched:
-            # Convert a list of dicts into a dict of lists.
-            return ld_to_dl(
-                [
-                    e.asdict()
-                    for e in f(
-                        [document_type.fromdict(x) for x in dl_to_ld(item)], *args, **kwargs
-                    )
-                ],
-                # passing the keys allows to work correctly with empty lists
-                keys=item.keys(),
-            )
+            docs = [document_type.fromdict(e) for e in dict_of_lists2list_of_dicts(item)]
+            return f(docs, *args, **kwargs)
         else:
-            return f(document_type.fromdict(item), *args, **kwargs).asdict()
+            doc = document_type.fromdict(item)
+            return f(doc, *args, **kwargs)
+
+    return decorated
+
+
+def decorate_convert_to_document_and_back(f, document_type: Type[Document], batched: bool):
+    """Decorate the mapped function, so that it converts a dict to a Document and the result back
+    to a dict.
+
+    If batched is True, it converts a list of dicts to a list of Documents and the result back to a
+    dict of lists.
+    """
+
+    @wraps(f)
+    def decorated(item, *args, **kwargs):
+        if batched:
+            docs = [document_type.fromdict(e) for e in dict_of_lists2list_of_dicts(item)]
+            mapped_docs = f(docs, *args, **kwargs)
+            return list_of_dicts2dict_of_lists([e.asdict() for e in mapped_docs])
+        else:
+            doc = document_type.fromdict(item)
+            mapped_doc = f(doc, *args, **kwargs)
+            return mapped_doc.asdict()
 
     return decorated
 
@@ -358,6 +366,20 @@ class Dataset(datasets.Dataset, Sequence[D]):
             **kwargs,
         )
 
+    def map_to_hf(
+        self, function: Optional[Callable] = None, as_documents: bool = False, **map_kwargs
+    ) -> datasets.Dataset:
+        """Map the dataset using a function and return a Huggingface Dataset.
+
+        Args:
+            function (Optional[Callable], optional): The function to apply to the documents. Defaults to None.
+            as_documents (bool, optional): Whether the function returns documents. Defaults to False.
+            **map_kwargs: Additional keyword arguments for the Huggingface Dataset.map method.
+        """
+        if function is not None and as_documents:
+            function = decorate_convert_document_back(function)
+        return super().map(function=function, **map_kwargs)
+
     def map(
         self,
         function: Optional[Callable] = None,
@@ -382,12 +404,9 @@ class Dataset(datasets.Dataset, Sequence[D]):
         as_documents: bool = True,
         result_document_type: Optional[Type[Document]] = None,
     ) -> "Dataset":
-        dataset = super().map(
-            function=(
-                decorate_convert_to_dict_of_lists(function)
-                if as_documents and function is not None
-                else function
-            ),
+        dataset = self.map_to_hf(
+            function=function,
+            as_documents=as_documents,
             with_indices=with_indices,
             with_rank=with_rank,
             input_columns=input_columns,
@@ -583,25 +602,40 @@ class IterableDataset(datasets.IterableDataset):
             **kwargs,
         )
 
+    def map_to_hf(
+        self,
+        function: Optional[Callable] = None,
+        as_documents: bool = False,
+        batched: bool = False,
+        **map_kwargs,
+    ) -> datasets.IterableDataset:
+        """Map the dataset using a function and return a Huggingface IterableDataset.
+
+        Args:
+            function (Optional[Callable], optional): The function to apply to the documents. Defaults to None.
+            as_documents (bool, optional): Whether the function returns documents. Defaults to False.
+            batched (bool, optional): Whether to apply the function in batches. Defaults to False.
+            **map_kwargs: Additional keyword arguments for the Huggingface IterableDataset.map method.
+        """
+        if function is not None:
+            if as_documents:
+                function = decorate_convert_to_document_and_back(
+                    function, document_type=self.document_type, batched=batched
+                )
+            else:
+                function = decorate_convert_to_document(
+                    function, document_type=self.document_type, batched=batched
+                )
+        return super().map(function=function, batched=batched, **map_kwargs)
+
     def map(  # type: ignore
         self,
         function: Optional[Callable] = None,
-        batched: bool = False,
         as_documents: bool = True,
         result_document_type: Optional[Type[Document]] = None,
-        **kwargs,
+        **map_kwargs,
     ) -> "IterableDataset":
-        dataset_mapped = super().map(
-            function=(
-                decorate_convert_to_document_and_back(
-                    function, document_type=self.document_type, batched=batched
-                )
-                if as_documents and function is not None
-                else function
-            ),
-            batched=batched,
-            **kwargs,
-        )
+        dataset_mapped = self.map_to_hf(function=function, as_documents=as_documents, **map_kwargs)
 
         if result_document_type is None:
             result_document_type = self.document_type

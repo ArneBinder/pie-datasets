@@ -137,3 +137,39 @@ def test_iterable_dataset(iterable_dataset):
 @pytest.fixture(params=["dataset", "iterable_dataset"])
 def maybe_iterable_dataset(request):
     return request.getfixturevalue(request.param)
+
+
+@pytest.fixture()
+def empty_dataset(dataset):
+    empty_hf_dataset = load_dataset(
+        "json", data_files={"train": []}, features=dataset["train"].features
+    )
+    mapped_dataset = empty_hf_dataset.map(example_to_doc_dict)
+    dataset = DatasetDict.from_hf(hf_dataset=mapped_dataset, document_type=TestDocument)
+    return dataset
+
+
+def test_empty_dataset(empty_dataset):
+    assert empty_dataset is not None
+    assert set(empty_dataset) == {"train"}
+    for split in empty_dataset:
+        assert len(empty_dataset[split]) == 0
+    # try getting a split
+    d_train = empty_dataset["train"]
+    assert d_train is not None
+    # try getting a document
+    with pytest.raises(IndexError):
+        _ = d_train[0]  # should raise an IndexError since the split is empty
+
+
+@pytest.fixture()
+def iterable_empty_dataset():
+    empty_hf_dataset = load_dataset("json", data_files={"train": []}, streaming=True)
+    mapped_dataset = empty_hf_dataset.map(example_to_doc_dict)
+    dataset = DatasetDict.from_hf(hf_dataset=mapped_dataset, document_type=TestDocument)
+    return dataset
+
+
+@pytest.fixture(params=["empty_dataset", "iterable_empty_dataset"])
+def maybe_iterable_empty_dataset(request):
+    return request.getfixturevalue(request.param)
