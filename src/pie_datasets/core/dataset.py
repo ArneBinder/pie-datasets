@@ -367,13 +367,13 @@ class Dataset(datasets.Dataset, Sequence[D]):
         )
 
     def map_to_hf(
-        self, function: Optional[Callable] = None, as_documents: bool = True, **map_kwargs
+        self, function: Optional[Callable] = None, as_documents: bool = False, **map_kwargs
     ) -> datasets.Dataset:
         """Map the dataset using a function and return a Huggingface Dataset.
 
         Args:
             function (Optional[Callable], optional): The function to apply to the documents. Defaults to None.
-            as_documents (bool, optional): Whether the function returns documents. Defaults to True.
+            as_documents (bool, optional): Whether the function returns documents. Defaults to False.
             **map_kwargs: Additional keyword arguments for the Huggingface Dataset.map method.
         """
         if function is not None and as_documents:
@@ -605,7 +605,7 @@ class IterableDataset(datasets.IterableDataset):
     def map_to_hf(
         self,
         function: Optional[Callable] = None,
-        as_documents: bool = True,
+        as_documents: bool = False,
         batched: bool = False,
         **map_kwargs,
     ) -> datasets.IterableDataset:
@@ -613,7 +613,7 @@ class IterableDataset(datasets.IterableDataset):
 
         Args:
             function (Optional[Callable], optional): The function to apply to the documents. Defaults to None.
-            as_documents (bool, optional): Whether the function returns documents. Defaults to True.
+            as_documents (bool, optional): Whether the function returns documents. Defaults to False.
             batched (bool, optional): Whether to apply the function in batches. Defaults to False.
             **map_kwargs: Additional keyword arguments for the Huggingface IterableDataset.map method.
         """
@@ -631,10 +631,11 @@ class IterableDataset(datasets.IterableDataset):
     def map(  # type: ignore
         self,
         function: Optional[Callable] = None,
+        as_documents: bool = True,
         result_document_type: Optional[Type[Document]] = None,
         **map_kwargs,
     ) -> "IterableDataset":
-        dataset_mapped = self.map_to_hf(function=function, **map_kwargs)
+        dataset_mapped = self.map_to_hf(function=function, as_documents=as_documents, **map_kwargs)
 
         if result_document_type is None:
             result_document_type = self.document_type
