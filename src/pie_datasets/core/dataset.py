@@ -23,11 +23,12 @@ from pie_core.utils.dictionary import (
     list_of_dicts2dict_of_lists,
 )
 
-from .document_formatter import DocumentFormatter
+from .formatter import DocumentFormatter, TaskEncodingFormatter
 
 logger = logging.getLogger(__name__)
 
 _register_formatter(DocumentFormatter, "document")
+_register_formatter(TaskEncodingFormatter, "task_encoding")
 
 
 def decorate_convert_document_back(f):
