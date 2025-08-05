@@ -372,7 +372,7 @@ class Dataset(datasets.Dataset, Sequence[D]):
         """Map the dataset using a function and return a Huggingface Dataset.
 
         Args:
-            function (Optional[Callable], optional): The function to apply to each document. Defaults to None.
+            function (Optional[Callable], optional): The function to apply to the documents. Defaults to None.
             as_documents (bool, optional): Whether the function returns documents. Defaults to True.
             **map_kwargs: Additional keyword arguments for the Huggingface Dataset.map method.
         """
@@ -612,7 +612,7 @@ class IterableDataset(datasets.IterableDataset):
         """Map the dataset using a function and return a Huggingface IterableDataset.
 
         Args:
-            function (Optional[Callable], optional): The function to apply to each document. Defaults to None.
+            function (Optional[Callable], optional): The function to apply to the documents. Defaults to None.
             as_documents (bool, optional): Whether the function returns documents. Defaults to True.
             batched (bool, optional): Whether to apply the function in batches. Defaults to False.
             **map_kwargs: Additional keyword arguments for the Huggingface IterableDataset.map method.
