@@ -731,6 +731,15 @@ class DatasetDict(datasets.DatasetDict):
         )
         return result
 
+    def shuffle(self, **kwargs):
+        result = DatasetDict.from_hf(super().shuffle(**kwargs), document_type=self.document_type)
+
+        # TODO: integrate into DatasetDict.from_hf
+        for split_name, split in result.items():
+            split.document_converters = self[split_name].document_converters
+
+        return result
+
 
 def load_dataset(*args, **kwargs) -> Union[DatasetDict, Dataset, IterableDataset]:
     dataset_or_dataset_dict = datasets.load_dataset(*args, **kwargs)
