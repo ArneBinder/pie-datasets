@@ -273,6 +273,7 @@ class ArgMicro(GeneratorBasedBuilder):
     BUILDER_CONFIGS = [datasets.BuilderConfig(name="en"), datasets.BuilderConfig(name="de")]
 
     def _generate_document_kwargs(self, dataset):
+        print("DELETE ME")
         return {
             "adu_type_label": dataset.features["adus"].feature["type"],
             "edge_type_label": dataset.features["edges"].feature["type"],
