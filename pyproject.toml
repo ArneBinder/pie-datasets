@@ -24,7 +24,7 @@ classifiers = [
 
 [tool.poetry.dependencies]
 python = "^3.9"
-pie-core = ">=0.2.0,<0.3.0"
+pie-core = ">=0.2.0,<0.4.0"
 # <2.16.0 because of https://github.com/ArneBinder/pie-datasets/issues/93
 datasets = ">=2.14.0,<2.16.0"
 # should not be necessary, but see https://github.com/ArneBinder/pie-datasets/issues/164
