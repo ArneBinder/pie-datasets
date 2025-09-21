@@ -111,10 +111,9 @@ class BaseBratDocument(Document):
 class BratDocument(BaseBratDocument):
     spans: AnnotationLayer[BratMultiSpan] = annotation_field(target="text")
     relations: AnnotationLayer[BratRelation] = annotation_field(target="spans")
-    span_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="spans")
-    relation_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="relations")
+    attributes: AnnotationLayer[BratAttribute] = annotation_field(targets=["spans", "relations"])
     notes: AnnotationLayer[BratNote] = annotation_field(
-        targets=["spans", "relations", "span_attributes", "relation_attributes"]
+        targets=["spans", "relations", "attributes"]
     )
 
 
@@ -122,10 +121,9 @@ class BratDocument(BaseBratDocument):
 class BratDocumentWithMergedSpans(BaseBratDocument):
     spans: AnnotationLayer[BratSpan] = annotation_field(target="text")
     relations: AnnotationLayer[BratRelation] = annotation_field(target="spans")
-    span_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="spans")
-    relation_attributes: AnnotationLayer[BratAttribute] = annotation_field(target="relations")
+    attributes: AnnotationLayer[BratAttribute] = annotation_field(targets=["spans", "relations"])
     notes: AnnotationLayer[BratNote] = annotation_field(
-        targets=["spans", "relations", "span_attributes", "relation_attributes"]
+        targets=["spans", "relations", "attributes"]
     )
 
 
@@ -148,15 +146,17 @@ def example_to_document(
     else:
         doc = BratDocument(text=example["context"], id=example["file_name"])
 
+    id2annotation: Dict[str, Annotation] = dict()
+
+    # create span annotations
     spans: Dict[str, BratSpan] = dict()
-    span_locations: List[Tuple[Tuple[int, int], ...]] = []
-    span_texts: List[str] = []
+    doc.metadata["span_ids"] = []
+    doc.metadata["span_locations"] = []
+    doc.metadata["span_texts"] = []
     for span_dict in dl2ld(example["spans"]):
         starts: List[int] = span_dict["locations"]["start"]
         ends: List[int] = span_dict["locations"]["end"]
         slices = tuple(zip(starts, ends))
-        span_locations.append(slices)
-        span_texts.append(span_dict["text"])
         # sanity check
         span_text_parts = [doc.text[start:end] for start, end in slices]
         joined_span_texts_stripped = " ".join(span_text_parts).strip()
@@ -191,12 +191,17 @@ def example_to_document(
             span = BratMultiSpan(slices=slices, label=span_dict["type"])
         spans[span_dict["id"]] = span
 
-    doc.spans.extend(spans.values())
-    doc.metadata["span_ids"] = list(spans.keys())
-    doc.metadata["span_locations"] = span_locations
-    doc.metadata["span_texts"] = span_texts
+        # add span annotation to the document
+        doc.spans.append(span)
+        doc.metadata["span_ids"].append(span_dict["id"])
+        doc.metadata["span_locations"].append(slices)
+        doc.metadata["span_texts"].append(span_dict["text"])
 
+        id2annotation[span_dict["id"]] = span
+
+    # create relation annotations
     relations: Dict[str, BratRelation] = dict()
+    doc.metadata["relation_ids"] = []
     for rel_dict in dl2ld(example["relations"]):
         arguments = dict(zip(rel_dict["arguments"]["type"], rel_dict["arguments"]["target"]))
         assert set(arguments) == {"Arg1", "Arg2"}
@@ -205,76 +210,95 @@ def example_to_document(
         rel = BratRelation(head=head, tail=tail, label=rel_dict["type"])
         relations[rel_dict["id"]] = rel
 
-    doc.relations.extend(relations.values())
-    doc.metadata["relation_ids"] = list(relations.keys())
+        # add relation annotation to the document
+        doc.relations.append(rel)
+        doc.metadata["relation_ids"].append(rel_dict["id"])
 
+        id2annotation[rel_dict["id"]] = rel
+
+    # create equivalence relation annotations
     equivalence_relations = dl2ld(example["equivalence_relations"])
     if len(equivalence_relations) > 0:
         raise NotImplementedError("converting equivalence_relations is not yet implemented")
 
+    # create event annotations
     events = dl2ld(example["events"])
     if len(events) > 0:
         raise NotImplementedError("converting events is not yet implemented")
 
-    attribute_annotations: Dict[str, Dict[str, BratAttribute]] = defaultdict(dict)
-    attribute_ids = []
+    # create attribute annotations
+    attributes: Dict[str, BratAttribute] = dict()
+    doc.metadata["attribute_ids"] = []
+    attribute_annotation2dict: Dict[BratAttribute, Dict[str, Any]] = defaultdict(dict)
     for attribute_dict in dl2ld(example["attributions"]):
         target_id = attribute_dict["target"]
-        if target_id in spans:
-            target_layer_name = "spans"
-            annotation = spans[target_id]
-        elif target_id in relations:
-            target_layer_name = "relations"
-            annotation = relations[target_id]
-        else:
-            raise Exception("only span and relation attributes are supported yet")
+        if target_id not in id2annotation:
+            raise Exception(
+                f"attribute target annotation {target_id} not found in any of the target layers (spans, relations)"
+            )
+        target_annotation = id2annotation[target_id]
         attribute = BratAttribute(
-            annotation=annotation,
+            annotation=target_annotation,
             label=attribute_dict["type"],
             value=attribute_dict["value"],
         )
-        attribute_annotations[target_layer_name][attribute_dict["id"]] = attribute
-        attribute_ids.append((target_layer_name, attribute_dict["id"]))
+        attributes[attribute_dict["id"]] = attribute
 
-    doc.span_attributes.extend(attribute_annotations["spans"].values())
-    doc.relation_attributes.extend(attribute_annotations["relations"].values())
-    doc.metadata["attribute_ids"] = attribute_ids
+        # add attribute annotation to the document
+        doc.attributes.append(attribute)
+        doc.metadata["attribute_ids"].append(attribute_dict["id"])
 
+        id2annotation[attribute_dict["id"]] = attribute
+
+        # check for duplicates: this works only because the attribute was already added to the document
+        # (annotations attached to different documents are never equal)
+        if attribute in attribute_annotation2dict:
+            prev_attribute = attribute_annotation2dict[attribute]
+            logger.warning(
+                f"document {doc.id}: annotation exists twice: {prev_attribute['id']} and {attribute_dict['id']} "
+                f"are identical"
+            )
+        attribute_annotation2dict[attribute] = attribute_dict
+
+    # create normalization annotations
     normalizations = dl2ld(example["normalizations"])
     if len(normalizations) > 0:
         raise NotImplementedError("converting normalizations is not yet implemented")
 
-    id2annotation: Dict[str, Annotation] = {
-        **spans,
-        **relations,
-        **attribute_annotations["spans"],
-        **attribute_annotations["relations"],
-    }
-
+    # create note annotations
+    notes: Dict[str, BratNote] = dict()
     doc.metadata["note_ids"] = []
-    notes_dicts: Dict[Annotation, Dict[str, Any]] = dict()
+    note_annotation2dict: Dict[Annotation, Dict[str, Any]] = dict()
     for note_dict in dl2ld(example["notes"]):
         target_id = note_dict["target"]
         if target_id not in id2annotation:
-            raise Exception(f"note target {target_id} not found in any of the target layers")
+            raise Exception(
+                f"note target annotation {target_id} not found in any of the target layers (spans, relations, "
+                f"attributes)"
+            )
         annotation = id2annotation[target_id]
         note = BratNote(
             annotation=annotation,
             label=note_dict["type"],
             value=note_dict["note"],
         )
+        notes[note_dict["id"]] = note
+
+        # add note annotation to the document
         doc.notes.append(note)
         doc.metadata["note_ids"].append(note_dict["id"])
 
+        id2annotation[note_dict["id"]] = note
+
         # check for duplicates: this works only because the note was already added to the document
         # (annotations attached to different documents are never equal)
-        if note in notes_dicts:
-            prev_note = notes_dicts[note]
+        if note in note_annotation2dict:
+            prev_note = note_annotation2dict[note]
             logger.warning(
                 f"document {doc.id}: annotation exists twice: {prev_note['id']} and {note_dict['id']} "
                 f"are identical"
             )
-        notes_dicts[note] = note_dict
+        note_annotation2dict[note] = note_dict
 
     return doc
 
@@ -352,40 +376,28 @@ def document_to_example(
     example["equivalence_relations"] = ld2dl([], keys=["type", "targets"])
     example["events"] = ld2dl([], keys=["id", "type", "trigger", "arguments"])
 
-    all_attribute_annotations = {
-        "spans": document.span_attributes,
-        "relations": document.relation_attributes,
-    }
     attribute_dicts: Dict[Annotation, Dict[str, Any]] = dict()
-    attribute_ids_per_target = defaultdict(list)
-    for target_layer, attribute_id in document.metadata["attribute_ids"]:
-        attribute_ids_per_target[target_layer].append(attribute_id)
-
-    for target_layer, attribute_ids in attribute_ids_per_target.items():
-        attribute_annotations = all_attribute_annotations[target_layer]
-        assert len(attribute_ids) == len(attribute_annotations)
-        for i, attribute_annotation in enumerate(attribute_annotations):
-            attribute_id = attribute_ids_per_target[target_layer][i]
-            annotation2id[attribute_annotation] = attribute_id
-            target_id = annotation2id[attribute_annotation.annotation]
-            attribute_dict = {
-                "id": attribute_id,
-                "type": attribute_annotation.label,
-                "target": target_id,
-                "value": attribute_annotation.value,
-            }
-            if attribute_annotation in attribute_dicts:
-                prev_ann_dict = attribute_dicts[attribute_annotation]
-                ann_dict = attribute_annotation
-                logger.warning(
-                    f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {ann_dict['id']} "
-                    f"are identical"
-                )
-            attribute_dicts[attribute_annotation] = attribute_dict
-
+    for i, attribute_annotation in enumerate(document.attributes):
+        attribute_id = document.metadata["attribute_ids"][i]
+        annotation2id[attribute_annotation] = attribute_id
+        target_id = annotation2id[attribute_annotation.annotation]
+        attribute_dict = {
+            "id": attribute_id,
+            "type": attribute_annotation.label,
+            "target": target_id,
+            "value": attribute_annotation.value,
+        }
+        if attribute_annotation in attribute_dicts:
+            prev_ann_dict = attribute_dicts[attribute_annotation]
+            logger.warning(
+                f"document {document.id}: annotation exists twice: {prev_ann_dict['id']} and {attribute_dict['id']} "
+                f"are identical"
+            )
+        attribute_dicts[attribute_annotation] = attribute_dict
     example["attributions"] = ld2dl(
         list(attribute_dicts.values()), keys=["id", "type", "target", "value"]
     )
+
     example["normalizations"] = ld2dl(
         [], keys=["id", "type", "target", "resource_id", "entity_id"]
     )
