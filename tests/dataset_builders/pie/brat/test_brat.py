@@ -127,8 +127,7 @@ def test_generate_document(generated_document, pie_dataset_variant, sample_idx):
     if sample_idx == 0:
         assert len(generated_document.spans) == 2
         assert len(generated_document.relations) == 0
-        assert len(generated_document.span_attributes) == 0
-        assert len(generated_document.relation_attributes) == 0
+        assert len(generated_document.attributes) == 0
 
         if pie_dataset_variant == "default":
             assert resolved_spans == [("person", ("Jane",)), ("city", ("Berlin",))]
@@ -140,37 +139,35 @@ def test_generate_document(generated_document, pie_dataset_variant, sample_idx):
     elif sample_idx == 1:
         assert len(generated_document.spans) == 2
         assert len(generated_document.relations) == 1
-        assert len(generated_document.span_attributes) == 1
-        assert len(generated_document.relation_attributes) == 1
+        assert len(generated_document.attributes) == 2
 
-        resolved_span_attributes = generated_document.span_attributes.resolve()
-        resolved_relation_attributes = generated_document.relation_attributes.resolve()
+        resolved_attributes = generated_document.attributes.resolve()
 
         if pie_dataset_variant == "default":
             assert resolved_spans == [("city", ("Seattle",)), ("person", ("Jenny Durkan",))]
             assert resolved_relations == [
                 ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",))))
             ]
-            assert resolved_span_attributes == [("actual", "factuality", ("city", ("Seattle",)))]
-            assert resolved_relation_attributes == [
+            assert resolved_attributes == [
+                ("actual", "factuality", ("city", ("Seattle",))),
                 (
                     "true",
                     "statement",
                     ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",)))),
-                )
+                ),
             ]
         elif pie_dataset_variant == "merge_fragmented_spans":
             assert resolved_spans == [("city", "Seattle"), ("person", "Jenny Durkan")]
             assert resolved_relations == [
                 ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle")))
             ]
-            assert resolved_span_attributes == [("actual", "factuality", ("city", "Seattle"))]
-            assert resolved_relation_attributes == [
+            assert resolved_attributes == [
+                ("actual", "factuality", ("city", "Seattle")),
                 (
                     "true",
                     "statement",
                     ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))),
-                )
+                ),
             ]
         else:
             raise ValueError(f"Unknown dataset variant: {pie_dataset_variant}")
