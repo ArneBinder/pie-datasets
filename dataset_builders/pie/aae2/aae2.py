@@ -10,7 +10,7 @@ from pie_modules.documents import (
 )
 
 from pie_datasets.builders import BratBuilder
-from pie_datasets.builders.brat import BratConfig, BratDocumentWithMergedSpans
+from pie_datasets.builders.brat import BratConfig, BratDocumentWithMergedSpans, BratSpan
 from pie_datasets.core.dataset import DocumentConvertersType
 from pie_datasets.document.processing import Caster, Converter, Pipeline
 
@@ -65,8 +65,8 @@ def convert_aae2_claim_attributions_to_relations(
 
     claim_attributes = [
         attribute
-        for attribute in document.span_attributes
-        if attribute.annotation.label == claim_label
+        for attribute in document.attributes
+        if isinstance(attribute.annotation, BratSpan) and attribute.annotation.label == claim_label
     ]
 
     # get all MajorClaims

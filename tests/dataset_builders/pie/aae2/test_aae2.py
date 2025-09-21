@@ -180,7 +180,7 @@ def test_convert_aae2_claim_attributions_to_relations(method):
     assert str(second_majorclaim) == "This is the second major claim."
     # create claim attribute
     claim_attribute = BratAttribute(annotation=claim, label="Stance", value="For")
-    sample_doc.span_attributes.append(claim_attribute)
+    sample_doc.attributes.append(claim_attribute)
 
     # check results
     converted_doc = convert_aae2_claim_attributions_to_relations(sample_doc, method)
