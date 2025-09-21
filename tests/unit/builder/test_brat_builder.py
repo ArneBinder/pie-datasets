@@ -113,8 +113,7 @@ def test_generate_document(builder, hf_example):
 
     if hf_example == HF_EXAMPLES[0]:
         assert len(generated_document.relations) == 0
-        assert len(generated_document.span_attributes) == 0
-        assert len(generated_document.relation_attributes) == 0
+        assert len(generated_document.attributes) == 0
 
         if builder.config.name == "default":
             assert generated_document.spans.resolve() == [
@@ -141,16 +140,15 @@ def test_generate_document(builder, hf_example):
             assert generated_document.relations.resolve() == [
                 ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",))))
             ]
-            assert generated_document.span_attributes.resolve() == [
-                ("actual", "factuality", ("city", ("Seattle",)))
-            ]
-            assert generated_document.relation_attributes.resolve() == [
+            assert generated_document.attributes.resolve() == [
+                ("actual", "factuality", ("city", ("Seattle",))),
                 (
                     "true",
                     "statement",
                     ("mayor_of", (("person", ("Jenny Durkan",)), ("city", ("Seattle",)))),
-                )
+                ),
             ]
+
             assert generated_document.notes.resolve() == [
                 (
                     "single relation",
@@ -166,15 +164,13 @@ def test_generate_document(builder, hf_example):
             assert generated_document.relations.resolve() == [
                 ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle")))
             ]
-            assert generated_document.span_attributes.resolve() == [
-                ("actual", "factuality", ("city", "Seattle"))
-            ]
-            assert generated_document.relation_attributes.resolve() == [
+            assert generated_document.attributes.resolve() == [
+                ("actual", "factuality", ("city", "Seattle")),
                 (
                     "true",
                     "statement",
                     ("mayor_of", (("person", "Jenny Durkan"), ("city", "Seattle"))),
-                )
+                ),
             ]
             assert generated_document.notes.resolve() == [
                 (
@@ -205,7 +201,25 @@ def test_document_to_example_wrong_type(builder):
     assert str(exc_info.value) == f"document type {type(doc)} is not supported"
 
 
-def test_example_to_document_exceptions(builder):
+def test_example_to_document_missing_attribute_target(builder):
+    example = HF_EXAMPLES[1].copy()
+    example["attributions"] = {
+        "id": ["A1"],
+        "type": ["factuality"],
+        "target": [
+            "N1",
+        ],
+        "value": ["actual"],
+    }
+    with pytest.raises(Exception) as exc_info:
+        builder._generate_document(example=example)
+    assert (
+        str(exc_info.value)
+        == "attribute target annotation N1 not found in any of the target layers (spans, relations)"
+    )
+
+
+def test_example_to_document_missing_note_target(builder):
     example = HF_EXAMPLES[0].copy()
     example["notes"] = {
         "id": ["#1"],
@@ -214,11 +228,12 @@ def test_example_to_document_exceptions(builder):
         "note": ["last name is omitted"],
     }
 
-    kwargs = dict()
-
     with pytest.raises(Exception) as exc_info:
-        builder._generate_document(example=example, **kwargs)
-    assert str(exc_info.value) == "note target T3 not found in any of the target layers"
+        builder._generate_document(example=example)
+    assert (
+        str(exc_info.value)
+        == "note target annotation T3 not found in any of the target layers (spans, relations, attributes)"
+    )
 
 
 def test_document_to_example_warnings(builder, caplog):
@@ -239,6 +254,24 @@ def test_document_to_example_warnings(builder, caplog):
     with caplog.at_level(logging.WARNING):
         builder._generate_example(doc)
     assert caplog.messages == ["document 1: annotation exists twice: #1 and #2 are identical"]
+
+    example = HF_EXAMPLES[1].copy()
+    example["attributions"] = {
+        "id": ["A1", "A2"],
+        "type": ["factuality", "factuality"],
+        "target": ["T1", "T1"],
+        "value": ["actual", "actual"],
+    }
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        doc = builder._generate_document(example)
+    assert caplog.messages == ["document 2: annotation exists twice: A1 and A2 are identical"]
+
+    caplog.clear()
+    with caplog.at_level(logging.WARNING):
+        builder._generate_example(doc)
+    assert caplog.messages == ["document 2: annotation exists twice: A1 and A2 are identical"]
 
 
 def test_brat_attribute():
