@@ -126,24 +126,24 @@ def test_document(document, dataset_variant):
 
     # check relations
     assert len(document.relations) == 6
-    document.relations[0].label == "supports"
-    document.relations[0].head == document.spans[3]
-    document.relations[0].tail == document.spans[2]
-    document.relations[1].label == "supports"
-    document.relations[1].head == document.spans[4]
-    document.relations[1].tail == document.spans[2]
-    document.relations[2].label == "supports"
-    document.relations[2].head == document.spans[5]
-    document.relations[2].tail == document.spans[2]
-    document.relations[3].label == "supports"
-    document.relations[3].head == document.spans[9]
-    document.relations[3].tail == document.spans[10]
-    document.relations[4].label == "supports"
-    document.relations[4].head == document.spans[8]
-    document.relations[4].tail == document.spans[10]
-    document.relations[5].label == "supports"
-    document.relations[5].head == document.spans[7]
-    document.relations[5].tail == document.spans[8]
+    assert document.relations[0].label == "supports"
+    assert document.relations[0].head == document.spans[3]
+    assert document.relations[0].tail == document.spans[2]
+    assert document.relations[1].label == "supports"
+    assert document.relations[1].head == document.spans[4]
+    assert document.relations[1].tail == document.spans[2]
+    assert document.relations[2].label == "supports"
+    assert document.relations[2].head == document.spans[5]
+    assert document.relations[2].tail == document.spans[2]
+    assert document.relations[3].label == "supports"
+    assert document.relations[3].head == document.spans[9]
+    assert document.relations[3].tail == document.spans[10]
+    assert document.relations[4].label == "supports"
+    assert document.relations[4].head == document.spans[8]
+    assert document.relations[4].tail == document.spans[10]
+    assert document.relations[5].label == "supports"
+    assert document.relations[5].head == document.spans[7]
+    assert document.relations[5].tail == document.spans[6]
 
 
 @pytest.fixture(scope="module")
