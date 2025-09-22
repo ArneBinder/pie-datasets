@@ -2,8 +2,7 @@ from typing import Any, Dict, List, Type, Union
 
 import datasets
 import pytest
-from pie_modules.document.processing import tokenize_document
-from pie_modules.documents import (
+from pie_documents.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
@@ -11,7 +10,6 @@ from pie_modules.documents import (
     TokenDocumentWithLabeledSpansAndBinaryRelations,
     TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
-from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.drugprot.drugprot import (
     Drugprot,
@@ -535,131 +533,3 @@ def test_converted_document(converted_document, converted_document_type):
     assert converted_document.binary_relations.resolve() == [
         ("PRODUCT-OF", (("CHEMICAL", "androstanediol"), ("GENE-Y", "human type 12 RDH")))
     ]
-
-
-@pytest.fixture(scope="module")
-def tokenizer() -> PreTrainedTokenizer:
-    return AutoTokenizer.from_pretrained("bert-base-uncased")
-
-
-def tokenize(
-    document: TextBasedDocument, tokenizer: PreTrainedTokenizer
-) -> List[TokenBasedDocument]:
-    if isinstance(document, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions):
-        result_document_type = TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
-        partition_layer = "labeled_partitions"
-    elif isinstance(document, TextDocumentWithLabeledSpansAndBinaryRelations):
-        result_document_type = TokenDocumentWithLabeledSpansAndBinaryRelations
-        partition_layer = None
-    else:
-        raise ValueError(f"Unsupported document type: {type(document)}")
-    tokenized_documents = tokenize_document(
-        document,
-        tokenizer=tokenizer,
-        return_overflowing_tokens=True,
-        result_document_type=result_document_type,
-        partition_layer=partition_layer,
-        strict_span_conversion=True,
-        verbose=True,
-    )
-    return tokenized_documents
-
-
-def test_tokenize_document(converted_document, tokenizer):
-    tokenized_docs = tokenize(converted_document, tokenizer=tokenizer)
-    # we just ensure that we get at least one tokenized document
-    assert tokenized_docs is not None
-    assert len(tokenized_docs) > 0
-    if isinstance(
-        converted_document,
-        TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-    ):
-        # we get two parts because the original document has two labeled partitions (passages)
-        assert len(tokenized_docs) == 2
-        # check the first document / partition
-        doc: TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions = tokenized_docs[0]
-        assert len(doc.tokens) == 32
-        assert len(doc.labeled_spans) == 3
-        assert doc.labeled_spans.resolve() == [
-            ("GENE-Y", ("rd", "##h", "##12")),
-            ("CHEMICAL", ("re", "##tino", "##l")),
-            ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase")),
-        ]
-        assert len(doc.binary_relations) == 0
-
-        # check the second document / partition
-        doc: TokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions = tokenized_docs[1]
-        assert len(doc.tokens) == 132
-        assert len(doc.labeled_spans) == 10
-        assert doc.labeled_spans.resolve() == [
-            ("CHEMICAL", ("re", "##tino", "##l")),
-            ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase", "##s")),
-            ("GENE-N", ("rd", "##hs")),
-            ("GENE-N", ("human", "and", "mu", "##rine", "rd", "##h", "12")),
-            ("GENE-Y", ("human", "rd", "##h", "##13")),
-            ("GENE-Y", ("rd", "##h", "##12")),
-            ("GENE-Y", ("mu", "##rine", "rd", "##h", "##12")),
-            ("GENE-Y", ("human", "rd", "##h", "##13")),
-            ("GENE-Y", ("human", "type", "12", "rd", "##h")),
-            ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
-        ]
-        assert len(doc.binary_relations) == 1
-        assert doc.binary_relations.resolve() == [
-            (
-                "PRODUCT-OF",
-                (
-                    ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
-                    ("GENE-Y", ("human", "type", "12", "rd", "##h")),
-                ),
-            )
-        ]
-
-    elif isinstance(
-        converted_document,
-        TextDocumentWithLabeledSpansAndBinaryRelations,
-    ):
-        assert len(tokenized_docs) == 1
-        doc: TokenDocumentWithLabeledSpansAndBinaryRelations = tokenized_docs[0]
-        assert len(doc.tokens) == 162
-
-        assert len(doc.labeled_spans) == 13
-        assert doc.labeled_spans.resolve() == [
-            ("GENE-Y", ("rd", "##h", "##12")),
-            ("CHEMICAL", ("re", "##tino", "##l")),
-            ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase")),
-            ("CHEMICAL", ("re", "##tino", "##l")),
-            ("GENE-N", ("re", "##tino", "##l", "de", "##hy", "##dro", "##genase", "##s")),
-            ("GENE-N", ("rd", "##hs")),
-            ("GENE-N", ("human", "and", "mu", "##rine", "rd", "##h", "12")),
-            ("GENE-Y", ("human", "rd", "##h", "##13")),
-            ("GENE-Y", ("rd", "##h", "##12")),
-            ("GENE-Y", ("mu", "##rine", "rd", "##h", "##12")),
-            ("GENE-Y", ("human", "rd", "##h", "##13")),
-            ("GENE-Y", ("human", "type", "12", "rd", "##h")),
-            ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
-        ]
-
-        assert len(doc.binary_relations) == 1
-        assert doc.binary_relations.resolve() == [
-            (
-                "PRODUCT-OF",
-                (
-                    ("CHEMICAL", ("and", "##ros", "##tan", "##ed", "##iol")),
-                    ("GENE-Y", ("human", "type", "12", "rd", "##h")),
-                ),
-            )
-        ]
-    else:
-        raise ValueError(f"Converted document has an unsupported type: {type(converted_document)}")
-
-
-@pytest.mark.slow
-def test_tokenize_documents_all(converted_pie_dataset, tokenizer):
-    for split, docs in converted_pie_dataset.items():
-        for doc in docs:
-            # Note, that this is a list of documents, because the document may be split into chunks
-            # if the input text is too long.
-            tokenized_docs = tokenize(doc, tokenizer=tokenizer)
-            # we just ensure that we get at least one tokenized document
-            assert tokenized_docs is not None
-            assert len(tokenized_docs) > 0

@@ -5,9 +5,8 @@ from typing import Optional, Type
 import datasets
 import pytest
 from pie_core import AnnotationLayer, Document, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
-from pie_modules.document.processing import tokenize_document
-from pie_modules.documents import (
+from pie_documents.annotations import BinaryRelation, LabeledMultiSpan, LabeledSpan
+from pie_documents.documents import (
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
     TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
     TextDocumentWithLabeledPartitions,
@@ -15,7 +14,6 @@ from pie_modules.documents import (
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
     TokenBasedDocument,
 )
-from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.sciarg.sciarg import SciArg, remove_duplicate_relations
 from pie_datasets import DatasetDict
@@ -684,11 +682,6 @@ def test_converted_document(converted_document, dataset_variant):
 
 
 @pytest.fixture(scope="module")
-def tokenizer() -> PreTrainedTokenizer:
-    return AutoTokenizer.from_pretrained("bert-base-uncased")
-
-
-@pytest.fixture(scope="module")
 def dataset_of_text_documents_with_labeled_spans_and_binary_relations(
     dataset, dataset_variant
 ) -> Optional[DatasetDict]:
@@ -709,49 +702,6 @@ class TestTokenDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions(
     TestTokenDocumentWithLabeledPartitions,
 ):
     pass
-
-
-TOKENIZED_DOCUMENT_TYPE_MAPPING = {
-    TextDocumentWithLabeledSpansAndBinaryRelations: TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-    TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions: TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-    TextDocumentWithLabeledMultiSpansAndBinaryRelations: TestTokenDocumentWithLabeledMultiSpansAndBinaryRelations,
-    TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions: TestTokenDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
-}
-
-
-def test_tokenize_documents_all(converted_dataset, tokenizer, dataset_variant):
-    if converted_dataset is None:
-        return
-    # docs that cause errors when using strict_span_conversion (and the spans that can not be converted):
-    # - A11: "́ Ø 1⁄2 μ 3⁄4È and  ́ Ø 3⁄4 μ 3⁄4Ç"
-    # - A19: "̃ l CE is the normalized muscle fiber length"
-    # - A20: "̇ to generalized forces (u)" / "('a force field function u = g(q, q)  ̇ maps kinematic states', '̇ to generalized forces (u)')"
-    # - A24: "φ n = φ  ̄"
-    # - A25: " M 0 −1 I −1 0 A 1 b T 1 ··· A k b T k b k" and " b 1  R = " / "('\uf8ee b 1 \uf8f9 R = \uf8f0',)" and "('\uf8fb M 0 −1 I −1 0 A 1 b T 1 ··· A k b T k b k',)"
-    docs_with_span_errors = {"A11", "A19", "A20", "A24", "A25"}
-    for split, docs in converted_dataset.items():
-        for doc in docs:
-            strict_span_conversion = doc.id not in docs_with_span_errors and not isinstance(
-                doc, TextDocumentWithLabeledPartitions
-            )
-            # Note, that this is a list of documents, because the document may be split into chunks
-            # if the input text is too long.
-            tokenized_docs = tokenize_document(
-                doc,
-                tokenizer=tokenizer,
-                return_overflowing_tokens=True,
-                result_document_type=TOKENIZED_DOCUMENT_TYPE_MAPPING[type(doc)],
-                partition_layer=(
-                    "labeled_partitions"
-                    if isinstance(doc, TextDocumentWithLabeledPartitions)
-                    else None
-                ),
-                strict_span_conversion=strict_span_conversion,
-                verbose=True,
-            )
-            # we just ensure that we get at least one tokenized document
-            assert tokenized_docs is not None
-            assert len(tokenized_docs) > 0
 
 
 def test_document_converters(dataset_variant):

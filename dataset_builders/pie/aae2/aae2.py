@@ -2,9 +2,9 @@ import os
 from typing import Dict
 
 import pandas as pd
-from pie_modules.annotations import BinaryRelation
-from pie_modules.document.processing import RegexPartitioner
-from pie_modules.documents import (
+from pie_documents.annotations import BinaryRelation
+from pie_documents.document.processing import RegexPartitioner
+from pie_documents.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )

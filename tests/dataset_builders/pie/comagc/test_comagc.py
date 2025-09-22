@@ -1,7 +1,7 @@
 import datasets
 import pytest
 from pie_core import Document
-from pie_modules.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+from pie_documents.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 from dataset_builders.pie.comagc.comagc import (
     Comagc,

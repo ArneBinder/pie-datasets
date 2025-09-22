@@ -3,17 +3,12 @@ from typing import List
 import pytest
 from datasets import disable_caching
 from pie_core import Document
-from pie_modules.document.processing import tokenize_document
-from pie_modules.documents import TextDocumentWithLabeledSpansAndBinaryRelations
-from transformers import AutoTokenizer, PreTrainedTokenizer
+from pie_documents.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 from dataset_builders.pie.abstrct.abstrct import AbstRCT
 from pie_datasets import DatasetDict
 from pie_datasets.builders.brat import BratDocumentWithMergedSpans
-from tests.dataset_builders.common import (
-    PIE_BASE_PATH,
-    TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-)
+from tests.dataset_builders.common import PIE_BASE_PATH
 
 disable_caching()
 
@@ -239,116 +234,6 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
         "A combination of mitoxantrone plus prednisone is preferable to prednisone alone for reduction of pain in "
         "men with metastatic, hormone-resistant, prostate cancer.",
     )
-
-
-@pytest.fixture(scope="module")
-def tokenizer() -> PreTrainedTokenizer:
-    return AutoTokenizer.from_pretrained("bert-base-uncased")
-
-
-@pytest.fixture(scope="module")
-def tokenized_documents_with_labeled_spans_and_binary_relations(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer
-) -> List[TestTokenDocumentWithLabeledSpansAndBinaryRelations]:
-    # get a document to check
-    doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations[SPLIT][0]
-    # Note, that this is a list of documents, because the document may be split into chunks
-    # if the input text is too long.
-    tokenized_docs = tokenize_document(
-        doc,
-        tokenizer=tokenizer,
-        return_overflowing_tokens=True,
-        result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-        strict_span_conversion=True,
-        verbose=True,
-    )
-    return tokenized_docs
-
-
-def test_tokenized_documents_with_labeled_spans_and_binary_relations(
-    tokenized_documents_with_labeled_spans_and_binary_relations,
-):
-    docs = tokenized_documents_with_labeled_spans_and_binary_relations
-    # check that the tokenization was fine
-    assert len(docs) == 1
-    doc = docs[0]
-    assert len(doc.tokens) == 465
-    assert len(doc.labeled_spans) == 7
-    ent = doc.labeled_spans[0]
-    assert (
-        str(ent)
-        == "('a', 'combination', 'of', 'mit', '##ox', '##ant', '##rone', 'plus', 'pre', '##d', '##nis', '##one', 'is', "
-        "'prefer', '##able', 'to', 'pre', '##d', '##nis', '##one', 'alone', 'for', 'reduction', 'of', 'pain', 'in', "
-        "'men', 'with', 'meta', '##static', ',', 'hormone', '-', 'resistant', ',', 'prostate', 'cancer', '.')"
-    )
-    ent = doc.labeled_spans[1]
-    assert (
-        str(ent)
-        == "('at', '6', 'weeks', ',', 'both', 'groups', 'showed', 'improvement', 'in', 'several', 'hq', '##l', "
-        "'domains', ',')"
-    )
-    ent = doc.labeled_spans[2]
-    assert (
-        str(ent)
-        == "('only', 'physical', 'functioning', 'and', 'pain', 'were', 'better', 'in', 'the', 'mit', '##ox', '##ant', "
-        "'##rone', '-', 'plus', '-', 'pre', '##d', '##nis', '##one', 'group', 'than', 'in', 'the', 'pre', '##d', "
-        "'##nis', '##one', '-', 'alone', 'group', '.')"
-    )
-    ent = doc.labeled_spans[3]
-    assert (
-        str(ent)
-        == "('after', '6', 'weeks', ',', 'patients', 'taking', 'pre', '##d', '##nis', '##one', 'showed', 'no', "
-        "'improvement', 'in', 'hq', '##l', 'scores', ',', 'whereas', 'those', 'taking', 'mit', '##ox', '##ant', "
-        "'##rone', 'plus', 'pre', '##d', '##nis', '##one', 'showed', 'significant', 'improvements', 'in', 'global', "
-        "'quality', 'of', 'life', '(', 'p', '=', '.', '00', '##9', ')', ',', 'four', 'functioning', 'domains', ',', "
-        "'and', 'nine', 'symptoms', '(', '.', '001', '<', 'p', '<', '.', '01', ')', ',')"
-    )
-    ent = doc.labeled_spans[4]
-    assert (
-        str(ent)
-        == "('the', 'improvement', '(', '>', '10', 'units', 'on', 'a', 'scale', 'of', '0', 'to', '##100', ')', "
-        "'lasted', 'longer', 'than', 'in', 'the', 'pre', '##d', '##nis', '##one', '-', 'alone', 'group', '(', '.', "
-        "'00', '##4', '<', 'p', '<', '.', '05', ')', '.')"
-    )
-    ent = doc.labeled_spans[5]
-    assert (
-        str(ent)
-        == "('the', 'addition', 'of', 'mit', '##ox', '##ant', '##rone', 'to', 'pre', '##d', '##nis', '##one', "
-        "'after', 'failure', 'of', 'pre', '##d', '##nis', '##one', 'alone', 'was', 'associated', 'with', "
-        "'improvements', 'in', 'pain', ',', 'pain', 'impact', ',', 'pain', 'relief', ',', 'ins', '##om', '##nia', "
-        "',', 'and', 'global', 'quality', 'of', 'life', '(', '.', '001', '<', 'p', '<', '.', '00', '##3', ')', '.')"
-    )
-    ent = doc.labeled_spans[6]
-    assert (
-        str(ent)
-        == "('treatment', 'with', 'mit', '##ox', '##ant', '##rone', 'plus', 'pre', '##d', '##nis', '##one', 'was', "
-        "'associated', 'with', 'greater', 'and', 'longer', '-', 'lasting', 'improvement', 'in', 'several', "
-        "'hq', '##l', 'domains', 'and', 'symptoms', 'than', 'treatment', 'with', 'pre', '##d', '##nis', '##one', "
-        "'alone', '.')"
-    )
-
-
-def test_tokenized_documents_with_entities_and_relations_all(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer, dataset_variant
-):
-    for (
-        split,
-        docs,
-    ) in dataset_of_text_documents_with_labeled_spans_and_binary_relations.items():
-        for doc in docs:
-            # Note, that this is a list of documents, because the document may be split into chunks
-            # if the input text is too long.
-            tokenized_docs = tokenize_document(
-                doc,
-                tokenizer=tokenizer,
-                return_overflowing_tokens=True,
-                result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-                strict_span_conversion=True,
-                verbose=True,
-            )
-            # we just ensure that we get at least one tokenized document
-            assert tokenized_docs is not None
-            assert len(tokenized_docs) > 0
 
 
 def test_document_converters(dataset_variant):

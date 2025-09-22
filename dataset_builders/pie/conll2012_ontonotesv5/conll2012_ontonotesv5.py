@@ -4,8 +4,8 @@ from typing import Any, Dict, List, Optional, Tuple
 
 import datasets
 from pie_core import Annotation, AnnotationLayer, annotation_field
-from pie_modules.annotations import LabeledSpan, NaryRelation, Span
-from pie_modules.documents import (
+from pie_documents.annotations import LabeledSpan, NaryRelation, Span
+from pie_documents.documents import (
     TextDocumentWithLabeledSpansAndLabeledPartitions,
     TokenBasedDocument,
 )

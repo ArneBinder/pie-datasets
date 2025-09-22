@@ -3,9 +3,9 @@ from typing import Any, Dict, Optional
 
 import datasets
 from pie_core import Annotation, AnnotationLayer, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledSpan
-from pie_modules.document.processing import token_based_document_to_text_based
-from pie_modules.documents import (
+from pie_documents.annotations import BinaryRelation, LabeledSpan
+from pie_documents.document.processing import token_based_document_to_text_based
+from pie_documents.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TokenBasedDocument,
 )

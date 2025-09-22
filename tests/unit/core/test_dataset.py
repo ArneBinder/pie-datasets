@@ -6,8 +6,8 @@ from typing import Union
 import pytest
 from pie_core import AnnotationLayer, Document, TaskEncodingSequence, annotation_field
 from pie_core.utils.dictionary import list_of_dicts2dict_of_lists
-from pie_modules.annotations import BinaryRelation, Label, LabeledSpan, Span
-from pie_modules.documents import TextBasedDocument
+from pie_documents.annotations import BinaryRelation, Label, LabeledSpan, Span
+from pie_documents.documents import TextBasedDocument
 
 from pie_datasets import Dataset, IterableDataset
 from pie_datasets.core.dataset import (

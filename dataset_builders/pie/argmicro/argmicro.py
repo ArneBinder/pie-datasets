@@ -7,8 +7,8 @@ from typing import Any, Dict, List, Optional, Set, Tuple
 
 import datasets
 from pie_core import Annotation, AnnotationLayer, annotation_field
-from pie_modules.annotations import BinaryRelation, Label, LabeledSpan, Span
-from pie_modules.documents import (
+from pie_documents.annotations import BinaryRelation, Label, LabeledSpan, Span
+from pie_documents.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )

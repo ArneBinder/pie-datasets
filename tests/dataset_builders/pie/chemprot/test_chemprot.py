@@ -3,7 +3,7 @@ from typing import Union
 import datasets
 import pytest
 from pie_core import Document
-from pie_modules.documents import (
+from pie_documents.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )

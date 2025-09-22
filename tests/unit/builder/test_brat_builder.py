@@ -4,8 +4,8 @@ from typing import Union
 
 import pytest
 from pie_core import AnnotationLayer, annotation_field
-from pie_modules.annotations import LabeledSpan
-from pie_modules.documents import TextBasedDocument
+from pie_documents.annotations import LabeledSpan
+from pie_documents.documents import TextBasedDocument
 
 from pie_datasets.builders.brat import (
     BratAttribute,
