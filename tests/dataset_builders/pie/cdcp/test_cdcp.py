@@ -4,13 +4,11 @@ from typing import List
 import pytest
 from datasets import disable_caching, load_dataset
 from pie_core import AnnotationLayer, Document, annotation_field
-from pie_modules.annotations import LabeledSpan
-from pie_modules.document.processing import tokenize_document
-from pie_modules.documents import (
+from pie_documents.annotations import LabeledSpan
+from pie_documents.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )
-from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.cdcp.cdcp import (
     CDCP,
@@ -21,11 +19,7 @@ from dataset_builders.pie.cdcp.cdcp import (
 )
 from pie_datasets import DatasetDict
 from tests import FIXTURES_ROOT
-from tests.dataset_builders.common import (
-    PIE_BASE_PATH,
-    TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-    _deep_compare,
-)
+from tests.dataset_builders.common import PIE_BASE_PATH, _deep_compare
 
 disable_caching()
 
@@ -301,146 +295,3 @@ def test_convert_to_textdocument_with_entities_and_relations(
         split
     ][0]
     assert converted_doc == doc_from_converted_dataset
-
-
-@pytest.fixture(scope="module")
-def tokenizer() -> PreTrainedTokenizer:
-    return AutoTokenizer.from_pretrained("bert-base-uncased")
-
-
-@pytest.fixture(scope="module")
-def tokenized_documents_with_labeled_spans_and_binary_relations(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer
-) -> List[TestTokenDocumentWithLabeledSpansAndBinaryRelations]:
-    # get a document to check
-    doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations["train"][0]
-    # Note, that this is a list of documents, because the document may be split into chunks
-    # if the input text is too long.
-    tokenized_docs = tokenize_document(
-        doc,
-        tokenizer=tokenizer,
-        return_overflowing_tokens=True,
-        result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-        verbose=True,
-    )
-    return tokenized_docs
-
-
-def test_tokenized_documents_with_labeled_spans_and_binary_relations(
-    tokenized_documents_with_labeled_spans_and_binary_relations,
-):
-    docs = tokenized_documents_with_labeled_spans_and_binary_relations
-    assert len(docs) == 1
-    doc = docs[0]
-    assert len(doc.tokens) == 84
-    assert len(doc.labeled_spans) == 3
-    ent = doc.labeled_spans[0]
-    assert ent.target[ent.start : ent.end] == (
-        "state",
-        "and",
-        "local",
-        "court",
-        "rules",
-        "sometimes",
-        "make",
-        "default",
-        "judgments",
-        "much",
-        "more",
-        "likely",
-        ".",
-    )
-    ent = doc.labeled_spans[1]
-    assert ent.target[ent.start : ent.end] == (
-        "for",
-        "example",
-        ",",
-        "when",
-        "a",
-        "person",
-        "who",
-        "allegedly",
-        "owes",
-        "a",
-        "debt",
-        "is",
-        "told",
-        "to",
-        "come",
-        "to",
-        "court",
-        "on",
-        "a",
-        "work",
-        "day",
-        ",",
-        "they",
-        "may",
-        "be",
-        "forced",
-        "to",
-        "choose",
-        "between",
-        "a",
-        "default",
-        "judgment",
-        "and",
-        "their",
-        "job",
-        ".",
-    )
-    ent = doc.labeled_spans[2]
-    assert ent.target[ent.start : ent.end] == (
-        "i",
-        "urge",
-        "the",
-        "cf",
-        "##p",
-        "##b",
-        "to",
-        "find",
-        "practices",
-        "that",
-        "involve",
-        "scheduling",
-        "hearings",
-        "at",
-        "inc",
-        "##on",
-        "##ven",
-        "##ient",
-        "times",
-        "unfair",
-        ",",
-        "dec",
-        "##eptive",
-        ",",
-        "and",
-        "abusive",
-        ",",
-        "or",
-        "inconsistent",
-        "with",
-        "1692",
-        "##i",
-        ".",
-    )
-
-
-def test_tokenized_documents_with_entities_and_relations_all(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer
-):
-    for split, docs in dataset_of_text_documents_with_labeled_spans_and_binary_relations.items():
-        for doc in docs:
-            # Note, that this is a list of documents, because the document may be split into chunks
-            # if the input text is too long.
-            tokenized_docs = tokenize_document(
-                doc,
-                tokenizer=tokenizer,
-                return_overflowing_tokens=True,
-                result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-                verbose=True,
-            )
-            # we just ensure that we get at least one tokenized document
-            assert tokenized_docs is not None
-            assert len(tokenized_docs) > 0

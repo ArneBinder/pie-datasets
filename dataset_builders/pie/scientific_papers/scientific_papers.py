@@ -3,7 +3,7 @@ from typing import Any, Dict, List
 
 import datasets
 from pie_core import Annotation, AnnotationLayer, annotation_field
-from pie_modules.documents import TextBasedDocument
+from pie_documents.documents import TextBasedDocument
 
 from pie_datasets import GeneratorBasedBuilder
 

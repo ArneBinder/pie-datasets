@@ -3,13 +3,11 @@ from typing import List
 import pytest
 from datasets import disable_caching
 from pie_core import Document
-from pie_modules.annotations import BinaryRelation, LabeledSpan
-from pie_modules.document.processing import tokenize_document
-from pie_modules.documents import (
+from pie_documents.annotations import BinaryRelation, LabeledSpan
+from pie_documents.documents import (
     TextDocumentWithLabeledSpansAndBinaryRelations,
     TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
 )
-from transformers import AutoTokenizer, PreTrainedTokenizer
 
 from dataset_builders.pie.aae2.aae2 import (
     ArgumentAnnotatedEssaysV2,
@@ -18,11 +16,7 @@ from dataset_builders.pie.aae2.aae2 import (
 )
 from pie_datasets import DatasetDict
 from pie_datasets.builders.brat import BratAttribute, BratDocumentWithMergedSpans
-from tests.dataset_builders.common import (
-    PIE_BASE_PATH,
-    TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-    TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-)
+from tests.dataset_builders.common import PIE_BASE_PATH
 
 disable_caching()
 
@@ -603,233 +597,6 @@ def test_dataset_of_text_documents_with_labeled_spans_binary_relations_and_label
 
     # check the relations
     assert doc_with_partitions.binary_relations == doc_without_partitions.binary_relations
-
-
-@pytest.fixture(scope="module")
-def tokenizer() -> PreTrainedTokenizer:
-    return AutoTokenizer.from_pretrained("bert-base-uncased")
-
-
-@pytest.fixture(scope="module")
-def tokenized_documents_with_labeled_spans_and_binary_relations(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer
-) -> List[TestTokenDocumentWithLabeledSpansAndBinaryRelations]:
-    if dataset_of_text_documents_with_labeled_spans_and_binary_relations is None:
-        return None
-
-    # get a document to check
-    doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations["train"][0]
-    # Note, that this is a list of documents, because the document may be split into chunks
-    # if the input text is too long.
-    tokenized_docs = tokenize_document(
-        doc,
-        tokenizer=tokenizer,
-        return_overflowing_tokens=True,
-        result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-        strict_span_conversion=True,
-        verbose=True,
-    )
-    return tokenized_docs
-
-
-def test_tokenized_documents_with_labeled_spans_and_binary_relations(
-    tokenized_documents_with_labeled_spans_and_binary_relations, dataset_variant
-):
-    docs = tokenized_documents_with_labeled_spans_and_binary_relations
-    # check that the tokenization was fine
-    assert len(docs) == 1
-    doc = docs[0]
-    assert len(doc.labeled_spans) == 11
-    if dataset_variant == "paragraphs":
-        assert len(doc.binary_relations) == 6
-    else:
-        assert len(doc.binary_relations) == 10
-    assert len(doc.tokens) == 427
-    # Check the first ten tokens
-    assert doc.tokens[:10] == (
-        "[CLS]",
-        "should",
-        "students",
-        "be",
-        "taught",
-        "to",
-        "compete",
-        "or",
-        "to",
-        "cooperate",
-    )
-    # sort the entities by their start position
-    sorted_entities = sorted(doc.labeled_spans, key=lambda ent: ent.start)
-    assert (
-        str(sorted_entities[0])
-        == "('we', 'should', 'attach', 'more', 'importance', 'to', 'cooperation', 'during', 'primary', 'education')"
-    )
-    assert (
-        str(sorted_entities[1])
-        == "('through', 'cooperation', ',', 'children', 'can', 'learn', 'about', 'inter', '##personal', 'skills', "
-        "'which', 'are', 'significant', 'in', 'the', 'future', 'life', 'of', 'all', 'students')"
-    )
-    assert (
-        str(sorted_entities[2])
-        == "('what', 'we', 'acquired', 'from', 'team', 'work', 'is', 'not', 'only', 'how', 'to', 'achieve', 'the', "
-        "'same', 'goal', 'with', 'others', 'but', 'more', 'importantly', ',', 'how', 'to', 'get', 'along', "
-        "'with', 'others')"
-    )
-    assert (
-        str(sorted_entities[3])
-        == "('during', 'the', 'process', 'of', 'cooperation', ',', 'children', 'can', 'learn', 'about', 'how', 'to', "
-        "'listen', 'to', 'opinions', 'of', 'others', ',', 'how', 'to', 'communicate', 'with', 'others', ',', "
-        "'how', 'to', 'think', 'comprehensive', '##ly', ',', 'and', 'even', 'how', 'to', 'compromise', 'with', "
-        "'other', 'team', 'members', 'when', 'conflicts', 'occurred')"
-    )
-    assert (
-        str(sorted_entities[4])
-        == "('all', 'of', 'these', 'skills', 'help', 'them', 'to', 'get', 'on', 'well', 'with', 'other', 'people', "
-        "'and', 'will', 'benefit', 'them', 'for', 'the', 'whole', 'life')"
-    )
-    assert (
-        str(sorted_entities[5])
-        == "('the', 'significance', 'of', 'competition', 'is', 'that', 'how', 'to', 'become', 'more', 'excellence', "
-        "'to', 'gain', 'the', 'victory')"
-    )
-    assert (
-        str(sorted_entities[6])
-        == "('competition', 'makes', 'the', 'society', 'more', 'effective')"
-    )
-    assert (
-        str(sorted_entities[7])
-        == "('when', 'we', 'consider', 'about', 'the', 'question', 'that', 'how', 'to', 'win', 'the', 'game', ',', "
-        "'we', 'always', 'find', 'that', 'we', 'need', 'the', 'cooperation')"
-    )
-    assert (
-        str(sorted_entities[8])
-        == "('take', 'olympic', 'games', 'which', 'is', 'a', 'form', 'of', 'competition', 'for', 'instance', ',', "
-        "'it', 'is', 'hard', 'to', 'imagine', 'how', 'an', 'athlete', 'could', 'win', 'the', 'game', 'without', "
-        "'the', 'training', 'of', 'his', 'or', 'her', 'coach', ',', 'and', 'the', 'help', 'of', 'other', "
-        "'professional', 'staff', '##s', 'such', 'as', 'the', 'people', 'who', 'take', 'care', 'of', 'his', "
-        "'diet', ',', 'and', 'those', 'who', 'are', 'in', 'charge', 'of', 'the', 'medical', 'care')"
-    )
-    assert (
-        str(sorted_entities[9])
-        == "('without', 'the', 'cooperation', ',', 'there', 'would', 'be', 'no', 'victory', 'of', 'competition')"
-    )
-    assert (
-        str(sorted_entities[10])
-        == "('a', 'more', 'cooperative', 'attitudes', 'towards', 'life', 'is', 'more', 'profitable', "
-        "'in', 'one', \"'\", 's', 'success')"
-    )
-
-
-def test_tokenized_documents_with_entities_and_relations_all(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer, dataset_variant
-):
-    for (
-        split,
-        docs,
-    ) in dataset_of_text_documents_with_labeled_spans_and_binary_relations.items():
-        for doc in docs:
-            # Note, that this is a list of documents, because the document may be split into chunks
-            # if the input text is too long.
-            tokenized_docs = tokenize_document(
-                doc,
-                tokenizer=tokenizer,
-                return_overflowing_tokens=True,
-                result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-                strict_span_conversion=True,
-                verbose=True,
-            )
-            # we just ensure that we get at least one tokenized document
-            assert tokenized_docs is not None
-            assert len(tokenized_docs) > 0
-
-
-@pytest.fixture(scope="module")
-def tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions(
-    dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions, tokenizer
-) -> List[TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions]:
-    # get a document to check
-    doc = dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions[
-        "train"
-    ][0]
-    # Note, that this is a list of documents, because the document may be split into chunks
-    # if the input text is too long.
-    tokenized_docs = tokenize_document(
-        doc,
-        tokenizer=tokenizer,
-        partition_layer="labeled_partitions",
-        return_overflowing_tokens=True,
-        result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-        # We set strict_span_conversion to False
-        # because we added relations between Claims and MajorClaims from different paragraphs
-        # and those relations are lost in annotations
-        strict_span_conversion=False,
-        verbose=True,
-    )
-    return tokenized_docs
-
-
-def test_tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions(
-    tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions,
-    tokenized_documents_with_labeled_spans_and_binary_relations,
-):
-    docs_with_partitions = (
-        tokenized_documents_with_labeled_spans_binary_relations_and_labeled_partitions
-    )
-
-    # check that the tokenization was fine
-    assert len(docs_with_partitions) == 5
-    doc_with_partitions = docs_with_partitions[0]
-    assert len(doc_with_partitions.labeled_partitions) == 1
-    assert len(doc_with_partitions.labeled_spans) == 0
-    assert len(doc_with_partitions.binary_relations) == 0
-    assert doc_with_partitions.tokens == (
-        "[CLS]",
-        "should",
-        "students",
-        "be",
-        "taught",
-        "to",
-        "compete",
-        "or",
-        "to",
-        "cooperate",
-        "?",
-        "[SEP]",
-    )
-
-
-def test_tokenized_documents_with_entities_relations_and_partitions_all(
-    dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions, tokenizer
-):
-    for (
-        split,
-        docs,
-    ) in (
-        dataset_of_text_documents_with_labeled_spans_binary_relations_and_labeled_partitions.items()
-    ):
-        for doc in docs:
-            # Note, that this is a list of documents, because the document may be split into chunks
-            # if the input text is too long.
-            tokenized_docs = tokenize_document(
-                doc,
-                tokenizer=tokenizer,
-                partition_layer="labeled_partitions",
-                return_overflowing_tokens=True,
-                result_document_type=TestTokenDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions,
-                # We set strict_span_conversion to False
-                # because we added relations between Claims and MajorClaims from different paragraphs
-                # and those relations are lost in annotations
-                strict_span_conversion=False,
-                verbose=True,
-            )
-            # we just ensure that we get at least one tokenized document
-            assert tokenized_docs is not None
-            assert len(tokenized_docs) > 0
-            for tokenized_doc in tokenized_docs:
-                assert tokenized_doc.labeled_partitions is not None
-                # We use the partitions to partition the input, so each tokenized
-                # document should have exactly one partition annotation.
-                assert len(tokenized_doc.labeled_partitions) == 1
 
 
 def test_document_converters(dataset_variant):

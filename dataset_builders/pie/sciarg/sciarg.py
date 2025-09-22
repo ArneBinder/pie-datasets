@@ -3,13 +3,13 @@ import logging
 from typing import Union
 
 from pie_core import AnnotationLayer, Document, annotation_field
-from pie_modules.document.processing import (
+from pie_documents.document.processing import (
     RegexPartitioner,
     RelationArgumentSorter,
     SpansViaRelationMerger,
     TextSpanTrimmer,
 )
-from pie_modules.documents import (
+from pie_documents.documents import (
     TextDocumentWithLabeledMultiSpansAndBinaryRelations,
     TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions,
     TextDocumentWithLabeledSpansAndBinaryRelations,

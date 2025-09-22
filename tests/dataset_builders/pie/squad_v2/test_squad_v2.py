@@ -1,7 +1,7 @@
 import datasets
 import pytest
 from pie_core import Document
-from pie_modules.documents import ExtractiveQADocument
+from pie_documents.documents import ExtractiveQADocument
 
 from dataset_builders.pie.squad_v2.squad_v2 import SquadV2
 from pie_datasets import Dataset, IterableDataset, load_dataset

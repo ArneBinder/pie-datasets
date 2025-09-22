@@ -1,14 +1,14 @@
 import dataclasses
 import glob
 import os
+from importlib.util import find_spec
 from pathlib import Path
 
-import pkg_resources
 import pytest
 from datasets import load_dataset
 from pie_core import AnnotationLayer, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledSpan, Span
-from pie_modules.documents import TextBasedDocument
+from pie_documents.annotations import BinaryRelation, LabeledSpan, Span
+from pie_documents.documents import TextBasedDocument
 
 from pie_datasets import DatasetDict
 from tests import FIXTURES_ROOT
@@ -25,7 +25,7 @@ for src_root in SRC_ROOTS:
         __import__(import_path)
 
 
-_TABULATE_AVAILABLE = "tabulate" in {pkg.key for pkg in pkg_resources.working_set}
+_TABULATE_AVAILABLE = find_spec("tabulate") is not None
 
 CREATE_FIXTURE_DATA = False
 

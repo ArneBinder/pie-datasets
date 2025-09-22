@@ -7,8 +7,8 @@ from pathlib import Path
 from typing import List, Optional
 
 from pie_core import AnnotationLayer, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledSpan
-from pie_modules.documents import TokenBasedDocument
+from pie_documents.annotations import BinaryRelation, LabeledSpan
+from pie_documents.documents import TokenBasedDocument
 
 from tests import FIXTURES_ROOT
 

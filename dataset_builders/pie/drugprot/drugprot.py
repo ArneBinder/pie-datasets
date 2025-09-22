@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from typing import Any, Dict, Optional, Union
 
 import datasets
-from pie_modules.annotations import BinaryRelation, LabeledSpan
-from pie_modules.documents import (
+from pie_documents.annotations import BinaryRelation, LabeledSpan
+from pie_documents.documents import (
     AnnotationLayer,
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,

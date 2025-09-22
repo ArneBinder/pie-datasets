@@ -40,7 +40,8 @@ fsspec = "<2023.9.0"
 optional = true
 
 [tool.poetry.group.dev.dependencies]
-pie-modules = ">=0.15.9,<0.16.0"
+pie-documents = ">=0.1.0,<0.2.0"
+networkx = "^3"  # for dataset tests that use SpansViaRelationMerger during conversion (sciarg)
 pytest = "^7.4.2"
 pytest-cov = "^4.1.0"
 pre-commit = "^3.4.0"

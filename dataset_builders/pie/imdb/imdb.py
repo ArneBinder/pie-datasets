@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from typing import Any, Dict
 
 import datasets
-from pie_modules.annotations import Label
-from pie_modules.documents import TextDocumentWithLabel
+from pie_documents.annotations import Label
+from pie_documents.documents import TextDocumentWithLabel
 
 from pie_datasets import GeneratorBasedBuilder
 

@@ -4,9 +4,9 @@ from typing import Any, Dict, List, Optional
 
 import datasets
 from pie_core import Annotation, AnnotationLayer, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledSpan
-from pie_modules.document.processing.text_span_trimmer import trim_text_spans
-from pie_modules.documents import (
+from pie_documents.annotations import BinaryRelation, LabeledSpan
+from pie_documents.document.processing.text_span_trimmer import trim_text_spans
+from pie_documents.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )

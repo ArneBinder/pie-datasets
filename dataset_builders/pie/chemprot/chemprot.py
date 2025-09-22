@@ -3,8 +3,8 @@ from typing import Any, Dict
 
 import datasets
 from pie_core import Document
-from pie_modules.annotations import BinaryRelation, LabeledSpan
-from pie_modules.documents import (
+from pie_documents.annotations import BinaryRelation, LabeledSpan
+from pie_documents.documents import (
     AnnotationLayer,
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,

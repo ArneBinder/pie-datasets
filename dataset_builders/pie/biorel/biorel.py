@@ -4,8 +4,8 @@ from typing import Any
 
 import datasets
 from pie_core import AnnotationLayer, annotation_field
-from pie_modules.annotations import BinaryRelation, LabeledSpan, Span
-from pie_modules.documents import (
+from pie_documents.annotations import BinaryRelation, LabeledSpan, Span
+from pie_documents.documents import (
     TextBasedDocument,
     TextDocumentWithLabeledSpansAndBinaryRelations,
 )

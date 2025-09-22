@@ -2,8 +2,8 @@ import dataclasses
 from typing import Any, Dict, Optional
 
 import datasets
-from pie_modules.annotations import ExtractiveAnswer, Question
-from pie_modules.documents import ExtractiveQADocument
+from pie_documents.annotations import ExtractiveAnswer, Question
+from pie_documents.documents import ExtractiveQADocument
 
 from pie_datasets import GeneratorBasedBuilder
 

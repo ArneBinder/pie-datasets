@@ -1,9 +1,9 @@
 from dataclasses import dataclass
 
 import datasets
-from pie_modules.annotations import LabeledSpan
+from pie_documents.annotations import LabeledSpan
 from pie_core import AnnotationLayer, annotation_field
-from pie_modules.documents import TextBasedDocument
+from pie_documents.documents import TextBasedDocument
 
 from pie_datasets import GeneratorBasedBuilder
 from tests import FIXTURES_ROOT

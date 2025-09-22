@@ -13,8 +13,8 @@ from typing import Dict, Iterator, List, Optional, Sequence, Tuple, TypedDict
 
 import numpy as np
 from pie_core import AnnotationLayer, TaskEncoding, TaskModule, annotation_field
-from pie_modules.annotations import Label
-from pie_modules.documents import TextBasedDocument
+from pie_documents.annotations import Label
+from pie_documents.documents import TextBasedDocument
 from typing_extensions import TypeAlias
 
 logger = logging.getLogger(__name__)

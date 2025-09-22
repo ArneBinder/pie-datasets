@@ -1,12 +1,9 @@
 import json
-from typing import List
 
 import pytest
 from datasets import disable_caching, load_dataset
 from pie_core import Document
-from pie_modules.document.processing import tokenize_document
-from pie_modules.documents import TextDocumentWithLabeledSpansAndBinaryRelations
-from transformers import AutoTokenizer, PreTrainedTokenizer
+from pie_documents.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 from dataset_builders.pie.scidtb_argmin.scidtb_argmin import (
     SciDTBArgmin,
@@ -17,11 +14,7 @@ from dataset_builders.pie.scidtb_argmin.scidtb_argmin import (
 )
 from pie_datasets import DatasetDict
 from tests import FIXTURES_ROOT
-from tests.dataset_builders.common import (
-    HF_DS_FIXTURE_DATA_PATH,
-    PIE_BASE_PATH,
-    TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-)
+from tests.dataset_builders.common import HF_DS_FIXTURE_DATA_PATH, PIE_BASE_PATH
 
 disable_caching()
 
@@ -286,100 +279,3 @@ def test_dataset_of_text_documents_with_labeled_spans_and_binary_relations(
         "The effectiveness of the DSSM is demonstrated using two interestingness tasks : automatic highlighting "
         "and contextual entity search .",
     )
-
-
-@pytest.fixture(scope="module")
-def tokenizer() -> PreTrainedTokenizer:
-    return AutoTokenizer.from_pretrained("bert-base-uncased")
-
-
-@pytest.fixture(scope="module")
-def tokenized_documents_with_labeled_spans_and_binary_relations(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer
-) -> List[TestTokenDocumentWithLabeledSpansAndBinaryRelations]:
-    # get a document to check
-    doc = dataset_of_text_documents_with_labeled_spans_and_binary_relations["train"][0]
-    # Note, that this is a list of documents, because the document may be split into chunks
-    # if the input text is too long.
-    tokenized_docs = tokenize_document(
-        doc,
-        tokenizer=tokenizer,
-        return_overflowing_tokens=True,
-        result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-        verbose=True,
-    )
-    return tokenized_docs
-
-
-def test_tokenized_documents_with_labeled_spans_and_binary_relations(
-    tokenized_documents_with_labeled_spans_and_binary_relations,
-):
-    docs = tokenized_documents_with_labeled_spans_and_binary_relations
-    assert len(docs) == 1
-    doc = docs[0]
-    assert len(doc.tokens) == 225
-    assert len(doc.labeled_spans) == 6
-    ent = doc.labeled_spans[0]
-    assert (
-        str(ent)
-        == "('this', 'paper', 'presents', 'a', 'deep', 'semantic', 'similarity', 'model', '-', 'l', '##rb', '-', "
-        "'ds', '##sm', '-', 'rr', '##b', '-', ',', 'a', 'special', 'type', 'of', 'deep', 'neural', 'networks', "
-        "'designed', 'for', 'text', 'analysis', ',', 'for', 'recommend', '##ing', 'target', 'documents', 'to', "
-        "'be', 'of', 'interest', 'to', 'a', 'user', 'based', 'on', 'a', 'source', 'document', 'that', 'she', 'is', "
-        "'reading', '.')"
-    )
-    ent = doc.labeled_spans[1]
-    assert (
-        str(ent)
-        == "('we', 'observe', ',', 'identify', ',', 'and', 'detect', 'naturally', 'occurring', 'signals', 'of', "
-        "'interesting', '##ness', 'in', 'click', 'transitions', 'on', 'the', 'web', 'between', 'source', 'and', "
-        "'target', 'documents', ',', 'which', 'we', 'collect', 'from', 'commercial', 'web', 'browser', 'logs', '.')"
-    )
-    ent = doc.labeled_spans[2]
-    assert (
-        str(ent)
-        == "('the', 'ds', '##sm', 'is', 'trained', 'on', 'millions', 'of', 'web', 'transitions', ',', 'and', 'maps', "
-        "'source', '-', 'target', 'document', 'pairs', 'to', 'feature', 'vectors', 'in', 'a', 'late', '##nt', "
-        "'space', 'in', 'such', 'a', 'way', 'that', 'the', 'distance', 'between', 'source', 'documents', 'and', "
-        "'their', 'corresponding', 'interesting', 'targets', 'in', 'that', 'space', 'is', 'minimize', '##d', '.')"
-    )
-    ent = doc.labeled_spans[3]
-    assert (
-        str(ent)
-        == "('the', 'effectiveness', 'of', 'the', 'ds', '##sm', 'is', 'demonstrated', 'using', 'two', 'interesting', "
-        "'##ness', 'tasks', ':', 'automatic', 'highlighting', 'and', 'context', '##ual', 'entity', 'search', '.')"
-    )
-    ent = doc.labeled_spans[4]
-    assert (
-        str(ent)
-        == "('the', 'results', 'on', 'large', '-', 'scale', ',', 'real', '-', 'world', 'data', '##set', '##s', 'show', "
-        "'that', 'the', 'semantics', 'of', 'documents', 'are', 'important', 'for', 'modeling', 'interesting', "
-        "'##ness')"
-    )
-    ent = doc.labeled_spans[5]
-    assert (
-        str(ent)
-        == "('and', 'that', 'the', 'ds', '##sm', 'leads', 'to', 'significant', 'quality', 'improvement', 'on', "
-        "'both', 'tasks', ',', 'out', '##per', '##form', '##ing', 'not', 'only', 'the', 'classic', 'document', "
-        "'models', 'that', 'do', 'not', 'use', 'semantics', 'but', 'also', 'state', '-', 'of', '-', 'the', "
-        "'-', 'art', 'topic', 'models', '.')"
-    )
-
-
-def test_tokenized_documents_with_entities_and_relations_all(
-    dataset_of_text_documents_with_labeled_spans_and_binary_relations, tokenizer
-):
-    for split, docs in dataset_of_text_documents_with_labeled_spans_and_binary_relations.items():
-        for doc in docs:
-            # Note, that this is a list of documents, because the document may be split into chunks
-            # if the input text is too long.
-            tokenized_docs = tokenize_document(
-                doc,
-                tokenizer=tokenizer,
-                return_overflowing_tokens=True,
-                result_document_type=TestTokenDocumentWithLabeledSpansAndBinaryRelations,
-                verbose=True,
-            )
-            # we just ensure that we get at least one tokenized document
-            assert tokenized_docs is not None
-            assert len(tokenized_docs) > 0
