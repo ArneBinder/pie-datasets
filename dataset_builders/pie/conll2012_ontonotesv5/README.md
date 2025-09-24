@@ -35,13 +35,13 @@ and the following annotation layers:
 - `speakers` (annotation type: `Attribute`, target: `sentences`)
 - `parse_trees` (annotation type: `Attribute`, target: `sentences`)
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) for the annotation type definitions.
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/annotations.py) for the annotation type definitions.
 
 ## Document Converters
 
 The dataset provides document converters for the following target document types:
 
-- `pie_modules.documents.TextDocumentWithLabeledSpansAndLabeledPartitions`
+- `pie_documents.documents.TextDocumentWithLabeledSpansAndLabeledPartitions`
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py) for the document type
 definitions.

@@ -9,7 +9,7 @@ Therefore, the `sciarg` dataset as described here follows the data structure fro
 ```python
 from pie_datasets import load_dataset
 from pie_datasets.builders.brat import BratDocumentWithMergedSpans, BratDocument
-from pie_modules.documents import TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+from pie_documents.documents import TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions, TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
 
 # load default version
 dataset = load_dataset("pie/sciarg")
@@ -74,20 +74,20 @@ See [PIE-Brat Data Schema](https://huggingface.co/datasets/pie/brat#data-schema)
 
 The dataset provides document converters for the following target document types:
 
-- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+- `pie_documents.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
   - `LabeledSpans`, converted from `BratDocument`'s `spans`
     - labels: `background_claim`, `own_claim`, `data`
     - if `spans` contain whitespace at the beginning and/or the end, the whitespace are trimmed out.
   - `BinraryRelations`, converted from `BratDocument`'s `relations`
     - labels: `supports`, `contradicts`, `semantically_same`, `parts_of_same`
     - if the `relations` label is `semantically_same` or `parts_of_same`, they are merged if they are the same arguments after sorting.
-- `pie_modules.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
+- `pie_documents.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
   - `LabeledSpans`, as above
   - `BinaryRelations`, as above
   - `LabeledPartitions`, partitioned `BratDocument`'s `text`, according to the paragraph, using regex.
     - labels: `title`, `abstract`, `H1`
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py) for the document type
 definitions.
 
 ### Data Splits
@@ -196,14 +196,14 @@ python src/evaluate_documents.py dataset=sciarg_base metric=METRIC
 
 From `default` version:
 
-- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+- `pie_documents.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
   - `labeled_spans`: `LabeledSpan` annotations, converted from `BratDocumentWithMergedSpans`'s `spans`
     - labels: `background_claim`, `own_claim`, `data`
     - if `spans` contain whitespace at the beginning and/or the end, that whitespace is trimmed out.
   - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocumentWithMergedSpans`'s `relations`
     - labels: `supports`, `contradicts`, `semantically_same`, `parts_of_same`
     - if the `relations` label is `semantically_same` or `parts_of_same` (i.e. it is a symmetric relation), their arguments are sorted by their start and end indices.
-- `pie_modules.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
+- `pie_documents.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions`
   - `labeled_spans`, as above
   - `binary_relations`, as above
   - `labeled_partitions`, `LabeledSpan` annotations, created from splitting `BratDocumentWithMergedSpans`'s `text` at new paragraph in `xml` format.
@@ -211,7 +211,7 @@ From `default` version:
 
 From `resolve_parts_of_same` version:
 
-- `pie_modules.documents.TextDocumentWithLabeledMultiSpansAndBinaryRelations`:
+- `pie_documents.documents.TextDocumentWithLabeledMultiSpansAndBinaryRelations`:
   - `labeled_multi_spans`: `LabeledMultiSpan` annotations, converted from `BratDocument`'s `spans`
     - labels: as above
     - if spans contain whitespace at the beginning and/or the end, that whitespace is trimmed out.
@@ -219,7 +219,7 @@ From `resolve_parts_of_same` version:
     - labels: `supports`, `contradicts`, `semantically_same`
     - in contrast to the `default` version, spans connected with `parts_of_same` relation are stored as one labeled multi-span
     - if the `relations` label is `semantically_same` (i.e. it is a symmetric relation), their arguments are sorted by their start and end indices.
-- `pie_modules.documents.TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions`:
+- `pie_documents.documents.TextDocumentWithLabeledMultiSpansBinaryRelationsAndLabeledPartitions`:
   - `labeled_multi_spans`, as above
   - `binary_relations`, as above
   - `labeled_partitions`, `LabeledSpan` annotations, created from splitting `BratDocument`'s `text` at new paragraph in `xml` format.
@@ -235,7 +235,7 @@ input:
   revision: 982d5682ba414ee13cf92cb93ec18fc8e78e2b81
 ```
 
-For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py)).
+For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py)).
 
 #### Relation argument (outer) token distance per label
 

@@ -9,7 +9,7 @@ Therefore, the `aae2` dataset as described here follows the data structure from 
 ```python
 from pie_datasets import load_dataset
 from pie_datasets.builders.brat import BratDocumentWithMergedSpans
-from pie_modules.documents import TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
+from pie_documents.documents import TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions
 
 # load default version
 dataset = load_dataset("pie/aae2")
@@ -102,7 +102,7 @@ See further description in Stab & Gurevych 2017, p.627 and the [annotation guide
 
 The dataset provides document converters for the following target document types:
 
-- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations` with layers:
+- `pie_documents.documents.TextDocumentWithLabeledSpansAndBinaryRelations` with layers:
   - `labeled_spans`: `LabeledSpan` annotations, converted from `BratDocumentWithMergedSpans`'s `spans`
     - labels: `MajorClaim`, `Claim`, `Premise`
   - `binary_relations`: `BinaryRelation` annotations, converted from `BratDocumentWithMergedSpans`'s `relations`
@@ -114,13 +114,13 @@ The dataset provides document converters for the following target document types
         - build a `supports` or `attacks` relation from each `Claim` to every `MajorClaim`
         - no relations between each `MajorClaim`
     - labels: `supports`, `attacks`, and `semantically_same` if `connect_first`
-- `pie_modules.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions` with layers:
+- `pie_documents.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions` with layers:
   - `labeled_spans`, as above
   - `binary_relations`, as above
   - `labeled_partitions`, `LabeledSpan` annotations, created from splitting `BratDocumentWithMergedSpans`'s `text` at new lines (`\n`).
     - every partition is labeled as `paragraph`
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py) for the document type
 definitions.
 
 #### Relation Label Statistics after Document Conversion
@@ -164,7 +164,7 @@ input:
   revision: 1015ee38bd8a36549b344008f7a49af72956a7fe
 ```
 
-For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py)).
+For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py)).
 
 For relation-label statistics, we collect those from the default relation conversion method, i.e., `connect_first`, resulting in three distinct relation labels.
 

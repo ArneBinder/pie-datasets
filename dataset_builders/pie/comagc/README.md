@@ -31,15 +31,15 @@ and the following annotation layers:
 - `name` (str): entity string between span start and end
 - `type` (str): entity type classifying the expression
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) and
-[here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) for the annotation
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/annotations.py) and
+[here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/annotations.py) for the annotation
 type definitions.
 
 ## Document Converters
 
 The dataset provides predefined document converters for the following target document types:
 
-- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`:
+- `pie_documents.documents.TextDocumentWithLabeledSpansAndBinaryRelations`:
 
   - **labeled_spans**: There are always two labeled spans in each sentence.
     The first one refers to the gene, while the second one refers to the cancer.
@@ -51,6 +51,6 @@ The dataset provides predefined document converters for the following target doc
     no binary relation is added to the document. In total to 303 of the 821 examples,
     there is no rule is applicable (cf [here](https://bmcbioinformatics.biomedcentral.com/articles/10.1186/1471-2105-14-323/tables/7)).
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) and
-[here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py) and
+[here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py) for the document type
 definitions.

@@ -40,7 +40,7 @@ The `Attribute` annotation type is defined as follows:
 - `value` (type: `str`, optional)
 - `score` (type: `float`, optional, not included in comparison)
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) for the remaining annotation type definitions.
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/annotations.py) for the remaining annotation type definitions.
 
 ## Document Converters
 

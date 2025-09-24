@@ -7,7 +7,7 @@ This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for t
 
 ```python
 from pie_datasets import load_dataset
-from pie_modules.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+from pie_documents.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 # load English variant
 dataset = load_dataset("pie/scidtb_argmin")
@@ -37,20 +37,20 @@ and the following annotation layers:
 - `units` (annotation type: `LabeledSpan`, target: `tokens`)
 - `relations` (annotation type: `BinaryRelation`, target: `units`)
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) for the annotation type definitions.
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/annotations.py) for the annotation type definitions.
 
 ## Document Converters
 
 The dataset provides document converters for the following target document types:
 
-- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+- `pie_documents.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
   - `labeled_spans`: `LabeledSpan` annotations, converted from`SciDTBArgminDocument`'s `units`
     - labels: `proposal`, `assertion`, `result`, `observation`, `means`, `description`
     - tuples of `tokens` are joined with a whitespace to create `text` for `LabeledSpans`
   - `binary_relations`: `BinaryRelation` annotations, converted from `SciDTBArgminDocument`'s `relations`
     - labels: `support`, `attack`, `additional`, `detail`, `sequence`
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py) for the document type
 definitions.
 
 ### Collected Statistics after Document Conversion
@@ -74,7 +74,7 @@ input:
   revision: 335a8e6168919d7f204c6920eceb96745dbd161b
 ```
 
-For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py)).
+For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py)).
 
 #### Relation argument (outer) token distance per label
 

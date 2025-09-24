@@ -36,15 +36,15 @@ and the following annotation layers:
 - `entities` (annotation type: `LabeledSpan`, target: `text`)
 - `relations` (annotation type: `BinaryRelation`, target: `entities`)
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) for the annotation
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/annotations.py) for the annotation
 type definitions.
 
 ## Document Converters
 
 The dataset provides predefined document converters for the following target document types:
 
-- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations` for `DrugprotDocument`
-- `pie_modules.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions` for `DrugprotBigbioDocument`
+- `pie_documents.documents.TextDocumentWithLabeledSpansAndBinaryRelations` for `DrugprotDocument`
+- `pie_documents.documents.TextDocumentWithLabeledSpansBinaryRelationsAndLabeledPartitions` for `DrugprotBigbioDocument`
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py) for the document type
 definitions.

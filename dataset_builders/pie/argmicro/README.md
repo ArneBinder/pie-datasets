@@ -7,7 +7,7 @@ This is a [PyTorch-IE](https://github.com/ChristophAlt/pytorch-ie) wrapper for t
 
 ```python
 from pie_datasets import load_dataset
-from pie_modules.documents import TextDocumentWithLabeledSpansAndBinaryRelations
+from pie_documents.documents import TextDocumentWithLabeledSpansAndBinaryRelations
 
 # load English variant
 dataset = load_dataset("pie/argmicro", name="en")
@@ -57,13 +57,13 @@ and the following annotation layers:
     - `tail` (tuple, annotation type: `LabeledAnnotationCollection`, target: `adus`)
     - `label` (str, optional), values: `sup`, `exa`, `reb`, `und` (see [here](https://huggingface.co/datasets/DFKI-SLT/argmicro/blob/main/argmicro.py#L37) for reference, but note that helper relations `seg` and `add` are not there anymore, see above).
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/annotations.py) for the annotation type definitions.
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/annotations.py) for the annotation type definitions.
 
 ## Document Converters
 
 The dataset provides document converters for the following target document types:
 
-- `pie_modules.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
+- `pie_documents.documents.TextDocumentWithLabeledSpansAndBinaryRelations`
   - `LabeledSpans`, converted from `ArgMicroDocument`'s `adus`
     - labels: `opp`, `pro`
     - if an ADU contains multiple spans (i.e. EDUs), we take the start of the first EDU and the end of the last EDU as the boundaries of the new `LabeledSpan`. We also raise exceptions if any newly created `LabeledSpan`s overlap.
@@ -72,7 +72,7 @@ The dataset provides document converters for the following target document types
     - if the `head` or `tail` consists of multiple `adus`, then we build `BinaryRelation`s with all `head`-`tail` combinations and take the label from the original relation. Then, we build `BinaryRelations`' with label `joint` between each component that previously belongs to the same `head` or `tail`, respectively.
   - `metadata`, we keep the `ArgMicroDocument`'s `metadata`, but `stance` and `topic_id`.
 
-See [here](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py) for the document type
+See [here](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py) for the document type
 definitions.
 
 ### Collected Statistics after Document Conversion
@@ -97,7 +97,7 @@ input:
   name: en
 ```
 
-For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ArneBinder/pie-modules/blob/main/src/pie_modules/documents.py)).
+For token based metrics, this uses `bert-base-uncased` from `transformer.AutoTokenizer` (see [AutoTokenizer](https://huggingface.co/docs/transformers/v4.37.1/en/model_doc/auto#transformers.AutoTokenizer), and [bert-based-uncased](https://huggingface.co/bert-base-uncased) to tokenize `text` in `TextDocumentWithLabeledSpansAndBinaryRelations` (see [document type](https://github.com/ArneBinder/pie-documents/blob/main/src/pie_documents/documents.py)).
 
 #### Relation argument (outer) token distance per label
 
