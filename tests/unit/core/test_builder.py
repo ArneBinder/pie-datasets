@@ -42,13 +42,16 @@ def test_builder_class_with_kwargs_wrong_parameter():
     builder_cls = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         # this should raise an exception because the base config does not know the parameter
-        with pytest.raises(
-            TypeError,
-            match=re.escape("__init__() got an unexpected keyword argument 'unknown_parameter'"),
-        ):
-            builder = builder_cls(
+        with pytest.raises(ValueError) as exc_info:
+            builder_cls(
                 cache_dir=tmp_cache_dir, parameter="test", unknown_parameter="test_unknown"
             )
+        assert (
+            str(exc_info.value)
+            == "BuilderConfig ExampleConfig(name='conll2003', version=1.0.0, data_dir=None, "
+            "data_files=None, description='Example dataset') doesn't have a "
+            "'unknown_parameter' key."
+        )
 
 
 def test_builder_class_with_base_dataset_kwargs():
@@ -68,13 +71,14 @@ def test_builder_class_with_base_dataset_kwargs_wrong_parameter():
     base_dataset_kwargs = dict(unknown_base_parameter="base_parameter_value")
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         # this should raise an exception because the base config does not know the parameter
-        with pytest.raises(
-            TypeError,
-            match=re.escape(
-                "__init__() got an unexpected keyword argument 'unknown_base_parameter'"
-            ),
-        ):
-            builder = builder_cls(cache_dir=tmp_cache_dir, base_dataset_kwargs=base_dataset_kwargs)
+        with pytest.raises(ValueError) as exc_info:
+            builder_cls(cache_dir=tmp_cache_dir, base_dataset_kwargs=base_dataset_kwargs)
+        assert (
+            str(exc_info.value)
+            == "BuilderConfig Conll2003Config(name='conll2003', version=1.0.0, data_dir=None, "
+            "data_files=None, description='Conll2003 dataset') doesn't have a "
+            "'unknown_base_parameter' key."
+        )
 
 
 def test_builder_class_multi_configs():
