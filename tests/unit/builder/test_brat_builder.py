@@ -3,6 +3,8 @@ import logging
 from typing import Union
 
 import pytest
+from datasets import DatasetBuilder
+from datasets.load import load_dataset_builder
 from pie_core import AnnotationLayer, annotation_field
 from pie_documents.annotations import LabeledSpan
 from pie_documents.documents import TextBasedDocument
@@ -80,6 +82,18 @@ HF_EXAMPLES = [
         },
     },
 ]
+
+
+@pytest.fixture(scope="module")
+def base_builder() -> DatasetBuilder:
+    result = load_dataset_builder(path=BratBuilder.BASE_DATASET_PATH)
+    return result
+
+
+def test_base_builder(base_builder):
+    assert base_builder is not None
+    assert base_builder.name == "brat"
+    assert base_builder.config.name == "default"
 
 
 @pytest.fixture(scope="module", params=BratBuilder.BUILDER_CONFIGS)
