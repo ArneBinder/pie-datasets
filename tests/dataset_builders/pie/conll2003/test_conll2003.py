@@ -21,7 +21,7 @@ def dataset_name(request):
 
 @pytest.fixture(scope="module")
 def hf_dataset(dataset_name):
-    return datasets.load_dataset(str(HF_DATASET_PATH), name=dataset_name, trust_remote_code=True)
+    return datasets.load_dataset(str(HF_DATASET_PATH), name=dataset_name)
 
 
 def test_hf_dataset(hf_dataset):
@@ -71,9 +71,7 @@ def test_document(document, dataset_name):
 
 @pytest.fixture(scope="module")
 def pie_dataset(dataset_name):
-    return DatasetDict.load_dataset(
-        str(PIE_DATASET_PATH), name=dataset_name, trust_remote_code=True
-    )
+    return DatasetDict.load_dataset(str(PIE_DATASET_PATH), name=dataset_name)
 
 
 def test_pie_dataset(pie_dataset):
