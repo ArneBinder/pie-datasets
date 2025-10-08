@@ -732,8 +732,12 @@ class DatasetDict(datasets.DatasetDict):
         return result
 
 
-def load_dataset(*args, **kwargs) -> Union[DatasetDict, Dataset, IterableDataset]:
-    dataset_or_dataset_dict = datasets.load_dataset(*args, **kwargs)
+def load_dataset(
+    *args, trust_remote_code: bool = True, **kwargs
+) -> Union[DatasetDict, Dataset, IterableDataset]:
+    dataset_or_dataset_dict = datasets.load_dataset(
+        *args, trust_remote_code=trust_remote_code, **kwargs
+    )
     if isinstance(dataset_or_dataset_dict, (Dataset, IterableDataset)):
         return dataset_or_dataset_dict
     elif isinstance(dataset_or_dataset_dict, (datasets.DatasetDict, datasets.IterableDatasetDict)):

@@ -755,7 +755,6 @@ def test_to_document_type_dont_downcast_noop(dataset_dict, caplog):
 def test_load_dataset_conll2003():
     dataset_dict = load_dataset(
         str(PIE_DATASET_PATH),
-        trust_remote_code=True,
         # TODO: should not be necessary anymore once this is handled in the pie dataset script
         base_dataset_kwargs=dict(trust_remote_code=True),
     )
@@ -774,7 +773,6 @@ def test_load_dataset_conll2003_single_split():
     dataset = load_dataset(
         str(PIE_DATASET_PATH),
         split="train",
-        trust_remote_code=True,
         # TODO: should not be necessary anymore once this is handled in the pie dataset script
         base_dataset_kwargs=dict(trust_remote_code=True),
     )
