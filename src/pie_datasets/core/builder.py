@@ -236,13 +236,11 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
         split: Optional[datasets.Split] = None,
         run_post_process=True,
         verification_mode: Optional[Union[datasets.VerificationMode, str]] = None,
-        ignore_verifications="deprecated",
         in_memory=False,
     ) -> Union[Dataset, datasets.DatasetDict]:
         dataset = super().as_dataset(
             split=split,
             run_post_process=run_post_process,
-            ignore_verifications=ignore_verifications,
             in_memory=in_memory,
             verification_mode=verification_mode,
         )
