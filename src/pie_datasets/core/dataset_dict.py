@@ -53,8 +53,12 @@ class DatasetDict(datasets.DatasetDict):
             raise TypeError(f"dataset must be of type Dataset, but is {type(dataset)}")
 
     @classmethod
-    def load_dataset(cls, *args, split=None, **kwargs) -> "DatasetDict":
-        dataset_or_dataset_dict = datasets.load_dataset(*args, split=split, **kwargs)
+    def load_dataset(
+        cls, *args, split=None, trust_remote_code: bool = True, **kwargs
+    ) -> "DatasetDict":
+        dataset_or_dataset_dict = datasets.load_dataset(
+            *args, split=split, trust_remote_code=trust_remote_code, **kwargs
+        )
         if isinstance(dataset_or_dataset_dict, (Dataset, IterableDataset)):
             if split is None:
                 raise ValueError(
