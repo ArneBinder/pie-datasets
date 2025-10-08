@@ -26,15 +26,9 @@ classifiers = [
 python = "^3.9"
 pie-core = ">=0.2.0,<0.4.0"
 # >=3.0.2 because of github.com/huggingface/datasets/pull/7234 (otherwise Brat datasets break)
-datasets = ">=3.0.2,<3.0.3"
+datasets = ">=3.0.2,<4.0.0"
 # should not be necessary, but see https://github.com/ArneBinder/pie-datasets/issues/164
 huggingface-hub = ">=0.24.0"
-# <2.0.0 because otherwise datasets breaks
-#numpy = "<2.0.0"
-# this was manually added because we get a conflict with pyarrow otherwise
-#pyarrow = "^13"
-# pin to version below 2023.9.0 because that one causes problems when using load_dataset with local files (e.g. json)
-#fsspec = "<2023.9.0"
 
 [tool.poetry.group.dev]
 optional = true
