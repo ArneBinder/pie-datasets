@@ -25,7 +25,7 @@ classifiers = [
 [tool.poetry.dependencies]
 python = "^3.9"
 pie-core = ">=0.2.0,<0.4.0"
-# >=3.0.2 because of github.com/huggingface/datasets/pull/7234 (otherwise Brat datasets break)
+# >=3.0.2 because of https://github.com/huggingface/datasets/pull/7234 (otherwise Brat datasets break)
 datasets = ">=3.0.2,<4.0.0"
 # should not be necessary, but see https://github.com/ArneBinder/pie-datasets/issues/164
 huggingface-hub = ">=0.24.0"
