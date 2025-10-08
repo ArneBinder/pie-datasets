@@ -38,14 +38,14 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
     BASE_DATASET_PATH: Optional[str] = None
     # A mapping from config names to Huggingface dataset loading script paths. Use this to specify individual
     # base datasets for each config.
-    BASE_DATASET_PATHS: Dict[str, str] = {}
+    BASE_DATASET_PATHS: Dict[Optional[str], str] = {}
 
     # The default revision (e.g. git commit) of the Huggingface dataset loading script that will be used
     # as base dataset.
     BASE_DATASET_REVISION: Optional[str] = None
     # A mapping from config names to revisions (e.g. git commits) of the Huggingface dataset loading script
     # that will be used as base dataset.
-    BASE_DATASET_REVISIONS: Dict[str, str] = {}
+    BASE_DATASET_REVISIONS: Dict[Optional[str], str] = {}
 
     # Define kwargs to create base configs. This should contain config names as keys
     # and the respective config kwargs dicts as values. If the config name is not contained, a new entry
@@ -236,13 +236,11 @@ class PieDatasetBuilder(datasets.builder.DatasetBuilder):
         split: Optional[datasets.Split] = None,
         run_post_process=True,
         verification_mode: Optional[Union[datasets.VerificationMode, str]] = None,
-        ignore_verifications="deprecated",
         in_memory=False,
     ) -> Union[Dataset, datasets.DatasetDict]:
         dataset = super().as_dataset(
             split=split,
             run_post_process=run_post_process,
-            ignore_verifications=ignore_verifications,
             in_memory=in_memory,
             verification_mode=verification_mode,
         )
