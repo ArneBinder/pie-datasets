@@ -140,10 +140,9 @@ def maybe_iterable_dataset(request):
 
 
 @pytest.fixture()
-def empty_dataset(dataset):
-    empty_hf_dataset = load_dataset(
-        "json", data_files={"train": []}, features=dataset["train"].features
-    )
+def empty_dataset(hf_dataset):
+    # filter out all examples
+    empty_hf_dataset = hf_dataset.filter(function=lambda example: False)
     mapped_dataset = empty_hf_dataset.map(example_to_doc_dict)
     dataset = DatasetDict.from_hf(hf_dataset=mapped_dataset, document_type=TestDocument)
     return dataset
@@ -163,8 +162,9 @@ def test_empty_dataset(empty_dataset):
 
 
 @pytest.fixture()
-def iterable_empty_dataset():
-    empty_hf_dataset = load_dataset("json", data_files={"train": []}, streaming=True)
+def iterable_empty_dataset(iterable_hf_dataset):
+    # filter out all examples
+    empty_hf_dataset = iterable_hf_dataset.filter(function=lambda example: False)
     mapped_dataset = empty_hf_dataset.map(example_to_doc_dict)
     dataset = DatasetDict.from_hf(hf_dataset=mapped_dataset, document_type=TestDocument)
     return dataset
