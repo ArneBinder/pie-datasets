@@ -107,7 +107,7 @@ def test_config_names(config_name):
 
 @pytest.fixture(scope="module")
 def builder(config_name: str) -> BratBuilder:
-    return BratBuilder(name=config_name)
+    return BratBuilder(config_name=config_name)
 
 
 def test_builder(builder):
