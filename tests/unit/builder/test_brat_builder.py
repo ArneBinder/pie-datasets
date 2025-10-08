@@ -3,7 +3,7 @@ import logging
 from typing import Union
 
 import pytest
-from datasets import DatasetBuilder, disable_caching
+from datasets import DatasetBuilder
 from datasets.load import load_dataset_builder
 from pie_core import AnnotationLayer, annotation_field
 from pie_documents.annotations import LabeledSpan
@@ -82,10 +82,6 @@ HF_EXAMPLES = [
         },
     },
 ]
-
-# TODO: check if this really makes errors more visible (or does this hide caching related errors)?
-# disable HF caching
-# disable_caching()
 
 
 @pytest.fixture(scope="module")
