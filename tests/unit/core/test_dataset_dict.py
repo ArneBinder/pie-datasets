@@ -753,7 +753,7 @@ def test_to_document_type_dont_downcast_noop(dataset_dict, caplog):
 
 
 def test_load_dataset_conll2003():
-    dataset_dict = load_dataset(str(PIE_DATASET_PATH))
+    dataset_dict = load_dataset(str(PIE_DATASET_PATH), trust_remote_code=True)
     assert isinstance(dataset_dict, DatasetDict)
     assert set(dataset_dict) == {"train", "test", "validation"}
     split_sizes = {split: len(dataset_dict[split]) for split in dataset_dict}
@@ -766,7 +766,7 @@ def test_load_dataset_conll2003():
 
 
 def test_load_dataset_conll2003_single_split():
-    dataset = load_dataset(str(PIE_DATASET_PATH), split="train")
+    dataset = load_dataset(str(PIE_DATASET_PATH), split="train", trust_remote_code=True)
     assert isinstance(dataset, Dataset)
     assert len(dataset) == 14041
     doc = dataset[0]
