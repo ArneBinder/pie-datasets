@@ -31,6 +31,7 @@ class Example(GeneratorBasedBuilder):
     DOCUMENT_TYPE = ExampleDocument
 
     BASE_DATASET_PATH = str(FIXTURES_ROOT / "builder" / "datasets" / "base_multi_config")
+    BASE_BUILDER_KWARGS_DICT = {config_name: {"trust_remote_code": True} for config_name in [None, "es", "nl"]}
 
     BUILDER_CONFIGS = [
         ExampleConfig(
