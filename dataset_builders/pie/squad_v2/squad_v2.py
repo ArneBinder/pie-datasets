@@ -66,7 +66,7 @@ class SquadV2Config(datasets.BuilderConfig):
 class SquadV2(GeneratorBasedBuilder):
     DOCUMENT_TYPE = SquadV2Document
 
-    BASE_DATASET_PATH = "squad_v2"
+    BASE_DATASET_PATH = "rajpurkar/squad_v2"
     BASE_DATASET_REVISION = "e4d7191788b08fde3cbd09bd8fe1fcd827ee1715"
 
     BUILDER_CONFIGS = [

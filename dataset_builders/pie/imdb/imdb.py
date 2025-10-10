@@ -42,7 +42,7 @@ def document_to_example(document: ImdbDocument, labels: datasets.ClassLabel) -> 
 class Imdb(GeneratorBasedBuilder):
     DOCUMENT_TYPE = ImdbDocument
 
-    BASE_DATASET_PATH = "imdb"
+    BASE_DATASET_PATH = "stanfordnlp/imdb"
     BASE_DATASET_REVISION = "9c6ede893febf99215a29cc7b72992bb1138b06b"
 
     BUILDER_CONFIGS = [

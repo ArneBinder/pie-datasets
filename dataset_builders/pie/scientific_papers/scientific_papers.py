@@ -76,7 +76,7 @@ class ScientificPapersConfig(datasets.BuilderConfig):
 class ScientificPapers(GeneratorBasedBuilder):
     DOCUMENT_TYPE = ScientificPapersDocument
 
-    BASE_DATASET_PATH = "scientific_papers"
+    BASE_DATASET_PATH = "armanc/scientific_papers"
     BASE_DATASET_REVISION = "14c5296f2d707630f5835c9da59dcaddeea19b20"
 
     BUILDER_CONFIGS = [
