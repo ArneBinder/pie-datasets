@@ -455,6 +455,11 @@ class BratBuilder(GeneratorBasedBuilder):
         None  # it is highly recommended to set this to a commit hash in any derived builder
     )
 
+    BASE_BUILDER_KWARGS_DICT = {
+        dataset_variant: {"trust_remote_code": True}
+        for dataset_variant in [None] + [config.name for config in BUILDER_CONFIGS]
+    }
+
     def _generate_document(self, example, **kwargs):
         return example_to_document(
             example, merge_fragmented_spans=self.config.merge_fragmented_spans
