@@ -427,7 +427,7 @@ class Conll2012Ontonotesv5(GeneratorBasedBuilder):
         TextDocumentWithLabeledSpansAndLabeledPartitions: convert_to_text_document_with_labeled_spans_and_labeled_partitions
     }
 
-    BASE_DATASET_PATH = "conll2012_ontonotesv5"
+    BASE_DATASET_PATH = "ontonotes/conll2012_ontonotesv5"
     BASE_DATASET_REVISION = "1161216f7e7185a4b2f4d0a4e0734dc7919dfa15"
 
     BUILDER_CONFIGS = [
