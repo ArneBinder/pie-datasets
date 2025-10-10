@@ -35,7 +35,12 @@ def dataset_variant(request):
 
 @pytest.fixture(scope="module")
 def hf_dataset(dataset_variant):
-    return load_dataset(str(HF_DATASET_PATH), name=dataset_variant, data_dir=DATA_PATH)
+    return load_dataset(
+        str(HF_DATASET_PATH),
+        name=dataset_variant,
+        data_dir=DATA_PATH,
+        **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[dataset_variant],
+    )
 
 
 @pytest.fixture(scope="module")

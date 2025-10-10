@@ -26,7 +26,7 @@ class AbstRCT(BratBuilder):
 
     # we need to add None to the list of dataset variants to support the default dataset variant
     BASE_BUILDER_KWARGS_DICT = {
-        dataset_variant: {"url": URL, "split_paths": SPLIT_PATHS}
+        dataset_variant: {"url": URL, "split_paths": SPLIT_PATHS, "trust_remote_code": True}
         for dataset_variant in ["default", None]
     }
 

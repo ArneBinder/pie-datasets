@@ -49,6 +49,11 @@ class Conll2003(GeneratorBasedBuilder):
         ),
     ]
 
+    BASE_BUILDER_KWARGS_DICT = {
+        dataset_variant: {"trust_remote_code": True}
+        for dataset_variant in [None] + [config.name for config in BUILDER_CONFIGS]
+    }
+
     DOCUMENT_CONVERTERS = {
         TextDocumentWithLabeledSpans: {
             # just rename the layer

@@ -1,13 +1,12 @@
 import datasets
 import pytest
-from datasets import disable_caching, load_dataset
 from pie_core import Document
 
 from dataset_builders.pie.imdb.imdb import Imdb
 from pie_datasets import Dataset, IterableDataset
 from tests.dataset_builders.common import PIE_BASE_PATH
 
-disable_caching()
+datasets.disable_caching()
 
 DATASET_NAME = "imdb"
 BUILDER_CLASS = Imdb
@@ -33,7 +32,7 @@ def split(request):
 
 @pytest.fixture(scope="module")
 def hf_dataset(split) -> datasets.Dataset:
-    return load_dataset(str(HF_DATASET_PATH), split=split)
+    return datasets.load_dataset(str(HF_DATASET_PATH), split=split)
 
 
 @pytest.mark.slow
@@ -44,7 +43,9 @@ def test_hf_dataset(hf_dataset, split):
 
 @pytest.fixture(scope="module")
 def hf_dataset_fast() -> datasets.IterableDataset:
-    return load_dataset(str(HF_DATASET_PATH), split=SPLIT, streaming=True).take(STREAM_SIZE)
+    return datasets.load_dataset(str(HF_DATASET_PATH), split=SPLIT, streaming=True).take(
+        STREAM_SIZE
+    )
 
 
 def test_hf_dataset_fast(hf_dataset_fast):
@@ -109,7 +110,7 @@ def test_example_to_document_and_back_all(hf_dataset, builder):
 
 @pytest.fixture(scope="module")
 def pie_dataset(split) -> Dataset:
-    return load_dataset(str(PIE_DATASET_PATH), split=split)
+    return datasets.load_dataset(str(PIE_DATASET_PATH), trust_remote_code=True, split=split)
 
 
 @pytest.mark.slow
@@ -120,7 +121,9 @@ def test_pie_dataset(pie_dataset, split):
 
 @pytest.fixture(scope="module")
 def pie_dataset_fast() -> IterableDataset:
-    return load_dataset(str(PIE_DATASET_PATH), split=SPLIT, streaming=True).take(STREAM_SIZE)
+    return datasets.load_dataset(
+        str(PIE_DATASET_PATH), trust_remote_code=True, split=SPLIT, streaming=True
+    ).take(STREAM_SIZE)
 
 
 def test_pie_dataset_fast(pie_dataset_fast):

@@ -149,6 +149,11 @@ class SciDTBArgmin(GeneratorBasedBuilder):
 
     BUILDER_CONFIGS = [datasets.BuilderConfig(name="default")]
 
+    BASE_BUILDER_KWARGS_DICT = {
+        dataset_variant: {"trust_remote_code": True}
+        for dataset_variant in [None] + [config.name for config in BUILDER_CONFIGS]
+    }
+
     DEFAULT_CONFIG_NAME = "default"
 
     def _generate_document_kwargs(self, dataset):

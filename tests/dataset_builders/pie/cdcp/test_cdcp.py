@@ -1,5 +1,4 @@
 import dataclasses
-from typing import List
 
 import pytest
 from datasets import disable_caching, load_dataset
@@ -72,7 +71,12 @@ def split(request):
 
 @pytest.fixture(scope="module")
 def hf_dataset():
-    return load_dataset(str(HF_DATASET_PATH), data_dir=DATA_PATH, revision=HF_DATASET_REVISION)
+    return load_dataset(
+        str(HF_DATASET_PATH),
+        data_dir=DATA_PATH,
+        revision=HF_DATASET_REVISION,
+        **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[None],
+    )
 
 
 def test_hf_dataset(hf_dataset):

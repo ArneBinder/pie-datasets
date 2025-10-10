@@ -25,7 +25,7 @@ disable_caching()
 
 @pytest.fixture(scope="module")
 def hf_dataset():
-    return load_dataset(HF_DATASET_PATH)
+    return load_dataset(HF_DATASET_PATH, **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[None])
 
 
 @pytest.fixture(scope="module", params=list(SPLIT_SIZES))

@@ -226,6 +226,11 @@ class Drugprot(GeneratorBasedBuilder):
         ),
     ]
 
+    BASE_BUILDER_KWARGS_DICT = {
+        dataset_variant: {"trust_remote_code": True}
+        for dataset_variant in [None] + [config.name for config in BUILDER_CONFIGS]
+    }
+
     @property
     def document_converters(self):
         if self.config.name == "drugprot_source":

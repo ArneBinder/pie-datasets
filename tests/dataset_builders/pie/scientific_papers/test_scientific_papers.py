@@ -29,6 +29,7 @@ def hf_dataset(dataset_variant):
         name=dataset_variant,
         split=SPLIT,
         streaming=True,
+        **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[dataset_variant]
     )
     dataset_head = dataset.take(STREAM_SIZE)
     return list(dataset_head)

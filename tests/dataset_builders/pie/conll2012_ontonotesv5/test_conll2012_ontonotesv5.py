@@ -1,7 +1,7 @@
 import json
 
+import datasets
 import pytest
-from datasets import disable_caching, load_dataset
 from pie_documents.documents import TextDocumentWithLabeledSpansAndLabeledPartitions
 
 from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
@@ -13,7 +13,7 @@ from dataset_builders.pie.conll2012_ontonotesv5.conll2012_ontonotesv5 import (
 from pie_datasets import load_dataset as load_pie_dataset
 from tests.dataset_builders.common import HF_DS_FIXTURE_DATA_PATH, PIE_BASE_PATH
 
-disable_caching()
+datasets.disable_caching()
 
 DATASET_NAME = "conll2012_ontonotesv5"
 BUILDER_CLASS = Conll2012Ontonotesv5
@@ -47,19 +47,24 @@ def split_name(request):
 
 @pytest.fixture(scope="module")
 def hf_dataset_extract():
-    dataset = load_dataset(
-        BUILDER_CLASS.BASE_DATASET_PATH, name=DATASET_VARIANT, split=SPLIT_NAME, streaming=True
+    dataset = datasets.load_dataset(
+        BUILDER_CLASS.BASE_DATASET_PATH,
+        name=DATASET_VARIANT,
+        split=SPLIT_NAME,
+        streaming=True,
+        **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[DATASET_VARIANT]
     )
     return dataset.take(STREAM_SIZE)
 
 
 @pytest.fixture(scope="module")
 def hf_dataset_all(dataset_variant, split_name):
-    dataset = load_dataset(
+    dataset = datasets.load_dataset(
         BUILDER_CLASS.BASE_DATASET_PATH,
         name=dataset_variant,
         split=split_name,
         streaming=False,
+        **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[dataset_variant]
     )
 
     return dataset
@@ -119,7 +124,7 @@ def test_hf_example_extract(hf_example_extract):
     assert hf_example_extract is not None
     with open(HF_EXAMPLE_FIXTURE_PATH) as f:
         expected = json.load(f)
-    assert hf_example_extract == expected
+    assert json.dumps(hf_example_extract, sort_keys=True) == json.dumps(expected, sort_keys=True)
 
 
 def test_pie_example_extract(pie_example_extract):

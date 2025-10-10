@@ -5,7 +5,7 @@ import datasets
 from pie_documents.annotations import Label
 from pie_documents.documents import TextDocumentWithLabel
 
-from pie_datasets import GeneratorBasedBuilder
+from pie_datasets import ArrowBasedBuilder
 
 
 @dataclass
@@ -39,11 +39,11 @@ def document_to_example(document: ImdbDocument, labels: datasets.ClassLabel) -> 
     }
 
 
-class Imdb(GeneratorBasedBuilder):
+class Imdb(ArrowBasedBuilder):
     DOCUMENT_TYPE = ImdbDocument
 
     BASE_DATASET_PATH = "stanfordnlp/imdb"
-    BASE_DATASET_REVISION = "9c6ede893febf99215a29cc7b72992bb1138b06b"
+    BASE_DATASET_REVISION = "e6281661ce1c48d982bc483cf8a173c1bbeb5d31"
 
     BUILDER_CONFIGS = [
         datasets.BuilderConfig(

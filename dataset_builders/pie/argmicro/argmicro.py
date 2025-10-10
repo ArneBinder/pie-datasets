@@ -271,6 +271,10 @@ class ArgMicro(GeneratorBasedBuilder):
     BASE_DATASET_REVISION = "282733d6d57243f2a202d81143c4e31bb250e663"
 
     BUILDER_CONFIGS = [datasets.BuilderConfig(name="en"), datasets.BuilderConfig(name="de")]
+    BASE_BUILDER_KWARGS_DICT = {
+        dataset_variant: {"trust_remote_code": True}
+        for dataset_variant in [None] + [config.name for config in BUILDER_CONFIGS]
+    }
 
     def _generate_document_kwargs(self, dataset):
         return {
