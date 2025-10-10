@@ -1,4 +1,4 @@
-from typing import Any, Dict, List, Type, Union
+from typing import Any, Dict, Type, Union
 
 import datasets
 import pytest
@@ -36,7 +36,10 @@ def dataset_variant(request) -> str:
 @pytest.fixture(scope="module")
 def hf_dataset(dataset_variant) -> datasets.DatasetDict:
     return datasets.load_dataset(
-        HF_DATASET_PATH, revision=HF_DATASET_REVISION, name=dataset_variant
+        HF_DATASET_PATH,
+        revision=HF_DATASET_REVISION,
+        name=dataset_variant,
+        **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[dataset_variant],
     )
 
 

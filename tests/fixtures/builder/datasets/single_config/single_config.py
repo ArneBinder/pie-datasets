@@ -32,6 +32,7 @@ class Example(GeneratorBasedBuilder):
     DOCUMENT_TYPE = ExampleDocument
 
     BASE_DATASET_PATH = str(FIXTURES_ROOT / "builder" / "datasets" / "base_single_config")
+    BASE_BUILDER_KWARGS_DICT = {config_name: {"trust_remote_code": True} for config_name in [None, "conll2003"]}
 
     BUILDER_CONFIGS = [
         ExampleConfig(

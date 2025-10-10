@@ -23,7 +23,7 @@ SPLIT_SIZES = {"train": 821}
 
 @pytest.fixture(scope="module")
 def hf_dataset():
-    return datasets.load_dataset(HF_DATASET_PATH)
+    return datasets.load_dataset(HF_DATASET_PATH, **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[None])
 
 
 def test_hf_dataset(hf_dataset):

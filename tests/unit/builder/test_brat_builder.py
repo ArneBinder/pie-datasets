@@ -86,7 +86,7 @@ HF_EXAMPLES = [
 
 @pytest.fixture(scope="module")
 def base_builder() -> DatasetBuilder:
-    result = load_dataset_builder(path=BratBuilder.BASE_DATASET_PATH)
+    result = load_dataset_builder(path=BratBuilder.BASE_DATASET_PATH, trust_remote_code=True)
     return result
 
 

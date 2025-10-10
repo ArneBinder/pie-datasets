@@ -67,7 +67,7 @@ class SquadV2(GeneratorBasedBuilder):
     DOCUMENT_TYPE = SquadV2Document
 
     BASE_DATASET_PATH = "rajpurkar/squad_v2"
-    BASE_DATASET_REVISION = "e4d7191788b08fde3cbd09bd8fe1fcd827ee1715"
+    BASE_DATASET_REVISION = "3ffb306f725f7d2ce8394bc1873b24868140c412"
 
     BUILDER_CONFIGS = [
         SquadV2Config(
@@ -76,6 +76,10 @@ class SquadV2(GeneratorBasedBuilder):
             description="SQuAD plain text version 2",
         ),
     ]
+    BASE_BUILDER_KWARGS_DICT = {
+        dataset_variant: {"trust_remote_code": True}
+        for dataset_variant in [None] + [config.name for config in BUILDER_CONFIGS]
+    }
 
     DEFAULT_CONFIG_NAME = "squad_v2"
 

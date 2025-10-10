@@ -21,7 +21,9 @@ TEST_MODULE = f"{TEST_PACKAGE}.{Path(__file__).stem}"
 
 
 def test_builder_class():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "single_config"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "single_config"), trust_remote_code=True
+    )
     builder_cls = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         builder = builder_cls(cache_dir=tmp_cache_dir)
@@ -29,7 +31,9 @@ def test_builder_class():
 
 
 def test_builder_class_with_kwargs():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "single_config"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "single_config"), trust_remote_code=True
+    )
     builder_cls = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         builder = builder_cls(cache_dir=tmp_cache_dir, parameter="test")
@@ -38,21 +42,28 @@ def test_builder_class_with_kwargs():
 
 
 def test_builder_class_with_kwargs_wrong_parameter():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "single_config"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "single_config"), trust_remote_code=True
+    )
     builder_cls = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         # this should raise an exception because the base config does not know the parameter
-        with pytest.raises(
-            TypeError,
-            match=re.escape("__init__() got an unexpected keyword argument 'unknown_parameter'"),
-        ):
-            builder = builder_cls(
+        with pytest.raises(ValueError) as exc_info:
+            builder_cls(
                 cache_dir=tmp_cache_dir, parameter="test", unknown_parameter="test_unknown"
             )
+        assert (
+            str(exc_info.value)
+            == "BuilderConfig ExampleConfig(name='conll2003', version=1.0.0, data_dir=None, "
+            "data_files=None, description='Example dataset') doesn't have a "
+            "'unknown_parameter' key."
+        )
 
 
 def test_builder_class_with_base_dataset_kwargs():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "single_config"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "single_config"), trust_remote_code=True
+    )
     builder_cls = import_main_class(dataset_module.module_path)
     base_dataset_kwargs = dict(version=Version("0.0.0"), description="new description")
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
@@ -63,22 +74,27 @@ def test_builder_class_with_base_dataset_kwargs():
 
 
 def test_builder_class_with_base_dataset_kwargs_wrong_parameter():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "single_config"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "single_config"), trust_remote_code=True
+    )
     builder_cls = import_main_class(dataset_module.module_path)
     base_dataset_kwargs = dict(unknown_base_parameter="base_parameter_value")
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         # this should raise an exception because the base config does not know the parameter
-        with pytest.raises(
-            TypeError,
-            match=re.escape(
-                "__init__() got an unexpected keyword argument 'unknown_base_parameter'"
-            ),
-        ):
-            builder = builder_cls(cache_dir=tmp_cache_dir, base_dataset_kwargs=base_dataset_kwargs)
+        with pytest.raises(ValueError) as exc_info:
+            builder_cls(cache_dir=tmp_cache_dir, base_dataset_kwargs=base_dataset_kwargs)
+        assert (
+            str(exc_info.value)
+            == "BuilderConfig Conll2003Config(name='conll2003', version=1.0.0, data_dir=None, "
+            "data_files=None, description='Conll2003 dataset') doesn't have a "
+            "'unknown_base_parameter' key."
+        )
 
 
 def test_builder_class_multi_configs():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "multi_config"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "multi_config"), trust_remote_code=True
+    )
     builder_cls = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         with pytest.raises(ValueError, match="Config name is missing."):
@@ -89,7 +105,9 @@ def test_builder_class_multi_configs():
 
 
 def test_builder_class_name_mapping():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "name_mapping"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "name_mapping"), trust_remote_code=True
+    )
     builder_cls = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         builder = builder_cls(config_name="es", cache_dir=tmp_cache_dir)
@@ -102,7 +120,9 @@ def test_builder_class_name_mapping():
 
 
 def test_builder_class_name_mapping_disabled():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "name_mapping_disabled"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "name_mapping_disabled"), trust_remote_code=True
+    )
     builder_cls = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         # this should raise an exception because the config name is not passed
@@ -118,7 +138,9 @@ def test_builder_class_name_mapping_disabled():
 
 
 def test_builder_class_name_mapping_and_defaults():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "default_config_kwargs"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "default_config_kwargs"), trust_remote_code=True
+    )
     builder_cls = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         # this comes from passing the config as base config name
@@ -134,7 +156,9 @@ def test_builder_class_name_mapping_and_defaults():
 
 
 def test_wrong_builder_class_config():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "wrong_builder_class_config"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "wrong_builder_class_config"), trust_remote_code=True
+    )
     builder_cls = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         # This should raise an exception because the base builder is derived from GeneratorBasedBuilder,
@@ -191,7 +215,9 @@ def test_builder_with_document_converters_resolve_document_type_and_converter():
     class RenamedExampleDocument(TextBasedDocument):
         spans: AnnotationLayer[LabeledSpan] = annotation_field(target="text")
 
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "single_config"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "single_config"), trust_remote_code=True
+    )
     builder_cls: Type[PieDatasetBuilder] = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         builder = builder_cls(
@@ -211,7 +237,9 @@ class NoDocumentType:
 
 
 def test_builder_with_document_converters_resolve_wrong_document_type():
-    dataset_module = dataset_module_factory(str(DATASETS_ROOT / "single_config"))
+    dataset_module = dataset_module_factory(
+        str(DATASETS_ROOT / "single_config"), trust_remote_code=True
+    )
     builder_cls: Type[PieDatasetBuilder] = import_main_class(dataset_module.module_path)
     with tempfile.TemporaryDirectory() as tmp_cache_dir:
         with pytest.raises(

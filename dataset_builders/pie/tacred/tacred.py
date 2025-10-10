@@ -183,6 +183,10 @@ class Tacred(GeneratorBasedBuilder):
             description="Relabeled TACRED (corrected labels for all splits and pruned)",
         ),
     ]
+    BASE_BUILDER_KWARGS_DICT = {
+        dataset_variant: {"trust_remote_code": True}
+        for dataset_variant in [None] + [config.name for config in BUILDER_CONFIGS]
+    }
 
     def _generate_document_kwargs(self, dataset):
         return {

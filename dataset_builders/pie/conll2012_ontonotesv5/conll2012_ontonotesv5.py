@@ -443,6 +443,11 @@ class Conll2012Ontonotesv5(GeneratorBasedBuilder):
         )
     ]
 
+    BASE_BUILDER_KWARGS_DICT = {
+        dataset_variant: {"trust_remote_code": True}
+        for dataset_variant in [None] + [config.name for config in BUILDER_CONFIGS]
+    }
+
     def _generate_document_kwargs(self, dataset):
         pos_tags_feature = dataset.features["sentences"][0]["pos_tags"].feature
         return dict(

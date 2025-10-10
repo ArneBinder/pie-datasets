@@ -28,7 +28,9 @@ def split(request):
 
 @pytest.fixture(scope="module")
 def hf_dataset(split):
-    return datasets.load_dataset(str(HF_DATASET_PATH), split=split)
+    return datasets.load_dataset(
+        str(HF_DATASET_PATH), split=split, **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[None]
+    )
 
 
 @pytest.mark.slow

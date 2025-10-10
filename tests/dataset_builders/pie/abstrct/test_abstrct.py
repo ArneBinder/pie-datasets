@@ -1,5 +1,3 @@
-from typing import List
-
 import pytest
 from datasets import disable_caching
 from pie_core import Document

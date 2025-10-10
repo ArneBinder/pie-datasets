@@ -24,7 +24,8 @@ from tests.dataset_builders.common import (
 logger = logging.getLogger(__name__)
 
 PIE_DATASET_PATH = f"{PIE_BASE_PATH}/tacred"
-HF_DATASET_PATH = Tacred.BASE_DATASET_PATH
+BUILDER_CLASS = Tacred
+HF_DATASET_PATH = BUILDER_CLASS.BASE_DATASET_PATH
 SPLIT_NAMES = {"train", "validation", "test"}
 EXAMPLE_IDX = 0
 NUM_SAMPLES = 3
@@ -32,7 +33,7 @@ NUM_SAMPLES = 3
 TACRED_DATA_DIR = os.getenv("TACRED_DATA_DIR", "") or None  # ~/datasets/tacred/data/json
 
 
-@pytest.fixture(params=[config.name for config in Tacred.BUILDER_CONFIGS], scope="module")
+@pytest.fixture(params=[config.name for config in BUILDER_CLASS.BUILDER_CONFIGS], scope="module")
 def dataset_variant(request):
     return request.param
 
@@ -62,7 +63,12 @@ def hf_dataset(dataset_variant):
     if TACRED_DATA_DIR is None:
         raise ValueError("TACRED_DATA_DIR is required to load the Huggingface TacRED dataset")
     else:
-        return load_dataset(HF_DATASET_PATH, name=dataset_variant, data_dir=TACRED_DATA_DIR)
+        return load_dataset(
+            HF_DATASET_PATH,
+            name=dataset_variant,
+            data_dir=TACRED_DATA_DIR,
+            **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[dataset_variant],
+        )
 
 
 @pytest.fixture(scope="module")
@@ -124,7 +130,7 @@ def document(hf_example, ner_labels, relation_labels):
 
 def test_document(document):
     assert document is not None
-    assert isinstance(document, Tacred.DOCUMENT_TYPE)
+    assert isinstance(document, BUILDER_CLASS.DOCUMENT_TYPE)
 
 
 def test_example_to_document_and_back(hf_example, ner_labels, relation_labels):
@@ -153,7 +159,7 @@ def test_example_to_document_and_back_all(hf_dataset):
                 ner_labels=ner_labels,
                 relation_labels=relation_labels,
             )
-            assert isinstance(doc, Tacred.DOCUMENT_TYPE)
+            assert isinstance(doc, BUILDER_CLASS.DOCUMENT_TYPE)
             example_back = document_to_example(
                 doc, ner_labels=ner_labels, relation_labels=relation_labels
             )

@@ -23,7 +23,11 @@ SPLIT_SIZES = {"train": 2}
 
 @pytest.fixture(scope="module")
 def hf_dataset():
-    return datasets.load_dataset(str(HF_DATASET_PATH), data_dir=str(FIXTURE_DATA_PATH))
+    return datasets.load_dataset(
+        str(HF_DATASET_PATH),
+        data_dir=str(FIXTURE_DATA_PATH),
+        **Brat.BASE_BUILDER_KWARGS_DICT[None],
+    )
 
 
 def test_hf_dataset(hf_dataset):
@@ -113,7 +117,7 @@ def pie_dataset_variant(request):
 def generated_document(
     hf_example, hf_dataset, pie_dataset_variant
 ) -> Union[BratDocument, BratDocumentWithMergedSpans]:
-    builder = Brat(name=pie_dataset_variant)
+    builder = Brat(config_name=pie_dataset_variant)
     kwargs = builder._generate_document_kwargs(hf_dataset["train"]) or {}
     document = builder._generate_document(example=hf_example, **kwargs)
     assert document is not None

@@ -28,7 +28,9 @@ DATA_PATH = FIXTURES_ROOT / "dataset_builders" / "scidtb_argmin_annotations.tgz"
 
 @pytest.fixture(scope="module")
 def hf_dataset():
-    return load_dataset(str(HF_DATASET_PATH), data_dir=DATA_PATH)
+    return load_dataset(
+        str(HF_DATASET_PATH), data_dir=DATA_PATH, **BUILDER_CLASS.BASE_BUILDER_KWARGS_DICT[None]
+    )
 
 
 def test_hf_dataset(hf_dataset):
